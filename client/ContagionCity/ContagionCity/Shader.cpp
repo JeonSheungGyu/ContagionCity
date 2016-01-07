@@ -322,5 +322,6 @@ void CSkyBoxShader::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCa
 {
 	CShader::OnPrepareRender( pd3dDeviceContext );
 
-	m_ppObjects[0]->Render( pd3dDeviceContext, pCamera );
+	for (int i = 0; i < m_nObjects; i++)
+		m_ppObjects[i]->Render( pd3dDeviceContext, pCamera );
 }
