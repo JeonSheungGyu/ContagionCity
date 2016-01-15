@@ -314,6 +314,7 @@ CSkyBox::~CSkyBox( )
 void CSkyBox::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera )
 {
 	XMFLOAT3 vCameraPos = pCamera->GetPosition( );
+	//XMFLOAT3 vCameraPos = XMFLOAT3( 0.f, 0.f, 0.f );
 	SetPosition( vCameraPos );
 	CShader::UpdateShaderVariable( pd3dDeviceContext, &m_mtxWorld );
 

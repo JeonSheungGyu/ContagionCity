@@ -38,7 +38,8 @@ void CPlayer::CreateShaderVariables( ID3D11Device *pd3dDevice )
 
 void CPlayer::UpdateShaderVariables( ID3D11DeviceContext *pd3dDeviceContext )
 {
-	if (m_pCamera) m_pCamera->UpdateShaderVariables( pd3dDeviceContext );
+	if (m_pCamera) 
+		m_pCamera->UpdateShaderVariables( pd3dDeviceContext );
 
 }
 

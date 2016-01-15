@@ -436,7 +436,7 @@ void CThirdPersonCamera::Update( XMFLOAT3& vLookAt, float fTimeElapsed )
 		mtxRotate._13 = vRight.z; mtxRotate._23 = vUp.z; mtxRotate._33 = vLook.z;
 
 		XMFLOAT3 vOffset;
-		vOffset = MathHelper::GetInstance( )->Vector3TransformCoord( vOffset, mtxRotate );
+		vOffset = MathHelper::GetInstance( )->Vector3TransformCoord( m_vOffset, mtxRotate );
 		// 회전한 카메라의 위치는 플레이어의 위치에 회전한 카메라 오프셋 벡터를 더한 것
 		XMFLOAT3 vPosition = MathHelper::GetInstance( )->Float3PlusFloat3( m_pPlayer->GetPosition( ), vOffset );
 		// 현재의 카메라의 위치에서 회전한 카메라의 위치까지의 벡터
@@ -449,7 +449,7 @@ void CThirdPersonCamera::Update( XMFLOAT3& vLookAt, float fTimeElapsed )
 		float fDistance = fLength * fTimeLagScale;
 		if (fDistance > fLength) fDistance = fLength;
 		if (fLength < 0.01f) fDistance = fLength;
-		if (fDistance > 0)
+		if (fDistance >= 0)
 		{
 			m_vPosition = MathHelper::GetInstance( )->Float3PlusFloat3( m_vPosition, MathHelper::GetInstance()->Float3MulFloat( vDirection, fDistance) );
 			SetLookAt( vLookAt );
