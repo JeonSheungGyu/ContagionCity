@@ -159,6 +159,7 @@ void CPlayer::Update( float fTimeElapsed )
 {
 	/*플레이어의 속도 벡터를 중력 벡터와 더한다.
 	중력 벡터에 fTimeElapsed를 곱하는 것은 중력을 시간에 비례하도록 적용한다는 의미이다.*/
+	m_vGravity = XMFLOAT3( 0, 0, 0 );
 	m_vVelocity = MathHelper::GetInstance( )->Float3MulFloat( m_vGravity, fTimeElapsed );
 
 	/*플레이어의 속도 벡터의 XZ-성분의 크기를 구한다.

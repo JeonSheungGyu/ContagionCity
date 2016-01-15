@@ -421,6 +421,7 @@ CThirdPersonCamera::CThirdPersonCamera( CCamera *pCamera ) : CCamera( pCamera )
 
 void CThirdPersonCamera::Update( XMFLOAT3& vLookAt, float fTimeElapsed )
 {
+	
 	// 플레이어의 회전에 따라 3인칭 카메라도 회전해야 한다.
 	if (m_pPlayer)
 	{
@@ -434,7 +435,7 @@ void CThirdPersonCamera::Update( XMFLOAT3& vLookAt, float fTimeElapsed )
 		mtxRotate._11 = vRight.x; mtxRotate._21 = vUp.x; mtxRotate._31 = vLook.x;
 		mtxRotate._12 = vRight.y; mtxRotate._22 = vUp.y; mtxRotate._32 = vLook.y;
 		mtxRotate._13 = vRight.z; mtxRotate._23 = vUp.z; mtxRotate._33 = vLook.z;
-
+		
 		XMFLOAT3 vOffset;
 		vOffset = MathHelper::GetInstance( )->Vector3TransformCoord( m_vOffset, mtxRotate );
 		// 회전한 카메라의 위치는 플레이어의 위치에 회전한 카메라 오프셋 벡터를 더한 것
