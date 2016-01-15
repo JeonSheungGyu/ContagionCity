@@ -16,7 +16,8 @@ public:
 	float Float3ToLength( XMFLOAT3 vec );
 	float Float3ToDot( XMFLOAT3& v1, XMFLOAT3& v2 );
 	XMFLOAT3 CrossFloat3( XMFLOAT3 vec1, XMFLOAT3 vec2 );
-	XMFLOAT3 NormalizeFloat3( XMFLOAT3 vec );
+	XMFLOAT3 NormalizeFloat( XMFLOAT3& vec );
+	XMFLOAT4 NormalizeFloat( XMFLOAT4& vec );
 
 	XMFLOAT3 VectorToFloat3( XMVECTOR vec3 );
 	XMVECTOR Float4ToVector( XMFLOAT4 vec );

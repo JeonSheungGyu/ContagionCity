@@ -148,11 +148,11 @@ void CPlayer::Rotate( float x, float y, float z )
 
 	/*회전으로 인해 플레이어의 로컬 x-축, y-축, z-축이 서로 직교하지 않을 수 있으므로
 	z-축(LookAt 벡터)을 기준으로 하여 서로 직교하고 단위벡터가 되도록 한다.*/
-	m_vLook = MathHelper::GetInstance( )->NormalizeFloat3( m_vLook );
+	m_vLook = MathHelper::GetInstance( )->NormalizeFloat( m_vLook );
 	m_vRight = MathHelper::GetInstance( )->CrossFloat3( m_vUp, m_vLook );
-	m_vRight = MathHelper::GetInstance( )->NormalizeFloat3( m_vRight );
+	m_vRight = MathHelper::GetInstance( )->NormalizeFloat( m_vRight );
 	m_vUp = MathHelper::GetInstance( )->CrossFloat3( m_vLook, m_vRight );
-	m_vUp = MathHelper::GetInstance( )->NormalizeFloat3( m_vUp );
+	m_vUp = MathHelper::GetInstance( )->NormalizeFloat( m_vUp );
 }
 
 void CPlayer::Update( float fTimeElapsed )
@@ -194,7 +194,7 @@ void CPlayer::Update( float fTimeElapsed )
 	속도 벡터에 감속 벡터를 더하여 속도 벡터를 줄인다.
 	마찰력이 속력보다 크면 속력은 0이 될 것이다.*/
 	XMFLOAT3 vDeceleration = MathHelper::GetInstance( )->Float3MulFloat( m_vVelocity, -1 );
-	vDeceleration = MathHelper::GetInstance( )->NormalizeFloat3( vDeceleration );
+	vDeceleration = MathHelper::GetInstance( )->NormalizeFloat( vDeceleration );
 	fLength = MathHelper::GetInstance( )->Float3ToLength( m_vVelocity );
 	float fDeceleration = ( m_fFriction * fTimeElapsed );
 	if (fDeceleration > fLength) fDeceleration = fLength;
@@ -234,8 +234,8 @@ CCamera* CPlayer::OnChangeCamera( ID3D11Device *pd3dDevice, DWORD nNewCameraMode
 		m_vUp = XMFLOAT3( 0.0f, 1.0f, 0.0f );
 		m_vRight.y = 0.0f;
 		m_vLook.y = 0.0f;
-		m_vRight = MathHelper::GetInstance( )->NormalizeFloat3( m_vRight );
-		m_vLook = MathHelper::GetInstance( )->NormalizeFloat3( m_vLook );
+		m_vRight = MathHelper::GetInstance( )->NormalizeFloat( m_vRight );
+		m_vLook = MathHelper::GetInstance( )->NormalizeFloat( m_vLook );
 		m_fPitch = 0.0f;
 		m_fRoll = 0.0f;
 		/*Look 벡터와 월드좌표계의 z-축(0, 0, 1)이 이루는 각도(내적=cos)를 계산하여

@@ -115,14 +115,14 @@ public:
 
 	// 월드 변환
 	void SetMovingDeirection( XMFLOAT3 vMovingDirection ){
-		m_vMovingDirection = MathHelper::GetInstance( )->NormalizeFloat3( vMovingDirection );
+		m_vMovingDirection = MathHelper::GetInstance( )->NormalizeFloat( vMovingDirection );
 		m_bInChangeDirection = true;
 	}
 	void SetMovingSpeed( float fSpeed ) { m_fMovingSpeed = fSpeed; }
 	void SetMovingRange( float fRange ) { m_fMovingRange = fRange; }
 
 	void SetRotationAxis( XMFLOAT3 vRotationAxis ) {
-		m_vRotationAxis = MathHelper::GetInstance( )->NormalizeFloat3( m_vRotationAxis );
+		m_vRotationAxis = MathHelper::GetInstance( )->NormalizeFloat( m_vRotationAxis );
 	}
 	void SetRotationSpeed( float fSpeed ) { m_fRotationSpeed = fSpeed; }
 

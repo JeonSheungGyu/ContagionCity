@@ -170,12 +170,21 @@ XMFLOAT4X4 MathHelper::GetMatrixIdentity( )
 	return iden;
 }
 
-XMFLOAT3 MathHelper::NormalizeFloat3( XMFLOAT3 vec )
+XMFLOAT3 MathHelper::NormalizeFloat( XMFLOAT3& vec )
 {
 	XMVECTOR tmp = XMLoadFloat3( &vec );	
 	tmp = XMVector3Normalize( tmp );
 
 	XMStoreFloat3( &vec, tmp );
+	return vec;
+}
+
+XMFLOAT4 MathHelper::NormalizeFloat( XMFLOAT4& vec )
+{
+	XMVECTOR tmp = XMLoadFloat4( &vec );
+	tmp = XMVector3Normalize( tmp );
+
+	XMStoreFloat4( &vec, tmp );
 	return vec;
 }
 

@@ -313,7 +313,7 @@ XMFLOAT3 CMeshIlluminated::CalculateTriangleNormal( UINT nIndex0, UINT nIndex1, 
 	XMFLOAT3 vEdge2 = MathHelper::GetInstance( )->Float3MinusFloat3( vP2, vP0 );
 
 	vNormal = MathHelper::GetInstance( )->CrossFloat3( vEdge1, vEdge2 );
-	vNormal = MathHelper::GetInstance( )->NormalizeFloat3( vNormal );
+	vNormal = MathHelper::GetInstance( )->NormalizeFloat( vNormal );
 
 	return vNormal;
 }
@@ -336,7 +336,7 @@ void CMeshIlluminated::SetAverageVertexNormal( XMFLOAT3 *pvNormals, int nPrimiti
 			if (nIndex0 == i || nIndex1 == i || nIndex2 == i)
 				MathHelper::GetInstance( )->Float3PlusFloat3( vSumOfNormal, CalculateTriangleNormal( nIndex0, nIndex1, nIndex2 ));
 		}
-		vSumOfNormal = MathHelper::GetInstance( )->NormalizeFloat3( vSumOfNormal );
+		vSumOfNormal = MathHelper::GetInstance( )->NormalizeFloat( vSumOfNormal );
 		pvNormals[i] = vSumOfNormal;
 	}
 }

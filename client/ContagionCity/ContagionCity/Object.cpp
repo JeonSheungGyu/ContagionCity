@@ -132,7 +132,7 @@ XMFLOAT3 CGameObject::GetLookAt( )
 {
 	// 게임 객체를 로컬 z축 벡터를 반환
 	XMFLOAT3 vLookAt( m_mtxWorld._31, m_mtxWorld._32, m_mtxWorld._33 );
-	vLookAt = MathHelper::GetInstance( )->NormalizeFloat3( vLookAt );
+	vLookAt = MathHelper::GetInstance( )->NormalizeFloat( vLookAt );
 
 	return vLookAt;
 }
@@ -141,7 +141,7 @@ XMFLOAT3 CGameObject::GetUp( )
 {
 	// 게임 객체를 로컬 y축 벡터를 반환
 	XMFLOAT3 vUp( m_mtxWorld._21, m_mtxWorld._22, m_mtxWorld._23 );
-	vUp = MathHelper::GetInstance( )->NormalizeFloat3( vUp );
+	vUp = MathHelper::GetInstance( )->NormalizeFloat( vUp );
 
 	return vUp;
 }
@@ -150,7 +150,7 @@ XMFLOAT3 CGameObject::GetRight( )
 {
 	// 게임 객체를 로컬 x축 벡터를 반환
 	XMFLOAT3 vRight( m_mtxWorld._11, m_mtxWorld._12, m_mtxWorld._13 );
-	vRight = MathHelper::GetInstance( )->NormalizeFloat3( vRight );
+	vRight = MathHelper::GetInstance( )->NormalizeFloat( vRight );
 
 	return vRight;
 }

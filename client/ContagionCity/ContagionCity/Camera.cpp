@@ -64,50 +64,46 @@ CCamera::~CCamera( )
 
 void CCamera::CalculateFrustumPlanes( )
 {
-	XMMATRIX mtxView = XMLoadFloat4x4( &m_mtxView );
-	XMMATRIX mtxProjection = XMLoadFloat4x4( &m_mtxProjection );
-
-	XMMATRIX mtxViewProjection = mtxView * mtxProjection;
-
-	XMFLOAT4 frustumPlanes[6];
+	XMFLOAT4X4 mtxViewProjection = MathHelper::GetInstance( )->Float4x4MulFloat4x4( m_mtxView, m_mtxProjection );
 
 	// 절두체의 왼쪽 평면
-	frustumPlanes[0].x = -( mtxViewProjection._14 + mtxViewProjection._11 );
-	frustumPlanes[0].y = -( mtxViewProjection._24 + mtxViewProjection._21 );
-	frustumPlanes[0].z = -( mtxViewProjection._34 + mtxViewProjection._31 );
-	frustumPlanes[0].w = -( mtxViewProjection._44 + mtxViewProjection._41 );
+	m_FrustumPlanes[0].x = -( mtxViewProjection._14 + mtxViewProjection._11 );
+	m_FrustumPlanes[0].y = -( mtxViewProjection._24 + mtxViewProjection._21 );
+	m_FrustumPlanes[0].z = -( mtxViewProjection._34 + mtxViewProjection._31 );
+	m_FrustumPlanes[0].w = -( mtxViewProjection._44 + mtxViewProjection._41 );
 	// 절두체의 오른쪽 평면
-	frustumPlanes[1].x = -( mtxViewProjection._14 - mtxViewProjection._11 );
-	frustumPlanes[1].y = -( mtxViewProjection._24 - mtxViewProjection._21 );
-	frustumPlanes[1].z = -( mtxViewProjection._34 - mtxViewProjection._31 );
-	frustumPlanes[1].w = -( mtxViewProjection._44 - mtxViewProjection._41 );
+	m_FrustumPlanes[1].x = -( mtxViewProjection._14 - mtxViewProjection._11 );
+	m_FrustumPlanes[1].y = -( mtxViewProjection._24 - mtxViewProjection._21 );
+	m_FrustumPlanes[1].z = -( mtxViewProjection._34 - mtxViewProjection._31 );
+	m_FrustumPlanes[1].w = -( mtxViewProjection._44 - mtxViewProjection._41 );
 	// 절두체의 위쪽 평면
-	frustumPlanes[2].x = -( mtxViewProjection._14 - mtxViewProjection._12 );
-	frustumPlanes[2].y = -( mtxViewProjection._24 - mtxViewProjection._22 );
-	frustumPlanes[2].z = -( mtxViewProjection._34 - mtxViewProjection._32 );
-	frustumPlanes[2].w = -( mtxViewProjection._44 - mtxViewProjection._42 );
+	m_FrustumPlanes[2].x = -( mtxViewProjection._14 - mtxViewProjection._12 );
+	m_FrustumPlanes[2].y = -( mtxViewProjection._24 - mtxViewProjection._22 );
+	m_FrustumPlanes[2].z = -( mtxViewProjection._34 - mtxViewProjection._32 );
+	m_FrustumPlanes[2].w = -( mtxViewProjection._44 - mtxViewProjection._42 );
 	// 절두체의 아래쪽 평면
-	frustumPlanes[3].x = -( mtxViewProjection._14 + mtxViewProjection._12 );
-	frustumPlanes[3].y = -( mtxViewProjection._24 + mtxViewProjection._22 );
-	frustumPlanes[3].z = -( mtxViewProjection._34 + mtxViewProjection._32 );
-	frustumPlanes[3].w = -( mtxViewProjection._44 + mtxViewProjection._42 );
+	m_FrustumPlanes[3].x = -( mtxViewProjection._14 + mtxViewProjection._12 );
+	m_FrustumPlanes[3].y = -( mtxViewProjection._24 + mtxViewProjection._22 );
+	m_FrustumPlanes[3].z = -( mtxViewProjection._34 + mtxViewProjection._32 );
+	m_FrustumPlanes[3].w = -( mtxViewProjection._44 + mtxViewProjection._42 );
 	// 절두체의 근평면
-	frustumPlanes[4].x = -( mtxViewProjection._13 );
-	frustumPlanes[4].y = -( mtxViewProjection._23 );
-	frustumPlanes[4].z = -( mtxViewProjection._33 );
-	frustumPlanes[4].w = -( mtxViewProjection._43 );
+	m_FrustumPlanes[4].x = -( mtxViewProjection._13 );
+	m_FrustumPlanes[4].y = -( mtxViewProjection._23 );
+	m_FrustumPlanes[4].z = -( mtxViewProjection._33 );
+	m_FrustumPlanes[4].w = -( mtxViewProjection._43 );
 	// 절두체의 원평면
-	frustumPlanes[5].x = -( mtxViewProjection._14 - mtxViewProjection._13 );
-	frustumPlanes[5].y = -( mtxViewProjection._24 - mtxViewProjection._23 );
-	frustumPlanes[5].z = -( mtxViewProjection._34 - mtxViewProjection._33 );
-	frustumPlanes[5].w = -( mtxViewProjection._44 - mtxViewProjection._43 );
+	m_FrustumPlanes[5].x = -( mtxViewProjection._14 - mtxViewProjection._13 );
+	m_FrustumPlanes[5].y = -( mtxViewProjection._24 - mtxViewProjection._23 );
+	m_FrustumPlanes[5].z = -( mtxViewProjection._34 - mtxViewProjection._33 );
+	m_FrustumPlanes[5].w = -( mtxViewProjection._44 - mtxViewProjection._43 );
 
 	for (int i = 0; i < 6; i++)
 	{
-		XMVECTOR tmp = XMLoadFloat4( &frustumPlanes[i] );
-		tmp = XMVector4Normalize( tmp );
-		XMStoreFloat4( &m_FrustumPlanes[i], tmp );
+		m_FrustumPlanes[i] = MathHelper::GetInstance( )->NormalizeFloat( m_FrustumPlanes[i] );
 	}
+
+	m_FrustumPlanes[5];
+
 }
 
 bool CCamera::IsInFrustum( XMFLOAT3& vMin, XMFLOAT3& vMax )
@@ -238,15 +234,15 @@ void CCamera::GenerateViewMatrix( )
 void CCamera::RegenerateViewMatrix( )
 {
 	// 카메라의 z축 벡터를 정규화
-	m_vLook = MathHelper::GetInstance( )->NormalizeFloat3( m_vLook );
+	m_vLook = MathHelper::GetInstance( )->NormalizeFloat( m_vLook );
 	// 카메라의 z축과 y축에 수직인 벡터를 x축으로 설정
 	m_vRight = MathHelper::GetInstance( )->CrossFloat3( m_vUp, m_vLook );
 	// 카메라의 x축 벡터를 정규화
-	m_vRight = MathHelper::GetInstance( )->NormalizeFloat3( m_vRight );
+	m_vRight = MathHelper::GetInstance( )->NormalizeFloat( m_vRight );
 	// 카메라의 z축과 x축에 수직인 벡터를 y축으로 설정한다.
 	m_vUp = MathHelper::GetInstance( )->CrossFloat3( m_vLook, m_vRight );
 	// 카메라의 y축 벡터를 정규화
-	m_vUp = MathHelper::GetInstance( )->NormalizeFloat3( m_vUp );
+	m_vUp = MathHelper::GetInstance( )->NormalizeFloat( m_vUp );
 
 	m_mtxView._11 = m_vRight.x; m_mtxView._12 = m_vUp.x; m_mtxView._13 = m_vLook.x;
 	m_mtxView._21 = m_vRight.y; m_mtxView._22 = m_vUp.y; m_mtxView._23 = m_vLook.y;
@@ -356,8 +352,8 @@ CFirstPersonCamera::CFirstPersonCamera( CCamera *pCamera ) : CCamera( pCamera )
 			m_vUp = XMFLOAT3( 0.0f, 1.0f, 0.0f );
 			m_vRight.y = 0.0f;
 			m_vLook.y = 0.0f;
-			m_vRight = MathHelper::GetInstance( )->NormalizeFloat3( m_vRight );
-			m_vLook = MathHelper::GetInstance( )->NormalizeFloat3( m_vLook );
+			m_vRight = MathHelper::GetInstance( )->NormalizeFloat( m_vRight );
+			m_vLook = MathHelper::GetInstance( )->NormalizeFloat( m_vLook );
 		}
 	}
 }
@@ -413,8 +409,8 @@ CThirdPersonCamera::CThirdPersonCamera( CCamera *pCamera ) : CCamera( pCamera )
 			m_vUp = XMFLOAT3( 0.0f, 1.0f, 0.0f );
 			m_vRight.y = 0.0f;
 			m_vLook.y = 0.0f;
-			m_vRight = MathHelper::GetInstance( )->NormalizeFloat3( m_vRight );
-			m_vLook = MathHelper::GetInstance( )->NormalizeFloat3( m_vLook );
+			m_vRight = MathHelper::GetInstance( )->NormalizeFloat( m_vRight );
+			m_vLook = MathHelper::GetInstance( )->NormalizeFloat( m_vLook );
 		}
 	}
 }
@@ -443,7 +439,7 @@ void CThirdPersonCamera::Update( XMFLOAT3& vLookAt, float fTimeElapsed )
 		// 현재의 카메라의 위치에서 회전한 카메라의 위치까지의 벡터
 		XMFLOAT3 vDirection = MathHelper::GetInstance( )->Float3MinusFloat3( vPosition, m_vPosition );
 		float fLength = MathHelper::GetInstance( )->Float3ToLength( vDirection );
-		vDirection = MathHelper::GetInstance( )->NormalizeFloat3( vDirection );
+		vDirection = MathHelper::GetInstance( )->NormalizeFloat( vDirection );
 		// 3인칭 카메라의 래그는 플레이어가 회전하더라도 카메라가 동시에 따라서 회전하지 않고 약간의 시차를 두고 회전하는 효과를 구현하기 위한것
 		// m_fTimeLag가 1보다 크면 fTimeLagScale이 작아지고 실제 회전이 적게 일어날 것이다.
 		float fTimeLagScale = ( m_fTimeLag ) ? fTimeElapsed * ( 1.0f / m_fTimeLag ) : 1.0f;
