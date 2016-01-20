@@ -2,6 +2,33 @@
 #include "Mesh.h"
 #include "Object.h"
 
+CMesh::CMesh( )
+{
+	m_pvPositions = NULL;
+	m_pnIndices = NULL;
+
+	m_nBuffers = 0;
+	m_pd3dPositionBuffer = NULL;
+	m_ppd3dVertexBuffers = NULL;
+
+	m_d3dPrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	m_nSlot = 0;
+	m_nStartVertex = 0;
+
+	m_pd3dIndexBuffer = NULL;
+	m_nIndices = 0;
+	m_nStartIndex = 0;
+	m_nIndexOffset = 0;
+	m_dxgiIndexFormat = DXGI_FORMAT_R32_UINT;
+
+	m_pd3dRasterizerState = NULL;
+
+	m_bcBoundingCube.m_vMin = XMFLOAT3( +FLT_MAX, +FLT_MAX, +FLT_MAX );
+	m_bcBoundingCube.m_vMax = XMFLOAT3( -FLT_MAX, -FLT_MAX, -FLT_MAX );
+
+	m_nReferences = 0;
+}
+
 CMesh::CMesh( ID3D11Device *pd3dDevice )
 {
 	m_pvPositions = NULL;
@@ -750,7 +777,7 @@ void CSkyBoxMesh::Render( ID3D11DeviceContext *pd3dDeviceContext )
 	for (int i = 0; i < 6; i++)
 	{
 		// 스카이 박스의 각 면을 그릴 때 사용할 텍스처를 설정
-		m_pSkyboxTexture->UpdateTextureShaderVariable( pd3dDeviceContext, 1, 0 );
+		m_pSkyboxTexture->UpdateTextureShaderVariable( pd3dDeviceContext, i, 0 );
 		pd3dDeviceContext->DrawIndexed( 4, 0, i * 4 );
 	}
 	pd3dDeviceContext->OMSetDepthStencilState( NULL, 1 );

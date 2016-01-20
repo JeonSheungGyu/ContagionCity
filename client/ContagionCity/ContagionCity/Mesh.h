@@ -60,6 +60,7 @@ public:
 
 	int CheckRayIntersection( XMFLOAT3 *pvRayPosition, XMFLOAT3 *pvRatDirection, MESHINTERSECTINFO *pIntersectInfo );
 
+	CMesh( );
 	CMesh( ID3D11Device *pd3dDevice );
 	virtual ~CMesh( );
 
