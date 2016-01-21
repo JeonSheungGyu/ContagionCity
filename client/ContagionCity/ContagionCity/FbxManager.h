@@ -1,6 +1,7 @@
 #pragma once
 #include "stdafx.h"
 #include <fbxsdk.h>
+#include "Mesh.h"
 
 class FBXManager
 {
@@ -15,7 +16,7 @@ public:
 	~FBXManager( );
 
 	bool LoadFBX( const char* pstrFileName );
-	bool SetVertex( ID3D11Device *pd3dDevice, CMesh *pOutMeshes );
+	bool LoadVertex( CMesh *pOutMeshes, int *pOutVertexCount );
 
 	int getMeshCount( ){ return m_nMeshCount; }
 };

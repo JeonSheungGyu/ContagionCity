@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "FBXManager.h"
 #include <vector>
-#include "Mesh.h"
 
 FBXManager::FBXManager( )
 {
@@ -35,7 +34,7 @@ bool FBXManager::LoadFBX( const char* pstrFileName )
 }
 
 // Scene의 노드들의 정점 좌표들을 내가 사용할 정점으로 변환하는 함수
-bool FBXManager::SetVertex( ID3D11Device *pd3dDevice, CMesh *pOutMeshes )
+bool FBXManager::LoadVertex( CMesh *pOutMeshes, int *pOutVertexCount )
 {
 	FbxNode *pfbxRootNode = m_pfbxScene->GetRootNode( );
 
@@ -44,6 +43,7 @@ bool FBXManager::SetVertex( ID3D11Device *pd3dDevice, CMesh *pOutMeshes )
 		int ChildCount = pfbxRootNode->GetChildCount( );
 		CMesh *pOutMeshes;
 		pOutMeshes = new CMesh[ChildCount];
+		pOutVertexCount = new int[ChildCount];
 
 		for (int i = 0; i < ChildCount; i++)
 		{
@@ -67,6 +67,7 @@ bool FBXManager::SetVertex( ID3D11Device *pd3dDevice, CMesh *pOutMeshes )
 				if (iNumVertices != 3)
 					return false;
 			
+				// 정점 좌표들을 저장할 공간
 				XMFLOAT3* temp = new XMFLOAT3[pMesh->GetPolygonCount()*3];
 
 				for (int k = 0; k < iNumVertices; k++)
@@ -79,9 +80,17 @@ bool FBXManager::SetVertex( ID3D11Device *pd3dDevice, CMesh *pOutMeshes )
 					temp[j * 3 + k].z = (float)pVertices[iControlPointIndex].mData[2];
 					
 				}
+				// 정점 좌표들의 모임
 				pOutMeshes[i].m_pvPositions = temp;
+				// vertex 개수
+				pOutVertexCount[i] = j * 3;
 			}
 		}
+	}
+	for (int i = 0; i < m_pfbxScene->GetRootNode( )->GetChildCount( ); i++)
+	{
+		FbxNode* temp = pfbxRootNode->GetChild( i );
+		m_pfbxScene->RemoveNode( temp );
 	}
 	return true;
 }
