@@ -20,16 +20,19 @@ FBXManager::~FBXManager( )
 // FBX 파일을 Scene의 노드에 추가하는 함수
 bool FBXManager::LoadFBX( const char* pstrFileName )
 {
+	// 파일 이름을 로딩
 	bool bResult = m_pfbxImporter->Initialize( pstrFileName, -1, m_pfbxManager->GetIOSettings( ) );
 	if (!bResult)
 		return false;
 
+	// Scene에 추가, Scene의 루트노드의 하위로 들어가게됨
 	bResult = m_pfbxImporter->Import( m_pfbxScene );
 	if (!bResult)
 		return false;
 
 	m_pfbxImporter->Destroy( );
 
+	// 현재 Scene에 저장되어있는 메시들의 개수를 저장
 	m_nMeshCount = m_pfbxScene->GetRootNode( )->GetChildCount( );
 }
 
@@ -41,7 +44,6 @@ bool FBXManager::LoadVertex( CMesh *pOutMeshes, int *pOutVertexCount )
 	if (pfbxRootNode)
 	{
 		int ChildCount = pfbxRootNode->GetChildCount( );
-		CMesh *pOutMeshes;
 		pOutMeshes = new CMesh[ChildCount];
 		pOutVertexCount = new int[ChildCount];
 
@@ -87,10 +89,12 @@ bool FBXManager::LoadVertex( CMesh *pOutMeshes, int *pOutVertexCount )
 			}
 		}
 	}
+	// 버텍스 정보들을 옮긴 뒤 노드들 제거
 	for (int i = 0; i < m_pfbxScene->GetRootNode( )->GetChildCount( ); i++)
 	{
 		FbxNode* temp = pfbxRootNode->GetChild( i );
 		m_pfbxScene->RemoveNode( temp );
 	}
+	m_nMeshCount = 0;
 	return true;
 }
