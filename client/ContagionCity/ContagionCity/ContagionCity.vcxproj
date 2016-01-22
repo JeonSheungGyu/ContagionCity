@@ -41,8 +41,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>D:\SetupDirectory\FBX\2016.1.2\include;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\SetupDirectory\FBX\2016.1.2\lib\vs2013\x86\debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>D:\SetupDirectory\FBX\2015.1\include;D:\SetupDirectory\SDK\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\SetupDirectory\FBX\2015.1\lib\vs2013\x86\debug;D:\SetupDirectory\SDK\Lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -60,6 +60,7 @@
       <AdditionalOptions>"d3d11.lib" "d3dx11.lib" "d3dx11d.lib" "d3dcompiler.lib" "d3dx9.lib" "d3dx9d.lib" "dxerr.lib" "dxguid.lib" "dxgi.lib" "winmm.lib" %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>libfbxsdk.lib;libfbxsdk-md.lib;libfbxsdk-mt.lib;wininet.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>LIBMCT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <AdditionalLibraryDirectories>D:\SetupDirectory\FBX\2015.1\lib\vs2013\x86\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
