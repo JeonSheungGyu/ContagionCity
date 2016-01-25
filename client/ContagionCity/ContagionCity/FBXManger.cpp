@@ -43,9 +43,7 @@ bool FBXManager::LoadVertex( CMesh *pOutMeshes, int *pOutVertexCount )
 	if (pfbxRootNode)
 	{
 		int ChildCount = pfbxRootNode->GetChildCount( );
-		pOutMeshes = new CMesh[ChildCount];
-		pOutVertexCount = new int[ChildCount];
-
+		
 		for (int i = 0; i < ChildCount; i++)
 		{
 			FbxNode* pfbxChildNode = pfbxRootNode->GetChild( i );
@@ -62,14 +60,15 @@ bool FBXManager::LoadVertex( CMesh *pOutMeshes, int *pOutVertexCount )
 
 			FbxVector4* pVertices = pMesh->GetControlPoints( );
 
+			// 정점 좌표들을 저장할 공간
+			int polygonCount = pMesh->GetPolygonCount( );
+			XMFLOAT3* temp = new XMFLOAT3[polygonCount * 3];
+
 			for (int j = 0; j < pMesh->GetPolygonCount( ); j++)
 			{
 				int iNumVertices = pMesh->GetPolygonSize( j );
 				if (iNumVertices != 3)
 					return false;
-			
-				// 정점 좌표들을 저장할 공간
-				XMFLOAT3* temp = new XMFLOAT3[pMesh->GetPolygonCount()*3];
 
 				for (int k = 0; k < iNumVertices; k++)
 				{
@@ -81,11 +80,11 @@ bool FBXManager::LoadVertex( CMesh *pOutMeshes, int *pOutVertexCount )
 					temp[j * 3 + k].z = (float)pVertices[iControlPointIndex].mData[2];
 					
 				}
-				// 정점 좌표들의 모임
-				pOutMeshes[i].m_pvPositions = temp;
-				// vertex 개수
-				pOutVertexCount[i] = j * 3;
 			}
+			// 정점 좌표들의 모임
+			pOutMeshes[i].m_pvPositions = temp;
+			// vertex 개수
+			pOutVertexCount[i] = polygonCount * 3;
 		}
 	}
 	// 버텍스 정보들을 옮긴 뒤 노드들 제거

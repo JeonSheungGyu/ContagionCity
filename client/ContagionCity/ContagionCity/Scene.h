@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include "Shader.h"
+#include "FbxManager.h"
 
 using namespace std;
 
@@ -46,6 +47,13 @@ private:
 	// ºû Ãß°¡
 	LIGHTS *m_pLights;
 	ID3D11Buffer *m_pd3dcbLights;
+
+	// fbxLoader
+	FBXManager *m_pFbxLoader;
+	int m_nFbxCount;
+	CMesh *m_pMeshes;
+	int *m_pMeshCount;
+
 public:
 	CScene( );
 	~CScene( );
@@ -58,6 +66,7 @@ public:
 	bool OnProcessingKeyboardMessage( HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam );
 
 	void BuildObjects( ID3D11Device *pd3dDevice );
+	void LoadFBXs( );
 	void ReleaseObjects( );
 
 	bool ProcessInput( );

@@ -10,10 +10,20 @@ CScene::CScene( )
 
 	m_pLights = NULL;
 	m_pd3dcbLights = NULL;
+
+	m_pFbxLoader = new FBXManager;
+	m_nFbxCount = 0;
+	m_pMeshes = NULL;
+	m_pMeshCount = NULL;
 }
 
 CScene::~CScene( )
 {
+	delete m_pFbxLoader;
+	if (m_pMeshCount)
+		delete[ ] m_pMeshCount;
+	if (m_pMeshes)
+		delete[ ] m_pMeshes;
 }
 
 void CScene::CreateShaderVariables( ID3D11Device *pd3dDevice )
@@ -83,7 +93,11 @@ void CScene::BuildObjects( ID3D11Device *pd3dDevice )
 	pd3dsrvTexture->Release( );
 	pd3dSamplerState->Release( );*/
 
-	m_nShaders = 1;
+	// fbx loader를 통한 fbx로딩
+	LoadFBXs( );
+
+	// 현재 셰이더 개수에 fbx개수를 더한 뒤 셰이더를 생성하여 만듬
+	m_nShaders = 1 + m_nFbxCount;
 	m_ppShaders = new CShader*[m_nShaders];
 
 	// 첫번째로 그릴 객체는 스카이박스
@@ -91,7 +105,30 @@ void CScene::BuildObjects( ID3D11Device *pd3dDevice )
 	m_ppShaders[0]->CreateShader( pd3dDevice );
 	m_ppShaders[0]->BuildObjects( pd3dDevice );
 
+	for (int i = 1; i < m_nShaders; i++)
+	{
+		// fbx 그릴 준비하기
+		m_ppShaders[i] = new CShader( );
+		m_ppShaders[i]->CreateShader( pd3dDevice );
+		m_ppShaders[i]->BuildObjects( pd3dDevice );
+		///// 현재 매쉬를 설정 안해놓아서 화면에 아무것도 안나타남
+	}
+
 	CreateShaderVariables( pd3dDevice );
+}
+
+void CScene::LoadFBXs( )
+{
+	// fbx 파일 로딩
+	m_pFbxLoader->LoadFBX( "City_Base.FBX" );
+	m_nFbxCount = m_pFbxLoader->getMeshCount( );
+
+	// 정점 변환
+	m_pMeshes = new CMesh[m_nFbxCount];
+	m_pMeshCount = new int[m_nFbxCount];
+
+	// pMeshes에 정점 좌표들을, pMeshCount에 정점의 갯수들을 저장
+	m_pFbxLoader->LoadVertex( m_pMeshes, m_pMeshCount );
 }
 
 void CScene::ReleaseObjects( )
