@@ -27,6 +27,9 @@ CGameObject::CGameObject( int nMeshes )
 	m_bcMeshBoundingCube = AABB( );
 	m_nReferences = 0;
 	m_pTexture = NULL;
+
+	m_fRotationSpeed = 0.0f;
+	m_fMovingSpeed = 0.0f;
 }
 
 CGameObject::~CGameObject( )
@@ -314,8 +317,9 @@ CSkyBox::~CSkyBox( )
 void CSkyBox::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera )
 {
 	XMFLOAT3 vCameraPos = pCamera->GetPosition( );
-	//XMFLOAT3 vCameraPos = XMFLOAT3( 0.f, 0.f, 0.f );
 	SetPosition( vCameraPos );
+//	m_mtxWorld = MathHelper::GetInstance( )->GetMatrixIdentity( );
+
 	CShader::UpdateShaderVariable( pd3dDeviceContext, &m_mtxWorld );
 
 	// 스카이박스 메시를 렌더링

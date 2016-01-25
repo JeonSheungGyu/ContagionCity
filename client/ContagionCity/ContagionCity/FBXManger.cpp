@@ -14,6 +14,7 @@ FBXManager::FBXManager( )
 
 FBXManager::~FBXManager( )
 {
+	m_pfbxImporter->Destroy( );
 	m_pfbxManager->Destroy( );
 }
 
@@ -29,8 +30,6 @@ bool FBXManager::LoadFBX( const char* pstrFileName )
 	bResult = m_pfbxImporter->Import( m_pfbxScene );
 	if (!bResult)
 		return false;
-
-	m_pfbxImporter->Destroy( );
 
 	// 현재 Scene에 저장되어있는 메시들의 개수를 저장
 	m_nMeshCount = m_pfbxScene->GetRootNode( )->GetChildCount( );
