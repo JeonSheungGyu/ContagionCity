@@ -41,3 +41,4 @@
 #define PS_SLOT_TEXTURE		0x00
 #define PS_SLOT_SAMPLER_STATE		0x00
 
+enum ObjectType{ PLAYER, NPC, ENEMY, BACKGROUND };

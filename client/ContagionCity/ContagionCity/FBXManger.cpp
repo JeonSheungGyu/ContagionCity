@@ -19,7 +19,7 @@ FBXManager::~FBXManager( )
 }
 
 // FBX 파일을 Scene의 노드에 추가하는 함수
-bool FBXManager::LoadFBX( const char* pstrFileName )
+bool FBXManager::LoadFBX( const char* pstrFileName, int Type )
 {
 	// 파일 이름을 로딩
 	bool bResult = m_pfbxImporter->Initialize( pstrFileName, -1, m_pfbxManager->GetIOSettings( ) );
@@ -31,12 +31,14 @@ bool FBXManager::LoadFBX( const char* pstrFileName )
 	if (!bResult)
 		return false;
 
+	m_vTypes.push_back( Type );
 	// 현재 Scene에 저장되어있는 메시들의 개수를 저장
 	m_nMeshCount = m_pfbxScene->GetRootNode( )->GetChildCount( );
+	return true;
 }
 
 // Scene의 노드들의 정점 좌표들을 내가 사용할 정점으로 변환하는 함수
-bool FBXManager::LoadVertex( CMesh *pOutMeshes, int *pOutVertexCount )
+bool FBXManager::LoadVertex( std::vector<CFbxVertex> *pOutMeshes )
 {
 	FbxNode *pfbxRootNode = m_pfbxScene->GetRootNode( );
 
@@ -62,9 +64,9 @@ bool FBXManager::LoadVertex( CMesh *pOutMeshes, int *pOutVertexCount )
 
 			// 정점 좌표들을 저장할 공간
 			int polygonCount = pMesh->GetPolygonCount( );
-			XMFLOAT3* temp = new XMFLOAT3[polygonCount * 3];
+			vector<XMFLOAT3> temp( polygonCount * 3 );
 
-			for (int j = 0; j < pMesh->GetPolygonCount( ); j++)
+			for (int j = 0; j < polygonCount; j++)
 			{
 				int iNumVertices = pMesh->GetPolygonSize( j );
 				if (iNumVertices != 3)
@@ -82,9 +84,11 @@ bool FBXManager::LoadVertex( CMesh *pOutMeshes, int *pOutVertexCount )
 				}
 			}
 			// 정점 좌표들의 모임
-			pOutMeshes[i].m_pvPositions = temp;
+			( *pOutMeshes )[i].m_pvPositions = temp;
 			// vertex 개수
-			pOutVertexCount[i] = polygonCount * 3;
+			( *pOutMeshes )[i].m_nVertexCount = polygonCount * 3;
+			// 타입
+			( *pOutMeshes )[i].m_iType = m_vTypes[i];
 		}
 	}
 	// 버텍스 정보들을 옮긴 뒤 노드들 제거

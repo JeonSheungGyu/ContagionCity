@@ -1,4 +1,6 @@
 #pragma once
+#include <vector>
+
 #define RANDOM_COLOR XMCOLOR((rand() * 0xFFFFFF) / RAND_MAX)
 
 struct MESHINTERSECTINFO
@@ -18,6 +20,14 @@ public:
 	CVertex( XMFLOAT3 vPosition ){ m_vPosition = vPosition; }
 	XMFLOAT3 GetVertex( ) { return m_vPosition; }
 	~CVertex( );
+};
+
+class CFbxVertex
+{
+public:
+	std::vector<XMFLOAT3> m_pvPositions;
+	int m_nVertexCount;
+	int m_iType;
 };
 
 class CDiffusedVertex

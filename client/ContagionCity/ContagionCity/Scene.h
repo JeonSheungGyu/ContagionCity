@@ -51,8 +51,7 @@ private:
 	// fbxLoader
 	FBXManager *m_pFbxLoader;
 	int m_nFbxCount;
-	CMesh *m_pMeshes;
-	int *m_pMeshCount;
+	std::vector<CFbxVertex> m_pMeshes;
 
 public:
 	CScene( );
