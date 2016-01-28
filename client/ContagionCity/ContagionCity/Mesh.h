@@ -22,11 +22,12 @@ public:
 	~CVertex( );
 };
 
-class CFbxVertex
+struct CFbxVertex
 {
 public:
 	std::vector<XMFLOAT3> m_pvPositions;
 	int m_nVertexCount;
+	int m_iLayer;
 	int m_iType;
 };
 

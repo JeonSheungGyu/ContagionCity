@@ -19,7 +19,7 @@ FBXManager::~FBXManager( )
 }
 
 // FBX 파일을 Scene의 노드에 추가하는 함수
-bool FBXManager::LoadFBX( const char* pstrFileName, int Type )
+bool FBXManager::LoadFBX( const char* pstrFileName, int Layer, int Type )
 {
 	// 파일 이름을 로딩
 	bool bResult = m_pfbxImporter->Initialize( pstrFileName, -1, m_pfbxManager->GetIOSettings( ) );
@@ -32,6 +32,7 @@ bool FBXManager::LoadFBX( const char* pstrFileName, int Type )
 		return false;
 
 	m_vTypes.push_back( Type );
+	m_vLayers.push_back( Layer );
 	// 현재 Scene에 저장되어있는 메시들의 개수를 저장
 	m_nMeshCount = m_pfbxScene->GetRootNode( )->GetChildCount( );
 	return true;
@@ -45,7 +46,8 @@ bool FBXManager::LoadVertex( std::vector<CFbxVertex> *pOutMeshes )
 	if (pfbxRootNode)
 	{
 		int ChildCount = pfbxRootNode->GetChildCount( );
-		
+		pOutMeshes->resize( ChildCount );
+
 		for (int i = 0; i < ChildCount; i++)
 		{
 			FbxNode* pfbxChildNode = pfbxRootNode->GetChild( i );
@@ -87,6 +89,8 @@ bool FBXManager::LoadVertex( std::vector<CFbxVertex> *pOutMeshes )
 			( *pOutMeshes )[i].m_pvPositions = temp;
 			// vertex 개수
 			( *pOutMeshes )[i].m_nVertexCount = polygonCount * 3;
+			// 레이어
+			( *pOutMeshes )[i].m_iLayer = m_vLayers[i];
 			// 타입
 			( *pOutMeshes )[i].m_iType = m_vTypes[i];
 		}

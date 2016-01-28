@@ -215,6 +215,50 @@ void CPlayerShader::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCa
 	}
 }
 
+CBackgroundShader::CBackgroundShader( )
+{
+
+}
+CBackgroundShader::~CBackgroundShader( )
+{
+
+}
+
+void CBackgroundShader::CreateShader( ID3D11Device *pd3dDevice )
+{
+	CTexturedShader::CreateShader( pd3dDevice );
+}
+
+void CBackgroundShader::BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbxVertex> vertex )
+{
+	m_nObjects = vertex.size();
+	m_ppObjects = new CGameObject*[m_nObjects];
+
+	for (int i = 0; i < m_nObjects; i++)
+	{
+		switch (vertex[i].m_iType)
+		{
+			case ObjectType_BACKGROUND::BACK_GROUND:
+			{
+				CGround *pGround = new CGround( pd3dDevice );
+				break;
+			}
+
+			case ObjectType_BACKGROUND::BACK_SHOP:
+			{
+				break;
+			}
+			default:
+				break;
+		}
+	}
+}
+
+void CBackgroundShader::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera )
+{
+	CShader::Render( pd3dDeviceContext, pCamera );
+}
+
 CIlluminatedShader::CIlluminatedShader( )
 {
 }

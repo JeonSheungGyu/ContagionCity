@@ -326,3 +326,22 @@ void CSkyBox::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera )
 	if (m_ppMeshes && m_ppMeshes[0])
 		m_ppMeshes[0]->Render( pd3dDeviceContext );
 }
+
+
+CGround::CGround( ID3D11Device *pd3dDevice )
+{
+
+}
+
+CGround::~CGround( )
+{
+
+}
+
+void CGround::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera )
+{
+	CShader::UpdateShaderVariable( pd3dDeviceContext, &m_mtxWorld );
+
+	if (m_ppMeshes && m_ppMeshes[0])
+		m_ppMeshes[0]->Render( pd3dDeviceContext );
+}

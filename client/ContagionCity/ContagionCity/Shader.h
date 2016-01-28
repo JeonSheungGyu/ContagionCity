@@ -3,6 +3,7 @@
 #include "Object.h"
 #include "Camera.h"
 #include "Player.h"
+#include "Mesh.h"
 
 // 버퍼 데이터 타입 정의 시 사용
 struct VS_CB_WORLD_MATRIX
@@ -62,6 +63,15 @@ public:
 	virtual void CreateShader( ID3D11Device *pd3dDevice );
 };
 
+class CTexturedShader : public CShader
+{
+public:
+	CTexturedShader( );
+	virtual ~CTexturedShader( );
+
+	virtual void CreateShader( ID3D11Device *pd3dDevice );
+};
+
 // 게임 객체들을 렌더링하기 위한 셰이더 클래스
 class CSceneShader : public CShader
 {
@@ -87,6 +97,18 @@ public:
 	CPlayer* GetPlayer( int nIndex = 0 ){ return (CPlayer*)m_ppObjects[nIndex]; }
 };
 
+// 땅바닥을 렌더링하기 위한 셰이더 클래스
+class CBackgroundShader : public CTexturedShader
+{
+public:
+	CBackgroundShader( );
+	virtual ~CBackgroundShader( );
+
+	virtual void CreateShader( ID3D11Device *pd3dDevice );
+	virtual void BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbxVertex> vertex );
+	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera = NULL );
+};
+
 class CIlluminatedShader : public CShader
 {
 public:
@@ -104,14 +126,6 @@ public:
 	static void UpdateShaderVariable( ID3D11DeviceContext *pd3dDeviceContext, MATERIAL *pMaterial );
 };
 
-class CTexturedShader : public CShader
-{
-public:
-	CTexturedShader( );
-	virtual ~CTexturedShader( );
-
-	virtual void CreateShader( ID3D11Device *pd3dDevice );
-};
 
 class CDetailTexturedShader : public CTexturedShader
 {

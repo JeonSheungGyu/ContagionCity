@@ -89,9 +89,37 @@ void CScene::BuildObjects( ID3D11Device *pd3dDevice )
 
 	// fbx loader를 통한 fbx로딩
 	LoadFBXs( );
+	std::vector<CFbxVertex> background;
+	std::vector<CFbxVertex> enemy;
+	std::vector<CFbxVertex> npc;
+
+	for (int i = 0; i < m_nFbxCount; i++)
+	{
+		int layer = m_pMeshes[i].m_iLayer;
+		switch (layer)
+		{
+			case ObjectLayer::LAYER_BACKGROUND:	
+			{
+				background.push_back( m_pMeshes[i] );
+				break;
+			}
+			case ObjectLayer::LAYER_ENEMY:
+			{
+				background.push_back( m_pMeshes[i] );
+				break;
+			}
+			case ObjectLayer::LAYER_NPC:
+			{
+				background.push_back( m_pMeshes[i] );
+				break;
+			}
+			default:
+				break;
+		}
+	}
 
 	// 현재 셰이더 개수에 fbx개수를 더한 뒤 셰이더를 생성하여 만듬
-	m_nShaders = 1 + m_nFbxCount;		// 1은 스카이박스
+	m_nShaders = 4;		// 0은 스카이박스 , 1은 배경, 2는 적, 3은 엔피시 
 	m_ppShaders = new CShader*[m_nShaders];
 
 	// 첫번째로 그릴 객체는 스카이박스
@@ -99,22 +127,20 @@ void CScene::BuildObjects( ID3D11Device *pd3dDevice )
 	m_ppShaders[0]->CreateShader( pd3dDevice );
 	m_ppShaders[0]->BuildObjects( pd3dDevice );
 
-	for (int i = 1; i < m_nShaders; i++)
-	{
-		// fbx 그릴 준비하기
-		m_ppShaders[i] = new CShader( );		// 이 부분 수정 타입에 따른 각기 다른 셰이더 생성
-		m_ppShaders[i]->CreateShader( pd3dDevice );
-		m_ppShaders[i]->BuildObjects( pd3dDevice );
-		///// 현재 매쉬를 설정 안해놓아서 화면에 아무것도 안나타남
-	}
+	m_ppShaders[1] = new CBackgroundShader( );
+	m_ppShaders[1]->CreateShader( pd3dDevice );
+	( (CBackgroundShader*)m_ppShaders[1] )->BuildObjects( pd3dDevice, background );
 
+
+
+	
 	CreateShaderVariables( pd3dDevice );
 }
 
 void CScene::LoadFBXs( )
 {
 	// fbx 파일 로딩
-	m_pFbxLoader->LoadFBX( "City_Base.FBX", BACKGROUND);
+	m_pFbxLoader->LoadFBX( "City_Base.FBX", LAYER_BACKGROUND, BACK_GROUND );
 	//m_pFbxLoader->LoadFBX( "" );
 	m_nFbxCount = m_pFbxLoader->getMeshCount( );
 
