@@ -219,3 +219,18 @@ public:
 	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext );
 };
 
+class CGroundMesh : public CMeshTextured
+{
+protected:
+	ID3D11DepthStencilState *m_pd3dDepthStencilState;
+	CTexture *m_pGroundTexture;
+
+public:
+	CGroundMesh( ID3D11Device *pd3dDevice, CFbxVertex vertex );
+	virtual ~CGroundMesh( );
+
+	void OnChangeTexture( ID3D11Device *pd3dDevice );
+
+	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext );
+
+};

@@ -86,7 +86,7 @@ private:
 public:
 	// 오브젝트의 타입 설정, 무엇인지 알 수 있어야한다.
 	int m_iType;
-
+	int m_iLayer;
 	// 게임 객체는 하나의 재질을 가질 수 있다.
 	CMaterial *m_pMaterial;
 	void SetMaterial( CMaterial *pMaterial );
@@ -178,7 +178,7 @@ public:
 class CGround : public CGameObject
 {
 public:
-	CGround( ID3D11Device *pd3dDevice );
+	CGround( ID3D11Device *pd3dDevice, CFbxVertex vertex );
 	virtual ~CGround( );
 
 	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera );

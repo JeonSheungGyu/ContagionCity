@@ -240,7 +240,8 @@ void CBackgroundShader::BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbx
 		{
 			case ObjectType_BACKGROUND::BACK_GROUND:
 			{
-				CGround *pGround = new CGround( pd3dDevice );
+				CGround *pGround = new CGround( pd3dDevice, vertex[i] );
+				m_ppObjects[i] = pGround;
 				break;
 			}
 

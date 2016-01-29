@@ -119,7 +119,7 @@ void CScene::BuildObjects( ID3D11Device *pd3dDevice )
 	}
 
 	// 현재 셰이더 개수에 fbx개수를 더한 뒤 셰이더를 생성하여 만듬
-	m_nShaders = 4;		// 0은 스카이박스 , 1은 배경, 2는 적, 3은 엔피시 
+	m_nShaders = 2;		// 0은 스카이박스 , 1은 배경, 2는 적, 3은 엔피시 
 	m_ppShaders = new CShader*[m_nShaders];
 
 	// 첫번째로 그릴 객체는 스카이박스

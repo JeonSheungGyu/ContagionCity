@@ -783,3 +783,144 @@ void CSkyBoxMesh::Render( ID3D11DeviceContext *pd3dDeviceContext )
 	pd3dDeviceContext->OMSetDepthStencilState( NULL, 1 );
 }
 
+
+CGroundMesh::CGroundMesh( ID3D11Device *pd3dDevice, CFbxVertex vertex ) : CMeshTextured( pd3dDevice )
+{
+	m_nVertices = vertex.m_nVertexCount;
+	m_d3dPrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
+
+	m_pvPositions = new XMFLOAT3[m_nVertices];
+	XMFLOAT2 *pvTexCoords = new XMFLOAT2[m_nVertices];
+
+	for (int i = 0; i < m_nVertices; i++)
+	{
+		m_pvPositions[i] = vertex.m_pvPositions[i];
+		int tmp = i % 4;
+
+		switch (tmp)
+		{
+			case 0:
+				pvTexCoords[i] = XMFLOAT2( 0.0f, 0.0f );
+				break;
+			case 1:
+				pvTexCoords[i] = XMFLOAT2( 1.0f, 0.0f );
+				break;
+			case 2:
+				pvTexCoords[i] = XMFLOAT2( 1.0f, 1.0f );
+				break;
+			case 3:
+				pvTexCoords[i] = XMFLOAT2( 0.0f, 1.0f );
+				break;
+		}
+	}
+	// 정점 버퍼 생성
+	D3D11_BUFFER_DESC d3dBufferDesc;
+	::ZeroMemory( &d3dBufferDesc, sizeof( D3D11_BUFFER_DESC ) );
+	d3dBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	d3dBufferDesc.ByteWidth = sizeof( XMFLOAT3 ) * m_nVertices;
+	d3dBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	d3dBufferDesc.CPUAccessFlags = 0;
+	D3D11_SUBRESOURCE_DATA d3dBufferData;
+	::ZeroMemory( &d3dBufferData, sizeof( D3D11_SUBRESOURCE_DATA ) );
+	d3dBufferData.pSysMem = m_pvPositions;
+	pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dPositionBuffer );
+
+	d3dBufferDesc.ByteWidth = sizeof( XMFLOAT2 ) * m_nVertices;
+	d3dBufferData.pSysMem = pvTexCoords;
+	pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dTexCoordBuffer );
+
+	delete[ ] pvTexCoords;
+
+	
+	ID3D11Buffer *pd3dBuffers[2] = { m_pd3dPositionBuffer, m_pd3dTexCoordBuffer };
+	UINT pnBufferStrides[2] = { sizeof( XMFLOAT3 ), sizeof( XMFLOAT2 ) };
+	UINT pnBufferOffsets[2] = { 0, 0 };
+	AssembleToVertexBuffer( 2, pd3dBuffers, pnBufferStrides, pnBufferOffsets );
+
+	// 인덱스 버퍼 생성
+	m_nIndices = 3;
+	m_pnIndices = new UINT[m_nIndices];
+
+	m_pnIndices[0] = 0;
+	m_pnIndices[1] = 1;
+	m_pnIndices[2] = 3;
+
+	::ZeroMemory( &d3dBufferDesc, sizeof( D3D11_BUFFER_DESC ) );
+	d3dBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	d3dBufferDesc.ByteWidth = sizeof( UINT ) * m_nIndices;
+	d3dBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	d3dBufferDesc.CPUAccessFlags = 0;
+	::ZeroMemory( &d3dBufferData, sizeof( D3D11_SUBRESOURCE_DATA ) );
+	d3dBufferData.pSysMem = m_pnIndices;
+	pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dIndexBuffer );
+
+	D3D11_DEPTH_STENCIL_DESC d3dDepthStencilDesc;
+	::ZeroMemory( &d3dDepthStencilDesc, sizeof( D3D11_DEPTH_STENCIL_DESC ) );
+	d3dDepthStencilDesc.DepthEnable = false;
+	d3dDepthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+	d3dDepthStencilDesc.DepthFunc = D3D11_COMPARISON_NEVER;
+	d3dDepthStencilDesc.StencilEnable = false;
+	d3dDepthStencilDesc.StencilReadMask = 0xFF;
+	d3dDepthStencilDesc.StencilWriteMask = 0xFF;
+	d3dDepthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	d3dDepthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+	d3dDepthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	d3dDepthStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+	d3dDepthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	d3dDepthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+	d3dDepthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	d3dDepthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+	pd3dDevice->CreateDepthStencilState( &d3dDepthStencilDesc, &m_pd3dDepthStencilState );
+
+	ID3D11SamplerState *pd3dSamplerState = NULL;
+	D3D11_SAMPLER_DESC d3dSamplerDesc;
+	::ZeroMemory( &d3dSamplerDesc, sizeof( D3D11_SAMPLER_DESC ) );
+	d3dSamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+	d3dSamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+	d3dSamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	d3dSamplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	d3dSamplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	d3dSamplerDesc.MinLOD = 0;
+	d3dSamplerDesc.MaxLOD = 0;
+	pd3dDevice->CreateSamplerState( &d3dSamplerDesc, &pd3dSamplerState );
+
+	m_pGroundTexture = new CTexture( 1, 1, 0, 0 );
+	m_pGroundTexture->SetSampler( 0, pd3dSamplerState );
+	pd3dSamplerState->Release( );
+	m_pGroundTexture->AddRef( );
+
+	OnChangeTexture( pd3dDevice );
+}
+
+CGroundMesh::~CGroundMesh( )
+{
+	if (m_pd3dDepthStencilState)
+		m_pd3dDepthStencilState->Release( );
+	if (m_pGroundTexture)
+		m_pGroundTexture->Release( );
+}
+
+void CGroundMesh::OnChangeTexture( ID3D11Device *pd3dDevice )
+{
+	_TCHAR pstrTextureName[80];
+	ID3D11ShaderResourceView *pd3dsrvTexture = NULL;
+
+	_stprintf_s( pstrTextureName, _T( "./SkyBox/SkyBox_Front_1.jpg" ), 0, 80 );
+	D3DX11CreateShaderResourceViewFromFile( pd3dDevice, pstrTextureName, NULL, NULL, &pd3dsrvTexture, NULL );
+	m_pGroundTexture->SetTexture( 0, pd3dsrvTexture );
+	pd3dsrvTexture->Release( );
+}
+
+void CGroundMesh::Render( ID3D11DeviceContext *pd3dDeviceContext )
+{
+	pd3dDeviceContext->IASetVertexBuffers( m_nSlot, m_nBuffers, m_ppd3dVertexBuffers, m_pnVertexStrides, m_pnVertexOffsets );
+	pd3dDeviceContext->IASetIndexBuffer( m_pd3dIndexBuffer, m_dxgiIndexFormat, m_nIndexOffset );
+	pd3dDeviceContext->IASetPrimitiveTopology( m_d3dPrimitiveTopology );
+
+	m_pGroundTexture->UpdateSamplerShaderVariable( pd3dDeviceContext, 0, 0 );
+	pd3dDeviceContext->OMSetDepthStencilState( m_pd3dDepthStencilState, 1 );
+
+	m_pGroundTexture->UpdateTextureShaderVariable( pd3dDeviceContext, 0, 0 );
+	pd3dDeviceContext->DrawIndexed( 3, 0, 0 );
+	pd3dDeviceContext->OMSetDepthStencilState( NULL, 1 );
+}
