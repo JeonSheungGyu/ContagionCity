@@ -334,6 +334,15 @@ CGround::CGround( ID3D11Device *pd3dDevice, CFbxVertex vertex ) : CGameObject( 1
 	this->m_iType = vertex.m_iType;
 	CGroundMesh *pGroundMesh = new CGroundMesh( pd3dDevice, vertex );
 	SetMesh( pGroundMesh, 0 );
+
+	m_vPosition = XMFLOAT3( 0.0f, 0.0f, 0.0f );
+	m_vRight = XMFLOAT3( 1.0f, 0.0f, 0.0f );
+	m_vUp = XMFLOAT3( 0.0f, 1.0f, 0.0f );
+	m_vLook = XMFLOAT3( 0.0f, 0.0f, 1.0f );
+
+	m_fPitch = 0.0f;
+	m_fRoll = 0.0f;
+	m_fYaw = 0.0f;
 }
 
 CGround::~CGround( )
@@ -341,11 +350,19 @@ CGround::~CGround( )
 
 }
 
+void CGround::OnPrepareRender( )
+{
+	m_mtxWorld._11 = m_vRight.x; m_mtxWorld._12 = m_vRight.y; m_mtxWorld._13 = m_vRight.z;
+	m_mtxWorld._21 = m_vUp.x;	 m_mtxWorld._22 = m_vUp.y;	  m_mtxWorld._23 = m_vUp.z;
+	m_mtxWorld._31 = m_vLook.x;  m_mtxWorld._32 = m_vLook.y;  m_mtxWorld._33 = m_vLook.z;
+	m_mtxWorld._41 = m_vPosition.x;
+	m_mtxWorld._42 = m_vPosition.y;
+	m_mtxWorld._43 = m_vPosition.z;
+}
+
 void CGround::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera )
 {
-	SetPosition( 0.f, 0.f, 0.f );
-	XMFLOAT3 temp = GetPosition( );
-
+	SetPosition( 0.f, -2500.f, 5000.f );
 	CShader::UpdateShaderVariable( pd3dDeviceContext, &m_mtxWorld );
 
 	if (m_ppMeshes && m_ppMeshes[0])

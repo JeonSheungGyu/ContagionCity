@@ -4,8 +4,8 @@
 
 CMesh::CMesh( )
 {
-	m_pvPositions = NULL;
-	m_pnIndices = NULL;
+//	m_vPositions = NULL;
+//	m_vnIndices = NULL;
 
 	m_nBuffers = 0;
 	m_pd3dPositionBuffer = NULL;
@@ -31,8 +31,8 @@ CMesh::CMesh( )
 
 CMesh::CMesh( ID3D11Device *pd3dDevice )
 {
-	m_pvPositions = NULL;
-	m_pnIndices = NULL;
+//	m_vPositions = NULL;
+//	m_vnIndices = NULL;
 
 	m_nBuffers = 0;
 	m_pd3dPositionBuffer = NULL;
@@ -59,8 +59,8 @@ CMesh::CMesh( ID3D11Device *pd3dDevice )
 
 CMesh::~CMesh( )
 {
-	if (m_pvPositions)	delete[ ] m_pvPositions;
-	if (m_pnIndices)	delete[ ] m_pnIndices;
+	if (!(m_vPositions.empty()))	m_vPositions.clear();
+	if (!(m_vnIndices.empty( )))	m_vnIndices.clear();
 	
 	if (m_pd3dRasterizerState)	m_pd3dRasterizerState->Release( );
 	if (m_pd3dPositionBuffer)	m_pd3dPositionBuffer->Release( );
@@ -195,15 +195,15 @@ CCubeMeshDiffused::CCubeMeshDiffused( ID3D11Device *pd3dDevice, float fWidth, fl
 
 	// 직육면체 메시는 2개의 정점 버퍼로 구성
 	// 직육면체 메시의 정점 버퍼 생성
-	m_pvPositions = new XMFLOAT3[m_nVertices];
-	m_pvPositions[0] = XMFLOAT3( -fx, +fy, -fz );
-	m_pvPositions[1] = XMFLOAT3( +fx, +fy, -fz );
-	m_pvPositions[2] = XMFLOAT3( +fx, +fy, +fz );
-	m_pvPositions[3] = XMFLOAT3( -fx, +fy, +fz );
-	m_pvPositions[4] = XMFLOAT3( -fx, -fy, -fz );
-	m_pvPositions[5] = XMFLOAT3( +fx, -fy, -fz );
-	m_pvPositions[6] = XMFLOAT3( +fx, -fy, +fz );
-	m_pvPositions[7] = XMFLOAT3( -fx, -fy, +fz );
+	m_vPositions.resize(m_nVertices);
+	m_vPositions[0] = XMFLOAT3( -fx, +fy, -fz );
+	m_vPositions[1] = XMFLOAT3( +fx, +fy, -fz );
+	m_vPositions[2] = XMFLOAT3( +fx, +fy, +fz );
+	m_vPositions[3] = XMFLOAT3( -fx, +fy, +fz );
+	m_vPositions[4] = XMFLOAT3( -fx, -fy, -fz );
+	m_vPositions[5] = XMFLOAT3( +fx, -fy, -fz );
+	m_vPositions[6] = XMFLOAT3( +fx, -fy, +fz );
+	m_vPositions[7] = XMFLOAT3( -fx, -fy, +fz );
 
 	D3D11_BUFFER_DESC d3dBufferDesc;
 	::ZeroMemory( &d3dBufferDesc, sizeof( D3D11_BUFFER_DESC ) );
@@ -213,7 +213,7 @@ CCubeMeshDiffused::CCubeMeshDiffused( ID3D11Device *pd3dDevice, float fWidth, fl
 	d3dBufferDesc.CPUAccessFlags = 0;
 	D3D11_SUBRESOURCE_DATA d3dBufferData;
 	::ZeroMemory( &d3dBufferData, sizeof( D3D11_SUBRESOURCE_DATA ) );
-	d3dBufferData.pSysMem = m_pvPositions;
+	d3dBufferData.pSysMem = &m_vPositions[0];
 	pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dPositionBuffer );
 
 	// 직육면체 메시의 정점 버퍼 생성
@@ -231,25 +231,25 @@ CCubeMeshDiffused::CCubeMeshDiffused( ID3D11Device *pd3dDevice, float fWidth, fl
 	AssembleToVertexBuffer( 2, pd3dBuffers, pnBufferStrides, pnBufferOffsets );
 
 	m_nIndices = 18;
-	m_pnIndices = new UINT[m_nIndices];
-	m_pnIndices[0] = 5;		// 5 6 4 cw
-	m_pnIndices[1] = 6;		// 6 4 7 ccw
-	m_pnIndices[2] = 4;		// 4 7 0 cw
-	m_pnIndices[3] = 7;		// 7 0 3 ccw
-	m_pnIndices[4] = 0;		// 0 3 1 cw
-	m_pnIndices[5] = 3;		// 3 1 2 ccw
-	m_pnIndices[6] = 1;		// 1 2 2 cw
-	m_pnIndices[7] = 2;		// 2 2 3 ccw
-	m_pnIndices[8] = 2;		// 2 3 3 cw
-	m_pnIndices[9] = 3;		// 3 3 7 ccw
-	m_pnIndices[10] = 3;	// 3 7 2 cw
-	m_pnIndices[11] = 7;	// 7 2 6 ccw
-	m_pnIndices[12] = 2;	// 2 6 1 cw
-	m_pnIndices[13] = 6;	// 6 1 5 ccw
-	m_pnIndices[14] = 1;	// 1 5 0 cw
-	m_pnIndices[15] = 5;	// 5 0 4 ccw
-	m_pnIndices[16] = 0;
-	m_pnIndices[17] = 4;
+	m_vnIndices.resize(m_nIndices);
+	m_vnIndices[0] = 5;		// 5 6 4 cw
+	m_vnIndices[1] = 6;		// 6 4 7 ccw
+	m_vnIndices[2] = 4;		// 4 7 0 cw
+	m_vnIndices[3] = 7;		// 7 0 3 ccw
+	m_vnIndices[4] = 0;		// 0 3 1 cw
+	m_vnIndices[5] = 3;		// 3 1 2 ccw
+	m_vnIndices[6] = 1;		// 1 2 2 cw
+	m_vnIndices[7] = 2;		// 2 2 3 ccw
+	m_vnIndices[8] = 2;		// 2 3 3 cw
+	m_vnIndices[9] = 3;		// 3 3 7 ccw
+	m_vnIndices[10] = 3;	// 3 7 2 cw
+	m_vnIndices[11] = 7;	// 7 2 6 ccw
+	m_vnIndices[12] = 2;	// 2 6 1 cw
+	m_vnIndices[13] = 6;	// 6 1 5 ccw
+	m_vnIndices[14] = 1;	// 1 5 0 cw
+	m_vnIndices[15] = 5;	// 5 0 4 ccw
+	m_vnIndices[16] = 0;
+	m_vnIndices[17] = 4;
 
 	::ZeroMemory( &d3dBufferDesc, sizeof( D3D11_BUFFER_DESC ) );
 	d3dBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -257,7 +257,7 @@ CCubeMeshDiffused::CCubeMeshDiffused( ID3D11Device *pd3dDevice, float fWidth, fl
 	d3dBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	d3dBufferDesc.CPUAccessFlags = 0;
 	::ZeroMemory( &d3dBufferData, sizeof( D3D11_SUBRESOURCE_DATA ) );
-	d3dBufferData.pSysMem = m_pnIndices;
+	d3dBufferData.pSysMem = &m_vnIndices[0];
 	pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dIndexBuffer );
 	
 	CreateRasterizerState( pd3dDevice );
@@ -304,7 +304,7 @@ void CMeshIlluminated::CalculateVertexNormal( XMFLOAT3 *pvNormals )
 		인덱스 버퍼를 사용하지 않는 경우 각 정점의 법선 벡터는 그 정점이 포함된 삼각형의 법선 벡터로 계산한다.
 		인덱스 버퍼를 사용하는 경우 각 정점의 법선 벡터는 그 정점이 포함된 삼각형들의 법선 벡터의 평균으로(더하여) 계산한다.*/
 		case D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST:
-			if (m_pnIndices)
+			if (m_vnIndices.empty( ))
 				SetAverageVertexNormal( pvNormals, ( m_nIndices / 3 ), 3, false );
 			else
 				SetTriangleListVertexNormal( pvNormals );
@@ -333,9 +333,9 @@ void CMeshIlluminated::SetTriangleListVertexNormal( XMFLOAT3 *pvNormals )
 XMFLOAT3 CMeshIlluminated::CalculateTriangleNormal( UINT nIndex0, UINT nIndex1, UINT nIndex2 )
 {
 	XMFLOAT3 vNormal;
-	XMFLOAT3 vP0 = m_pvPositions[nIndex0];
-	XMFLOAT3 vP1 = m_pvPositions[nIndex1];
-	XMFLOAT3 vP2 = m_pvPositions[nIndex2];
+	XMFLOAT3 vP0 = m_vPositions[nIndex0];
+	XMFLOAT3 vP1 = m_vPositions[nIndex1];
+	XMFLOAT3 vP2 = m_vPositions[nIndex2];
 	XMFLOAT3 vEdge1 = MathHelper::GetInstance( )->Float3MinusFloat3( vP1, vP0 );
 	XMFLOAT3 vEdge2 = MathHelper::GetInstance( )->Float3MinusFloat3( vP2, vP0 );
 
@@ -354,12 +354,12 @@ void CMeshIlluminated::SetAverageVertexNormal( XMFLOAT3 *pvNormals, int nPrimiti
 		for (int j = 0; j < nPrimitives; j++)
 		{
 			UINT nIndex0 = ( bStrip ) ? ( ( ( j % 2 ) == 0 ) ? ( j*nOffset + 0 ) : ( j*nOffset + 1 ) ) : ( j*nOffset + 0 );
-			if (m_pnIndices)
-				nIndex0 = m_pnIndices[nIndex0];
+			if (m_vnIndices.empty())
+				nIndex0 = m_vnIndices[nIndex0];
 			UINT nIndex1 = ( bStrip ) ? ( ( ( j % 2 ) == 0 ) ? ( j*nOffset + 1 ) : ( j*nOffset + 0 ) ) : ( j*nOffset + 1 );
-			if (m_pnIndices)
-				nIndex1 = m_pnIndices[nIndex1];
-			UINT nIndex2 = ( m_pnIndices ) ? m_pnIndices[j*nOffset + 2] : ( j*nOffset + 2 );
+			if (m_vnIndices.empty( ))
+				nIndex1 = m_vnIndices[nIndex1];
+			UINT nIndex2 = ( m_vnIndices.empty( ) ) ? m_vnIndices[j*nOffset + 2] : ( j*nOffset + 2 );
 			if (nIndex0 == i || nIndex1 == i || nIndex2 == i)
 				MathHelper::GetInstance( )->Float3PlusFloat3( vSumOfNormal, CalculateTriangleNormal( nIndex0, nIndex1, nIndex2 ));
 		}
@@ -375,16 +375,16 @@ CCubeMeshIlluminated::CCubeMeshIlluminated( ID3D11Device *pd3dDevice, float fWid
 
 	float fx = fWidth *0.5f, fy = fHeight*0.5f, fz = fDepth * 0.5f;
 
-	m_pvPositions = new XMFLOAT3[m_nVertices];
+	m_vPositions.resize( m_nVertices );
 
-	m_pvPositions[0] = XMFLOAT3( -fx, +fy, -fz );
-	m_pvPositions[1] = XMFLOAT3( +fx, +fy, -fz );
-	m_pvPositions[2] = XMFLOAT3( +fx, +fy, +fz );
-	m_pvPositions[3] = XMFLOAT3( -fx, +fy, +fz );
-	m_pvPositions[4] = XMFLOAT3( -fx, -fy, -fz );
-	m_pvPositions[5] = XMFLOAT3( +fx, -fy, -fz );
-	m_pvPositions[6] = XMFLOAT3( +fx, -fy, +fz );
-	m_pvPositions[7] = XMFLOAT3( -fx, -fy, +fz );
+	m_vPositions[0] = XMFLOAT3( -fx, +fy, -fz );
+	m_vPositions[1] = XMFLOAT3( +fx, +fy, -fz );
+	m_vPositions[2] = XMFLOAT3( +fx, +fy, +fz );
+	m_vPositions[3] = XMFLOAT3( -fx, +fy, +fz );
+	m_vPositions[4] = XMFLOAT3( -fx, -fy, -fz );
+	m_vPositions[5] = XMFLOAT3( +fx, -fy, -fz );
+	m_vPositions[6] = XMFLOAT3( +fx, -fy, +fz );
+	m_vPositions[7] = XMFLOAT3( -fx, -fy, +fz );
 
 	D3D11_BUFFER_DESC d3dBufferDesc;
 	::ZeroMemory( &d3dBufferDesc, sizeof( D3D11_BUFFER_DESC ) );
@@ -394,24 +394,24 @@ CCubeMeshIlluminated::CCubeMeshIlluminated( ID3D11Device *pd3dDevice, float fWid
 	d3dBufferDesc.CPUAccessFlags = 0;
 	D3D11_SUBRESOURCE_DATA d3dBufferData;
 	::ZeroMemory( &d3dBufferData, sizeof( D3D11_SUBRESOURCE_DATA ) );
-	d3dBufferData.pSysMem = m_pvPositions;
+	d3dBufferData.pSysMem = &m_vPositions[0];
 	pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dPositionBuffer );
 
 	m_nIndices = 36;
-	m_pnIndices = new UINT[m_nIndices];
+	m_vnIndices.resize( m_nIndices );
 
-	m_pnIndices[0] = 3;		m_pnIndices[1] = 1;		m_pnIndices[2] = 0;
-	m_pnIndices[3] = 2;		m_pnIndices[4] = 1;		m_pnIndices[5] = 3;
-	m_pnIndices[6] = 0;		m_pnIndices[7] = 5;		m_pnIndices[8] = 4;
-	m_pnIndices[9] = 1;		m_pnIndices[10] = 5;	m_pnIndices[11] = 0;
-	m_pnIndices[12] = 3;	m_pnIndices[13] = 4;	m_pnIndices[14] = 7;
-	m_pnIndices[15] = 0;	m_pnIndices[16] = 4;	m_pnIndices[17] = 3;
-	m_pnIndices[18] = 1;	m_pnIndices[19] = 6;	m_pnIndices[20] = 5;
-	m_pnIndices[21] = 2;	m_pnIndices[22] = 6;	m_pnIndices[23] = 1;
-	m_pnIndices[24] = 2;	m_pnIndices[25] = 7;	m_pnIndices[26] = 6;
-	m_pnIndices[27] = 3;	m_pnIndices[28] = 7;	m_pnIndices[29] = 2;
-	m_pnIndices[30] = 6;	m_pnIndices[31] = 4;	m_pnIndices[32] = 5;
-	m_pnIndices[33] = 7;	m_pnIndices[34] = 4;	m_pnIndices[35] = 6;
+	m_vnIndices[0] = 3;		m_vnIndices[1] = 1;		m_vnIndices[2] = 0;
+	m_vnIndices[3] = 2;		m_vnIndices[4] = 1;		m_vnIndices[5] = 3;
+	m_vnIndices[6] = 0;		m_vnIndices[7] = 5;		m_vnIndices[8] = 4;
+	m_vnIndices[9] = 1;		m_vnIndices[10] = 5;	m_vnIndices[11] = 0;
+	m_vnIndices[12] = 3;	m_vnIndices[13] = 4;	m_vnIndices[14] = 7;
+	m_vnIndices[15] = 0;	m_vnIndices[16] = 4;	m_vnIndices[17] = 3;
+	m_vnIndices[18] = 1;	m_vnIndices[19] = 6;	m_vnIndices[20] = 5;
+	m_vnIndices[21] = 2;	m_vnIndices[22] = 6;	m_vnIndices[23] = 1;
+	m_vnIndices[24] = 2;	m_vnIndices[25] = 7;	m_vnIndices[26] = 6;
+	m_vnIndices[27] = 3;	m_vnIndices[28] = 7;	m_vnIndices[29] = 2;
+	m_vnIndices[30] = 6;	m_vnIndices[31] = 4;	m_vnIndices[32] = 5;
+	m_vnIndices[33] = 7;	m_vnIndices[34] = 4;	m_vnIndices[35] = 6;
 
 	XMFLOAT3 pvNormals[8];
 	CalculateVertexNormal( pvNormals );
@@ -431,7 +431,7 @@ CCubeMeshIlluminated::CCubeMeshIlluminated( ID3D11Device *pd3dDevice, float fWid
 	d3dBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	d3dBufferDesc.CPUAccessFlags = 0;
 	::ZeroMemory( &d3dBufferData, sizeof( D3D11_SUBRESOURCE_DATA ) );
-	d3dBufferData.pSysMem = m_pnIndices;
+	d3dBufferData.pSysMem = &m_vnIndices[0];
 	pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dIndexBuffer );
 
 	m_bcBoundingCube.m_vMin = XMFLOAT3( -fx, -fy, -fz );
@@ -461,86 +461,86 @@ CCubeMeshTextured::CCubeMeshTextured( ID3D11Device *pd3dDevice, float fWidth, fl
 
 	float fx = fWidth *0.5f, fy = fHeight * 0.5f, fz = fDepth * 0.5f;
 
-	m_pvPositions = new XMFLOAT3[m_nVertices];
+	m_vPositions.resize(m_nVertices);
 	XMFLOAT2 pvTexCoords[36];
 	int i = 0;
 
 	// 직육면체의 각 면에 하나의 텍스처 이미지 전체가 맵핑되도록 텍스처 좌표 설정
-	m_pvPositions[i] = XMFLOAT3( -fx, +fy, -fz );
+	m_vPositions[i] = XMFLOAT3( -fx, +fy, -fz );
 	pvTexCoords[i++] = XMFLOAT2( 0.0f, 0.0f );
-	m_pvPositions[i] = XMFLOAT3( +fx, +fy, -fz );
+	m_vPositions[i] = XMFLOAT3( +fx, +fy, -fz );
 	pvTexCoords[i++] = XMFLOAT2( 1.0f, 0.0f );
-	m_pvPositions[i] = XMFLOAT3( +fx, -fy, -fz );
+	m_vPositions[i] = XMFLOAT3( +fx, -fy, -fz );
 	pvTexCoords[i++] = XMFLOAT2( 1.0f, 1.0f );
 
-	m_pvPositions[i] = XMFLOAT3( -fx, +fy, -fz );
+	m_vPositions[i] = XMFLOAT3( -fx, +fy, -fz );
 	pvTexCoords[i++] = XMFLOAT2( 0.0f, 0.0f );
-	m_pvPositions[i] = XMFLOAT3( +fx, -fy, -fz );
+	m_vPositions[i] = XMFLOAT3( +fx, -fy, -fz );
 	pvTexCoords[i++] = XMFLOAT2( 1.0f, 1.0f );
-	m_pvPositions[i] = XMFLOAT3( -fx, -fy, -fz );
+	m_vPositions[i] = XMFLOAT3( -fx, -fy, -fz );
 	pvTexCoords[i++] = XMFLOAT2( 0.0f, 1.0f );
 
-	m_pvPositions[i] = XMFLOAT3( -fx, +fy, +fz );
+	m_vPositions[i] = XMFLOAT3( -fx, +fy, +fz );
 	pvTexCoords[i++] = XMFLOAT2( 0.0f, 0.0f );
-	m_pvPositions[i] = XMFLOAT3( +fx, +fy, +fz );
+	m_vPositions[i] = XMFLOAT3( +fx, +fy, +fz );
 	pvTexCoords[i++] = XMFLOAT2( 1.0f, 0.0f );
-	m_pvPositions[i] = XMFLOAT3( +fx, +fy, -fz );
+	m_vPositions[i] = XMFLOAT3( +fx, +fy, -fz );
 	pvTexCoords[i++] = XMFLOAT2( 1.0f, 1.0f );
 
-	m_pvPositions[i] = XMFLOAT3( -fx, -fy, +fz );
+	m_vPositions[i] = XMFLOAT3( -fx, -fy, +fz );
 	pvTexCoords[i++] = XMFLOAT2( 0.0f, 0.0f );
-	m_pvPositions[i] = XMFLOAT3( +fx, -fy, +fz );
+	m_vPositions[i] = XMFLOAT3( +fx, -fy, +fz );
 	pvTexCoords[i++] = XMFLOAT2( 1.0f, 0.0f );
-	m_pvPositions[i] = XMFLOAT3( +fx, +fy, +fz );
+	m_vPositions[i] = XMFLOAT3( +fx, +fy, +fz );
 	pvTexCoords[i++] = XMFLOAT2( 1.0f, 1.0f );
 
-	m_pvPositions[i] = XMFLOAT3( -fx, -fy, +fz );
+	m_vPositions[i] = XMFLOAT3( -fx, -fy, +fz );
 	pvTexCoords[i++] = XMFLOAT2( 0.0f, 0.0f );
-	m_pvPositions[i] = XMFLOAT3( +fx, +fy, +fz );
+	m_vPositions[i] = XMFLOAT3( +fx, +fy, +fz );
 	pvTexCoords[i++] = XMFLOAT2( 1.0f, 1.0f );
-	m_pvPositions[i] = XMFLOAT3( -fx, +fy, +fz );
+	m_vPositions[i] = XMFLOAT3( -fx, +fy, +fz );
 	pvTexCoords[i++] = XMFLOAT2( 0.0f, 1.0f );
 
-	m_pvPositions[i] = XMFLOAT3( -fx, -fy, -fz );
+	m_vPositions[i] = XMFLOAT3( -fx, -fy, -fz );
 	pvTexCoords[i++] = XMFLOAT2( 0.0f, 0.0f );
-	m_pvPositions[i] = XMFLOAT3( +fx, -fy, -fz );
+	m_vPositions[i] = XMFLOAT3( +fx, -fy, -fz );
 	pvTexCoords[i++] = XMFLOAT2( 1.0f, 0.0f );
-	m_pvPositions[i] = XMFLOAT3( +fx, -fy, +fz );
+	m_vPositions[i] = XMFLOAT3( +fx, -fy, +fz );
 	pvTexCoords[i++] = XMFLOAT2( 1.0f, 1.0f );
 
-	m_pvPositions[i] = XMFLOAT3( -fx, -fy, -fz );
+	m_vPositions[i] = XMFLOAT3( -fx, -fy, -fz );
 	pvTexCoords[i++] = XMFLOAT2( 0.0f, 0.0f );
-	m_pvPositions[i] = XMFLOAT3( +fx, -fy, +fz );
+	m_vPositions[i] = XMFLOAT3( +fx, -fy, +fz );
 	pvTexCoords[i++] = XMFLOAT2( 1.0f, 1.0f );
-	m_pvPositions[i] = XMFLOAT3( -fx, -fy, +fz );
+	m_vPositions[i] = XMFLOAT3( -fx, -fy, +fz );
 	pvTexCoords[i++] = XMFLOAT2( 0.0f, 1.0f );
 
-	m_pvPositions[i] = XMFLOAT3( -fx, +fy, +fz );
+	m_vPositions[i] = XMFLOAT3( -fx, +fy, +fz );
 	pvTexCoords[i++] = XMFLOAT2( 0.0f, 0.0f );
-	m_pvPositions[i] = XMFLOAT3( -fx, +fy, -fz );
+	m_vPositions[i] = XMFLOAT3( -fx, +fy, -fz );
 	pvTexCoords[i++] = XMFLOAT2( 1.0f, 0.0f );
-	m_pvPositions[i] = XMFLOAT3( -fx, -fy, -fz );
+	m_vPositions[i] = XMFLOAT3( -fx, -fy, -fz );
 	pvTexCoords[i++] = XMFLOAT2( 1.0f, 1.0f );
 
-	m_pvPositions[i] = XMFLOAT3( -fx, +fy, +fz );
+	m_vPositions[i] = XMFLOAT3( -fx, +fy, +fz );
 	pvTexCoords[i++] = XMFLOAT2( 0.0f, 0.0f );
-	m_pvPositions[i] = XMFLOAT3( -fx, -fy, -fz );
+	m_vPositions[i] = XMFLOAT3( -fx, -fy, -fz );
 	pvTexCoords[i++] = XMFLOAT2( 1.0f, 1.0f );
-	m_pvPositions[i] = XMFLOAT3( -fx, -fy, +fz );
+	m_vPositions[i] = XMFLOAT3( -fx, -fy, +fz );
 	pvTexCoords[i++] = XMFLOAT2( 0.0f, 1.0f );
 
-	m_pvPositions[i] = XMFLOAT3( +fx, +fy, -fz );
+	m_vPositions[i] = XMFLOAT3( +fx, +fy, -fz );
 	pvTexCoords[i++] = XMFLOAT2( 0.0f, 0.0f );
-	m_pvPositions[i] = XMFLOAT3( +fx, +fy, +fz );
+	m_vPositions[i] = XMFLOAT3( +fx, +fy, +fz );
 	pvTexCoords[i++] = XMFLOAT2( 1.0f, 0.0f );
-	m_pvPositions[i] = XMFLOAT3( +fx, -fy, +fz );
+	m_vPositions[i] = XMFLOAT3( +fx, -fy, +fz );
 	pvTexCoords[i++] = XMFLOAT2( 1.0f, 1.0f );
 
-	m_pvPositions[i] = XMFLOAT3( +fx, +fy, -fz );
+	m_vPositions[i] = XMFLOAT3( +fx, +fy, -fz );
 	pvTexCoords[i++] = XMFLOAT2( 0.0f, 0.0f );
-	m_pvPositions[i] = XMFLOAT3( +fx, -fy, +fz );
+	m_vPositions[i] = XMFLOAT3( +fx, -fy, +fz );
 	pvTexCoords[i++] = XMFLOAT2( 1.0f, 1.0f );
-	m_pvPositions[i] = XMFLOAT3( +fx, -fy, -fz );
+	m_vPositions[i] = XMFLOAT3( +fx, -fy, -fz );
 	pvTexCoords[i++] = XMFLOAT2( 0.0f, 1.0f );
 
 	D3D11_BUFFER_DESC d3dBufferDesc;
@@ -551,7 +551,7 @@ CCubeMeshTextured::CCubeMeshTextured( ID3D11Device *pd3dDevice, float fWidth, fl
 	d3dBufferDesc.CPUAccessFlags = 0;
 	D3D11_SUBRESOURCE_DATA d3dBufferData;
 	ZeroMemory( &d3dBufferData, sizeof( D3D11_SUBRESOURCE_DATA ) );
-	d3dBufferData.pSysMem = m_pvPositions;
+	d3dBufferData.pSysMem = &m_vPositions[0];
 	pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dPositionBuffer );
 
 	d3dBufferData.pSysMem = pvTexCoords;
@@ -579,64 +579,64 @@ CSkyBoxMesh::CSkyBoxMesh( ID3D11Device *pd3dDevice, float fWidth, float fHeight,
 	m_nVertices = 24;
 	m_d3dPrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
 
-	m_pvPositions = new XMFLOAT3[m_nVertices];
+	m_vPositions.resize(m_nVertices);
 	XMFLOAT2 *pvTexCoords = new XMFLOAT2[m_nVertices];
 
 	int i = 0;
 	float fx = fWidth*0.5f, fy = fHeight*0.5f, fz = fDepth*0.5f;
 	// Front Quad 
-	m_pvPositions[i] = XMFLOAT3( -fx, +fx, +fx );
+	m_vPositions[i] = XMFLOAT3( -fx, +fx, +fx );
 	pvTexCoords[i++] = XMFLOAT2( 0.0f, 0.0f );
-	m_pvPositions[i] = XMFLOAT3( +fx, +fx, +fx );
+	m_vPositions[i] = XMFLOAT3( +fx, +fx, +fx );
 	pvTexCoords[i++] = XMFLOAT2( 1.0f, 0.0f );
-	m_pvPositions[i] = XMFLOAT3( +fx, -fx, +fx );
+	m_vPositions[i] = XMFLOAT3( +fx, -fx, +fx );
 	pvTexCoords[i++] = XMFLOAT2( 1.0f, 1.0f );
-	m_pvPositions[i] = XMFLOAT3( -fx, -fx, +fx );
+	m_vPositions[i] = XMFLOAT3( -fx, -fx, +fx );
 	pvTexCoords[i++] = XMFLOAT2( 0.0f, 1.0f );
 	// Back Quad
-	m_pvPositions[i] = XMFLOAT3( +fx, +fx, -fx );
+	m_vPositions[i] = XMFLOAT3( +fx, +fx, -fx );
 	pvTexCoords[i++] = XMFLOAT2( 0.0f, 0.0f );
-	m_pvPositions[i] = XMFLOAT3( -fx, +fx, -fx );
+	m_vPositions[i] = XMFLOAT3( -fx, +fx, -fx );
 	pvTexCoords[i++] = XMFLOAT2( 1.0f, 0.0f );
-	m_pvPositions[i] = XMFLOAT3( -fx, -fx, -fx );
+	m_vPositions[i] = XMFLOAT3( -fx, -fx, -fx );
 	pvTexCoords[i++] = XMFLOAT2( 1.0f, 1.0f );
-	m_pvPositions[i] = XMFLOAT3( +fx, -fx, -fx );
+	m_vPositions[i] = XMFLOAT3( +fx, -fx, -fx );
 	pvTexCoords[i++] = XMFLOAT2( 0.0f, 1.0f );
 	// Left Quad
-	m_pvPositions[i] = XMFLOAT3( -fx, +fx, -fx );
+	m_vPositions[i] = XMFLOAT3( -fx, +fx, -fx );
 	pvTexCoords[i++] = XMFLOAT2( 0.0f, 0.0f );
-	m_pvPositions[i] = XMFLOAT3( -fx, +fx, +fx );
+	m_vPositions[i] = XMFLOAT3( -fx, +fx, +fx );
 	pvTexCoords[i++] = XMFLOAT2( 1.0f, 0.0f );
-	m_pvPositions[i] = XMFLOAT3( -fx, -fx, +fx );
+	m_vPositions[i] = XMFLOAT3( -fx, -fx, +fx );
 	pvTexCoords[i++] = XMFLOAT2( 1.0f, 1.0f );
-	m_pvPositions[i] = XMFLOAT3( -fx, -fx, -fx );
+	m_vPositions[i] = XMFLOAT3( -fx, -fx, -fx );
 	pvTexCoords[i++] = XMFLOAT2( 0.0f, 1.0f );
 	// Right Quad
-	m_pvPositions[i] = XMFLOAT3( +fx, +fx, +fx );
+	m_vPositions[i] = XMFLOAT3( +fx, +fx, +fx );
 	pvTexCoords[i++] = XMFLOAT2( 0.0f, 0.0f );
-	m_pvPositions[i] = XMFLOAT3( +fx, +fx, -fx );
+	m_vPositions[i] = XMFLOAT3( +fx, +fx, -fx );
 	pvTexCoords[i++] = XMFLOAT2( 1.0f, 0.0f );
-	m_pvPositions[i] = XMFLOAT3( +fx, -fx, -fx );
+	m_vPositions[i] = XMFLOAT3( +fx, -fx, -fx );
 	pvTexCoords[i++] = XMFLOAT2( 1.0f, 1.0f );
-	m_pvPositions[i] = XMFLOAT3( +fx, -fx, +fx );
+	m_vPositions[i] = XMFLOAT3( +fx, -fx, +fx );
 	pvTexCoords[i++] = XMFLOAT2( 0.0f, 1.0f );
 	// Top Quad
-	m_pvPositions[i] = XMFLOAT3( -fx, +fx, -fx );
+	m_vPositions[i] = XMFLOAT3( -fx, +fx, -fx );
 	pvTexCoords[i++] = XMFLOAT2( 0.0f, 0.0f );
-	m_pvPositions[i] = XMFLOAT3( +fx, +fx, -fx );
+	m_vPositions[i] = XMFLOAT3( +fx, +fx, -fx );
 	pvTexCoords[i++] = XMFLOAT2( 1.0f, 0.0f );
-	m_pvPositions[i] = XMFLOAT3( +fx, +fx, +fx );
+	m_vPositions[i] = XMFLOAT3( +fx, +fx, +fx );
 	pvTexCoords[i++] = XMFLOAT2( 1.0f, 1.0f );
-	m_pvPositions[i] = XMFLOAT3( -fx, +fx, +fx );
+	m_vPositions[i] = XMFLOAT3( -fx, +fx, +fx );
 	pvTexCoords[i++] = XMFLOAT2( 0.0f, 1.0f );
 	// Bottom Quad
-	m_pvPositions[i] = XMFLOAT3( -fx, -fx, +fx );
+	m_vPositions[i] = XMFLOAT3( -fx, -fx, +fx );
 	pvTexCoords[i++] = XMFLOAT2( 0.0f, 0.0f );
-	m_pvPositions[i] = XMFLOAT3( +fx, -fx, +fx );
+	m_vPositions[i] = XMFLOAT3( +fx, -fx, +fx );
 	pvTexCoords[i++] = XMFLOAT2( 1.0f, 0.0f );
-	m_pvPositions[i] = XMFLOAT3( +fx, -fx, -fx );
+	m_vPositions[i] = XMFLOAT3( +fx, -fx, -fx );
 	pvTexCoords[i++] = XMFLOAT2( 1.0f, 1.0f );
-	m_pvPositions[i] = XMFLOAT3( -fx, -fx, -fx );
+	m_vPositions[i] = XMFLOAT3( -fx, -fx, -fx );
 	pvTexCoords[i++] = XMFLOAT2( 0.0f, 1.0f );
 
 	D3D11_BUFFER_DESC d3dBufferDesc;
@@ -647,7 +647,7 @@ CSkyBoxMesh::CSkyBoxMesh( ID3D11Device *pd3dDevice, float fWidth, float fHeight,
 	d3dBufferDesc.CPUAccessFlags = 0;
 	D3D11_SUBRESOURCE_DATA d3dBufferData;
 	::ZeroMemory( &d3dBufferData, sizeof( D3D11_SUBRESOURCE_DATA ) );
-	d3dBufferData.pSysMem = m_pvPositions;
+	d3dBufferData.pSysMem = &m_vPositions[0];
 	pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dPositionBuffer );
 
 	d3dBufferDesc.ByteWidth = sizeof( XMFLOAT2 ) * m_nVertices;
@@ -663,12 +663,12 @@ CSkyBoxMesh::CSkyBoxMesh( ID3D11Device *pd3dDevice, float fWidth, float fHeight,
 
 	// 삼각형 스트립으로 사각형 1개를 그리기 위해서는 인덱스 4개가 필요
 	m_nIndices = 4;
-	m_pnIndices = new UINT[m_nIndices];
+	m_vnIndices.resize( m_nIndices );
 
-	m_pnIndices[0] = 0;
-	m_pnIndices[1] = 1;
-	m_pnIndices[2] = 3;
-	m_pnIndices[3] = 2;
+	m_vnIndices[0] = 0;
+	m_vnIndices[1] = 1;
+	m_vnIndices[2] = 3;
+	m_vnIndices[3] = 2;
 
 	::ZeroMemory( &d3dBufferDesc, sizeof( D3D11_BUFFER_DESC ) );
 	d3dBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -676,7 +676,7 @@ CSkyBoxMesh::CSkyBoxMesh( ID3D11Device *pd3dDevice, float fWidth, float fHeight,
 	d3dBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	d3dBufferDesc.CPUAccessFlags = 0;
 	::ZeroMemory( &d3dBufferData, sizeof( D3D11_SUBRESOURCE_DATA ) );
-	d3dBufferData.pSysMem = m_pnIndices;
+	d3dBufferData.pSysMem = &m_vnIndices[0];
 	pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dIndexBuffer );
 
 	D3D11_DEPTH_STENCIL_DESC d3dDepthStencilDesc;
@@ -789,12 +789,12 @@ CGroundMesh::CGroundMesh( ID3D11Device *pd3dDevice, CFbxVertex vertex ) : CMeshT
 	m_nVertices = vertex.m_nVertexCount;
 	m_d3dPrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
 
-	m_pvPositions = new XMFLOAT3[m_nVertices];
+	m_vPositions.resize(m_nVertices);
 	XMFLOAT2 *pvTexCoords = new XMFLOAT2[m_nVertices];
 
 	for (int i = 0; i < m_nVertices; i++)
 	{
-		m_pvPositions[i] = vertex.m_pvPositions[i];
+		m_vPositions[i] = vertex.m_pvPositions[i];
 		int tmp = i % 4;
 
 		switch (tmp)
@@ -822,7 +822,7 @@ CGroundMesh::CGroundMesh( ID3D11Device *pd3dDevice, CFbxVertex vertex ) : CMeshT
 	d3dBufferDesc.CPUAccessFlags = 0;
 	D3D11_SUBRESOURCE_DATA d3dBufferData;
 	::ZeroMemory( &d3dBufferData, sizeof( D3D11_SUBRESOURCE_DATA ) );
-	d3dBufferData.pSysMem = m_pvPositions;
+	d3dBufferData.pSysMem = &m_vPositions[0];
 	pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dPositionBuffer );
 
 	d3dBufferDesc.ByteWidth = sizeof( XMFLOAT2 ) * m_nVertices;
@@ -831,19 +831,24 @@ CGroundMesh::CGroundMesh( ID3D11Device *pd3dDevice, CFbxVertex vertex ) : CMeshT
 
 	delete[ ] pvTexCoords;
 
-	
 	ID3D11Buffer *pd3dBuffers[2] = { m_pd3dPositionBuffer, m_pd3dTexCoordBuffer };
 	UINT pnBufferStrides[2] = { sizeof( XMFLOAT3 ), sizeof( XMFLOAT2 ) };
 	UINT pnBufferOffsets[2] = { 0, 0 };
 	AssembleToVertexBuffer( 2, pd3dBuffers, pnBufferStrides, pnBufferOffsets );
 
 	// 인덱스 버퍼 생성
-	m_nIndices = 3;
-	m_pnIndices = new UINT[m_nIndices];
+	// n개의 정점으로 만들 수 있는 삼각형의 개수는 n-2 개
+	// 삼각형 1개당 인덱스가 3개 필요하기 때문에 인덱스의 개수는 3(n-2)개가 필요
+	m_nIndices = (m_nVertices-2) * 3;
 
-	m_pnIndices[0] = 0;
-	m_pnIndices[1] = 1;
-	m_pnIndices[2] = 3;
+	m_vnIndices.resize( m_nIndices );
+
+	m_vnIndices[0] = 0;
+	m_vnIndices[1] = 1;
+	m_vnIndices[2] = 2;
+	m_vnIndices[3] = 0;
+	m_vnIndices[4] = 2;
+	m_vnIndices[5] = 3;
 
 	::ZeroMemory( &d3dBufferDesc, sizeof( D3D11_BUFFER_DESC ) );
 	d3dBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -851,7 +856,7 @@ CGroundMesh::CGroundMesh( ID3D11Device *pd3dDevice, CFbxVertex vertex ) : CMeshT
 	d3dBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	d3dBufferDesc.CPUAccessFlags = 0;
 	::ZeroMemory( &d3dBufferData, sizeof( D3D11_SUBRESOURCE_DATA ) );
-	d3dBufferData.pSysMem = m_pnIndices;
+	d3dBufferData.pSysMem = &m_vnIndices[0];
 	pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dIndexBuffer );
 
 	D3D11_DEPTH_STENCIL_DESC d3dDepthStencilDesc;
@@ -905,6 +910,7 @@ void CGroundMesh::OnChangeTexture( ID3D11Device *pd3dDevice )
 	_TCHAR pstrTextureName[80];
 	ID3D11ShaderResourceView *pd3dsrvTexture = NULL;
 
+	// 그라운드 텍스처 지정
 	_stprintf_s( pstrTextureName, _T( "./SkyBox/SkyBox_Front_1.jpg" ), 0, 80 );
 	D3DX11CreateShaderResourceViewFromFile( pd3dDevice, pstrTextureName, NULL, NULL, &pd3dsrvTexture, NULL );
 	m_pGroundTexture->SetTexture( 0, pd3dsrvTexture );
@@ -921,6 +927,7 @@ void CGroundMesh::Render( ID3D11DeviceContext *pd3dDeviceContext )
 	pd3dDeviceContext->OMSetDepthStencilState( m_pd3dDepthStencilState, 1 );
 
 	m_pGroundTexture->UpdateTextureShaderVariable( pd3dDeviceContext, 0, 0 );
-	pd3dDeviceContext->DrawIndexed( 3, 0, 0 );
+	pd3dDeviceContext->Draw( m_nVertices, 0 );
+	//pd3dDeviceContext->DrawIndexed( m_nIndices, 0, 0 );
 	pd3dDeviceContext->OMSetDepthStencilState( NULL, 1 );
 }

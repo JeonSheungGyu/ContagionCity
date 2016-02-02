@@ -177,9 +177,35 @@ public:
 
 class CGround : public CGameObject
 {
+protected:
+	// 위치, xyz축벡터
+	XMFLOAT3 m_vPosition;
+	XMFLOAT3 m_vRight;
+	XMFLOAT3 m_vUp;
+	XMFLOAT3 m_vLook;
+
+	// 회전량
+	float m_fPitch;
+	float m_fYaw;
+	float m_fRoll;
 public:
 	CGround( ID3D11Device *pd3dDevice, CFbxVertex vertex );
 	virtual ~CGround( );
 
+	virtual void OnPrepareRender( );
 	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera );
+
+	XMFLOAT3 GetPosition( )							{ return m_vPosition; }
+	XMFLOAT3 GetLookVector( )						{ return m_vLook; }
+	XMFLOAT3 GetUpVector( )							{ return m_vUp; }
+	XMFLOAT3 GetRightVector( )						{ return m_vRight; }
+
+	void SetPositon( XMFLOAT3& vPosition ) {
+		Move( MathHelper::GetInstance( )->Float3MinusFloat3( vPosition, m_vPosition ), false );
+	}
+	void Move( XMFLOAT3& vShift, bool bVelocity = false );
+
+	float GetYaw( ) const { return m_fYaw; }
+	float GetPitch( ) const { return m_fPitch; }
+	float GetRoll( ) const { return m_fRoll; }
 };

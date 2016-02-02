@@ -65,9 +65,9 @@ class CMesh
 {
 public:
 	// 각 정점의 위치 벡터를 픽킹을 위하여 저장
-	XMFLOAT3 *m_pvPositions;
+	std::vector<XMFLOAT3> m_vPositions;
 	// 메시의 인덱스를 저장
-	UINT *m_pnIndices;
+	std::vector<UINT> m_vnIndices;
 
 	int CheckRayIntersection( XMFLOAT3 *pvRayPosition, XMFLOAT3 *pvRatDirection, MESHINTERSECTINFO *pIntersectInfo );
 
