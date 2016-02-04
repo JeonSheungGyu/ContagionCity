@@ -189,7 +189,7 @@ protected:
 	float m_fYaw;
 	float m_fRoll;
 public:
-	CGround( ID3D11Device *pd3dDevice, CFbxVertex vertex );
+	CGround( ID3D11Device *pd3dDevice, CFbxMesh vertex );
 	virtual ~CGround( );
 
 	virtual void OnPrepareRender( );

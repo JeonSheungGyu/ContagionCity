@@ -19,9 +19,9 @@ public:
 	~FBXManager( );
 
 	// 파일 경로에 있는 FBX를 로딩하여 scene에 추가
-	bool LoadFBX( const char* pstrFileName, int Layer, int Type );
+	bool LoadFBX( std::vector<CFbxMesh> *pOutMeshes, const char* pstrFileName, int Layer, int Type );
 	// scene에 있는 fbx노드들의 정점들을 CMesh의 정점들로 변환하여 반환
-	bool LoadVertex( std::vector<CFbxVertex> *pOutMeshes );
+	bool LoadVertex( std::vector<CFbxMesh> *pOutMeshes );
 
 	int getMeshCount( ){ return m_nMeshCount; }
 	vector<int> getTypes( ){ return m_vTypes; }

@@ -328,7 +328,7 @@ void CSkyBox::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera )
 }
 
 
-CGround::CGround( ID3D11Device *pd3dDevice, CFbxVertex vertex ) : CGameObject( 1 )
+CGround::CGround( ID3D11Device *pd3dDevice, CFbxMesh vertex ) : CGameObject( 1 )
 {
 	this->m_iLayer = vertex.m_iLayer;
 	this->m_iType = vertex.m_iType;
@@ -362,7 +362,8 @@ void CGround::OnPrepareRender( )
 
 void CGround::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera )
 {
-	SetPosition( 0.f, -2500.f, 5000.f );
+	SetPosition( 0.f, -2000.f, 7000.f );
+	Rotate( 90.f, 0.f, 0.f );
 	CShader::UpdateShaderVariable( pd3dDeviceContext, &m_mtxWorld );
 
 	if (m_ppMeshes && m_ppMeshes[0])

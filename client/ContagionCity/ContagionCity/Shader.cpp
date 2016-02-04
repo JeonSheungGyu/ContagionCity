@@ -229,7 +229,7 @@ void CBackgroundShader::CreateShader( ID3D11Device *pd3dDevice )
 	CTexturedShader::CreateShader( pd3dDevice );
 }
 
-void CBackgroundShader::BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbxVertex> vertex )
+void CBackgroundShader::BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbxMesh> vertex )
 {
 	m_nObjects = vertex.size();
 	m_ppObjects = new CGameObject*[m_nObjects];

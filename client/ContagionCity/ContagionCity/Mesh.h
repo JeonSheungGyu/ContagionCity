@@ -22,10 +22,12 @@ public:
 	~CVertex( );
 };
 
-struct CFbxVertex
+struct CFbxMesh
 {
 public:
 	std::vector<XMFLOAT3> m_pvPositions;
+	std::vector<UINT> m_pvIndices;
+	int m_nIndexCount;
 	int m_nVertexCount;
 	int m_iLayer;
 	int m_iType;
@@ -226,7 +228,7 @@ protected:
 	CTexture *m_pGroundTexture;
 
 public:
-	CGroundMesh( ID3D11Device *pd3dDevice, CFbxVertex vertex );
+	CGroundMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex );
 	virtual ~CGroundMesh( );
 
 	void OnChangeTexture( ID3D11Device *pd3dDevice );

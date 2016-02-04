@@ -784,7 +784,7 @@ void CSkyBoxMesh::Render( ID3D11DeviceContext *pd3dDeviceContext )
 }
 
 
-CGroundMesh::CGroundMesh( ID3D11Device *pd3dDevice, CFbxVertex vertex ) : CMeshTextured( pd3dDevice )
+CGroundMesh::CGroundMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex ) : CMeshTextured( pd3dDevice )
 {
 	m_nVertices = vertex.m_nVertexCount;
 	m_d3dPrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
@@ -792,27 +792,27 @@ CGroundMesh::CGroundMesh( ID3D11Device *pd3dDevice, CFbxVertex vertex ) : CMeshT
 	m_vPositions.resize(m_nVertices);
 	XMFLOAT2 *pvTexCoords = new XMFLOAT2[m_nVertices];
 
-	for (int i = 0; i < m_nVertices; i++)
-	{
-		m_vPositions[i] = vertex.m_pvPositions[i];
-		int tmp = i % 4;
+	m_vPositions = vertex.m_pvPositions;
+	//for (int i = 0; i < m_nVertices; i++)
+	//{
+	//	int tmp = i % 4;
 
-		switch (tmp)
-		{
-			case 0:
-				pvTexCoords[i] = XMFLOAT2( 0.0f, 0.0f );
-				break;
-			case 1:
-				pvTexCoords[i] = XMFLOAT2( 1.0f, 0.0f );
-				break;
-			case 2:
-				pvTexCoords[i] = XMFLOAT2( 1.0f, 1.0f );
-				break;
-			case 3:
-				pvTexCoords[i] = XMFLOAT2( 0.0f, 1.0f );
-				break;
-		}
-	}
+	//	switch (tmp)
+	//	{
+	//		case 0:
+	//			pvTexCoords[i] = XMFLOAT2( 0.0f, 0.0f );
+	//			break;
+	//		case 1:
+	//			pvTexCoords[i] = XMFLOAT2( 1.0f, 0.0f );
+	//			break;
+	//		case 2:
+	//			pvTexCoords[i] = XMFLOAT2( 1.0f, 1.0f );
+	//			break;
+	//		case 3:
+	//			pvTexCoords[i] = XMFLOAT2( 0.0f, 1.0f );
+	//			break;
+	//	}
+	//}
 	// 정점 버퍼 생성
 	D3D11_BUFFER_DESC d3dBufferDesc;
 	::ZeroMemory( &d3dBufferDesc, sizeof( D3D11_BUFFER_DESC ) );
@@ -839,16 +839,9 @@ CGroundMesh::CGroundMesh( ID3D11Device *pd3dDevice, CFbxVertex vertex ) : CMeshT
 	// 인덱스 버퍼 생성
 	// n개의 정점으로 만들 수 있는 삼각형의 개수는 n-2 개
 	// 삼각형 1개당 인덱스가 3개 필요하기 때문에 인덱스의 개수는 3(n-2)개가 필요
-	m_nIndices = (m_nVertices-2) * 3;
+	m_nIndices = vertex.m_nIndexCount;
 
-	m_vnIndices.resize( m_nIndices );
-
-	m_vnIndices[0] = 0;
-	m_vnIndices[1] = 1;
-	m_vnIndices[2] = 2;
-	m_vnIndices[3] = 0;
-	m_vnIndices[4] = 2;
-	m_vnIndices[5] = 3;
+	m_vnIndices = vertex.m_pvIndices;
 
 	::ZeroMemory( &d3dBufferDesc, sizeof( D3D11_BUFFER_DESC ) );
 	d3dBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -927,7 +920,7 @@ void CGroundMesh::Render( ID3D11DeviceContext *pd3dDeviceContext )
 	pd3dDeviceContext->OMSetDepthStencilState( m_pd3dDepthStencilState, 1 );
 
 	m_pGroundTexture->UpdateTextureShaderVariable( pd3dDeviceContext, 0, 0 );
-	pd3dDeviceContext->Draw( m_nVertices, 0 );
-	//pd3dDeviceContext->DrawIndexed( m_nIndices, 0, 0 );
+//	pd3dDeviceContext->Draw( m_nVertices, 0 );
+	pd3dDeviceContext->DrawIndexed( m_nIndices, 0, 0 );
 	pd3dDeviceContext->OMSetDepthStencilState( NULL, 1 );
 }
