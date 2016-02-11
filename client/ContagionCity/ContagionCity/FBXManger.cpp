@@ -61,20 +61,25 @@ bool FBXManager::LoadFBX( std::vector<CFbxMesh> *pOutMeshes, const char* pstrFil
 
 			// 정점 좌표들을 저장할 공간
 			int polygonCount = pMesh->GetPolygonCount( );		// 폴리곤의 개수
-			vector<XMFLOAT3> tempVector( polygonCount + 2 );
+			int vertexCount = pMesh->GetControlPointsCount( );
+
+			vector<XMFLOAT3> tempVector( vertexCount );
 			vector<UINT> tempIndex;
 
 			for (int j = 0; j < polygonCount; j++)
 			{
 				int iNumVertices = pMesh->GetPolygonSize( j );	// 폴리곤을 구성하는 정점의 개수
-				//	if (iNumVertices != 3)
-				//		return false;
+				if (iNumVertices != 3)
+				{
+					pMesh->Destroy( );
+					return false;
+				}
 
 		//		int startIndex = static_cast<int>( tempIndex.size( ) );
 		//		tempIndex.push_back( startIndex );
 		//		tempIndex.push_back( startIndex + 1 );
 		//		tempIndex.push_back( startIndex + 2 );
-		//		tempIndex.push_back( startIndex + 4 );
+		//		tempIndex.push_back( startIndex + 3 );
 
 				for (int k = 0; k < iNumVertices; k++)
 				{
@@ -90,6 +95,7 @@ bool FBXManager::LoadFBX( std::vector<CFbxMesh> *pOutMeshes, const char* pstrFil
 					temp.z = (float)pVertices[iControlPointIndex].mData[1];
 
 					tempVector[iControlPointIndex] = temp;
+		//			tempVector.push_back( temp );
 				}
 			}
 			CFbxMesh tempMesh;

@@ -787,32 +787,32 @@ void CSkyBoxMesh::Render( ID3D11DeviceContext *pd3dDeviceContext )
 CGroundMesh::CGroundMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex ) : CMeshTextured( pd3dDevice )
 {
 	m_nVertices = vertex.m_nVertexCount;
-	m_d3dPrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
+	m_d3dPrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
 	m_vPositions.resize(m_nVertices);
 	XMFLOAT2 *pvTexCoords = new XMFLOAT2[m_nVertices];
 
 	m_vPositions = vertex.m_pvPositions;
-	//for (int i = 0; i < m_nVertices; i++)
-	//{
-	//	int tmp = i % 4;
+	for (int i = 0; i < m_nVertices; i++)
+	{
+		int tmp = i % 4;
 
-	//	switch (tmp)
-	//	{
-	//		case 0:
-	//			pvTexCoords[i] = XMFLOAT2( 0.0f, 0.0f );
-	//			break;
-	//		case 1:
-	//			pvTexCoords[i] = XMFLOAT2( 1.0f, 0.0f );
-	//			break;
-	//		case 2:
-	//			pvTexCoords[i] = XMFLOAT2( 1.0f, 1.0f );
-	//			break;
-	//		case 3:
-	//			pvTexCoords[i] = XMFLOAT2( 0.0f, 1.0f );
-	//			break;
-	//	}
-	//}
+		switch (tmp)
+		{
+			case 0:
+				pvTexCoords[i] = XMFLOAT2( 0.0f, 0.0f );
+				break;
+			case 1:
+				pvTexCoords[i] = XMFLOAT2( 1.0f, 0.0f );
+				break;
+			case 2:
+				pvTexCoords[i] = XMFLOAT2( 1.0f, 1.0f );
+				break;
+			case 3:
+				pvTexCoords[i] = XMFLOAT2( 0.0f, 1.0f );
+				break;
+		}
+	}
 	// 정점 버퍼 생성
 	D3D11_BUFFER_DESC d3dBufferDesc;
 	::ZeroMemory( &d3dBufferDesc, sizeof( D3D11_BUFFER_DESC ) );
@@ -852,6 +852,8 @@ CGroundMesh::CGroundMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex ) : CMeshTex
 	d3dBufferData.pSysMem = &m_vnIndices[0];
 	pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dIndexBuffer );
 
+	CreateRasterizerState( pd3dDevice );
+
 	D3D11_DEPTH_STENCIL_DESC d3dDepthStencilDesc;
 	::ZeroMemory( &d3dDepthStencilDesc, sizeof( D3D11_DEPTH_STENCIL_DESC ) );
 	d3dDepthStencilDesc.DepthEnable = false;
@@ -869,7 +871,7 @@ CGroundMesh::CGroundMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex ) : CMeshTex
 	d3dDepthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
 	d3dDepthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
 	pd3dDevice->CreateDepthStencilState( &d3dDepthStencilDesc, &m_pd3dDepthStencilState );
-
+	
 	ID3D11SamplerState *pd3dSamplerState = NULL;
 	D3D11_SAMPLER_DESC d3dSamplerDesc;
 	::ZeroMemory( &d3dSamplerDesc, sizeof( D3D11_SAMPLER_DESC ) );
@@ -890,6 +892,18 @@ CGroundMesh::CGroundMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex ) : CMeshTex
 	OnChangeTexture( pd3dDevice );
 }
 
+void CGroundMesh::CreateRasterizerState( ID3D11Device *pd3dDevice )
+{
+	D3D11_RASTERIZER_DESC d3dRastersizerDesc;
+	::ZeroMemory( &d3dRastersizerDesc, sizeof( D3D11_RASTERIZER_DESC ) );
+	d3dRastersizerDesc.CullMode = D3D11_CULL_BACK;
+	// 솔리드와 와이어 설정할 수 있음
+	d3dRastersizerDesc.FrontCounterClockwise = FALSE;
+//	d3dRastersizerDesc.FillMode = D3D11_FILL_WIREFRAME;
+	d3dRastersizerDesc.FillMode = D3D11_FILL_SOLID;
+	pd3dDevice->CreateRasterizerState( &d3dRastersizerDesc, &m_pd3dRasterizerState );
+}
+
 CGroundMesh::~CGroundMesh( )
 {
 	if (m_pd3dDepthStencilState)
@@ -897,6 +911,7 @@ CGroundMesh::~CGroundMesh( )
 	if (m_pGroundTexture)
 		m_pGroundTexture->Release( );
 }
+
 
 void CGroundMesh::OnChangeTexture( ID3D11Device *pd3dDevice )
 {
@@ -915,7 +930,8 @@ void CGroundMesh::Render( ID3D11DeviceContext *pd3dDeviceContext )
 	pd3dDeviceContext->IASetVertexBuffers( m_nSlot, m_nBuffers, m_ppd3dVertexBuffers, m_pnVertexStrides, m_pnVertexOffsets );
 	pd3dDeviceContext->IASetIndexBuffer( m_pd3dIndexBuffer, m_dxgiIndexFormat, m_nIndexOffset );
 	pd3dDeviceContext->IASetPrimitiveTopology( m_d3dPrimitiveTopology );
-
+	pd3dDeviceContext->RSSetState( m_pd3dRasterizerState );
+	
 	m_pGroundTexture->UpdateSamplerShaderVariable( pd3dDeviceContext, 0, 0 );
 	pd3dDeviceContext->OMSetDepthStencilState( m_pd3dDepthStencilState, 1 );
 

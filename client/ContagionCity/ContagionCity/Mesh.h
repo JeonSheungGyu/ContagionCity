@@ -232,7 +232,7 @@ public:
 	virtual ~CGroundMesh( );
 
 	void OnChangeTexture( ID3D11Device *pd3dDevice );
-
+	virtual void CGroundMesh::CreateRasterizerState( ID3D11Device *pd3dDevice );
 	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext );
 
 };

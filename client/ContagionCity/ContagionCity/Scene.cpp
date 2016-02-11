@@ -140,7 +140,8 @@ void CScene::BuildObjects( ID3D11Device *pd3dDevice )
 void CScene::LoadFBXs( )
 {
 	// fbx 파일 로딩
-	m_pFbxLoader->LoadFBX( &m_pMeshes, "City_Base.FBX", LAYER_BACKGROUND, BACK_GROUND );
+//	m_pFbxLoader->LoadFBX( &m_pMeshes, "res/sample2.FBX", LAYER_BACKGROUND, BACK_GROUND ); 
+	m_pFbxLoader->LoadFBX( &m_pMeshes, "res/City_Base_mod.FBX", LAYER_BACKGROUND, BACK_GROUND );
 //	m_pFbxLoader->LoadFBX( &m_pMeshes, "cyclop_soldier.fbx", LAYER_BACKGROUND, BACK_GROUND );
 	//m_pFbxLoader->LoadFBX( "" );
 	m_nFbxCount = m_pFbxLoader->getMeshCount( );
