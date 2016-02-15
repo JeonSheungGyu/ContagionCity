@@ -49,160 +49,75 @@ bool FBXManager::LoadFBX( std::vector<CFbxMesh> *pOutMeshes, const char* pstrFil
 
 			FbxNodeAttribute::EType AttributeType = pfbxChildNode->GetNodeAttribute( )->GetAttributeType( );
 
-			if (AttributeType != FbxNodeAttribute::eMesh)
+			if (AttributeType == FbxNodeAttribute::eMesh)
+			{
+				FbxMesh* pMesh = (FbxMesh*)pfbxChildNode->GetNodeAttribute( );
+
+				FbxVector4* pVertices = pMesh->GetControlPoints( );
+
+				// 정점 좌표들을 저장할 공간
+				int polygonCount = pMesh->GetPolygonCount( );		// 폴리곤의 개수
+				int vertexCount = pMesh->GetControlPointsCount( );
+
+				vector<XMFLOAT3> tempVector( vertexCount );
+				vector<UINT> tempIndex;
+
+				for (int j = 0; j < polygonCount; j++)
+				{
+					int iNumVertices = pMesh->GetPolygonSize( j );	// 폴리곤을 구성하는 정점의 개수
+					if (iNumVertices != 3)
+					{
+						pMesh->Destroy( );
+						return false;
+					}
+
+					for (int k = 0; k < iNumVertices; k++)
+					{
+						int iControlPointIndex = pMesh->GetPolygonVertex( j, k );
+
+						tempIndex.push_back( iControlPointIndex );
+
+						// 이 부분에서 각 버텍스를 메시에 저장하면 됌
+						XMFLOAT3 temp;
+
+						temp.x = (float)pVertices[iControlPointIndex].mData[0];
+						temp.y = (float)pVertices[iControlPointIndex].mData[2];
+						temp.z = (float)pVertices[iControlPointIndex].mData[1];
+
+						tempVector[iControlPointIndex] = temp;
+					}
+				}
+				CFbxMesh tempMesh;
+
+				// 정점 좌표들의 모임
+				tempMesh.m_pvPositions = tempVector;
+				// vertex 개수
+				tempMesh.m_nVertexCount = tempVector.size( );
+				// 인덱스들의 모임
+				tempMesh.m_pvIndices = tempIndex;
+				// index 개수
+				tempMesh.m_nIndexCount = tempIndex.size( );
+				// 레이어
+				tempMesh.m_iLayer = Layer;
+				// 타입
+				tempMesh.m_iType = Type;
+
+				pOutMeshes->push_back( tempMesh );
+			}
+			else
 			{
 				m_nMeshCount--;
 				continue;
 			}
-
-			FbxMesh* pMesh = (FbxMesh*)pfbxChildNode->GetNodeAttribute( );
-
-			FbxVector4* pVertices = pMesh->GetControlPoints( );
-
-			// 정점 좌표들을 저장할 공간
-			int polygonCount = pMesh->GetPolygonCount( );		// 폴리곤의 개수
-			int vertexCount = pMesh->GetControlPointsCount( );
-
-			vector<XMFLOAT3> tempVector( vertexCount );
-			vector<UINT> tempIndex;
-
-			for (int j = 0; j < polygonCount; j++)
-			{
-				int iNumVertices = pMesh->GetPolygonSize( j );	// 폴리곤을 구성하는 정점의 개수
-				if (iNumVertices != 3)
-				{
-					pMesh->Destroy( );
-					return false;
-				}
-
-		//		int startIndex = static_cast<int>( tempIndex.size( ) );
-		//		tempIndex.push_back( startIndex );
-		//		tempIndex.push_back( startIndex + 1 );
-		//		tempIndex.push_back( startIndex + 2 );
-		//		tempIndex.push_back( startIndex + 3 );
-
-				for (int k = 0; k < iNumVertices; k++)
-				{
-					int iControlPointIndex = pMesh->GetPolygonVertex( j, k );
-
-					tempIndex.push_back( iControlPointIndex );
-
-					// 이 부분에서 각 버텍스를 메시에 저장하면 됌
-					XMFLOAT3 temp;
-
-					temp.x = (float)pVertices[iControlPointIndex].mData[0];
-					temp.y = (float)pVertices[iControlPointIndex].mData[2];
-					temp.z = (float)pVertices[iControlPointIndex].mData[1];
-
-					tempVector[iControlPointIndex] = temp;
-		//			tempVector.push_back( temp );
-				}
-			}
-			CFbxMesh tempMesh;
-
-			// 정점 좌표들의 모임
-			tempMesh.m_pvPositions = tempVector;
-			// vertex 개수
-			tempMesh.m_nVertexCount = tempVector.size( );
-			// 인덱스들의 모임
-			tempMesh.m_pvIndices = tempIndex;
-			// index 개수
-			tempMesh.m_nIndexCount = tempIndex.size( );
-			// 레이어
-			tempMesh.m_iLayer = Layer;
-			// 타입
-			tempMesh.m_iType = Type;
-
-			pOutMeshes->push_back( tempMesh );
 		}
-	}
 
-	// 버텍스 정보들을 옮긴 뒤 노드들 제거
-	for (int i = 0; i < m_pfbxScene->GetNodeCount( ); i++)
-	{
-		FbxNode* temp = m_pfbxScene->GetNode( i );
-		m_pfbxScene->RemoveNode( temp );
-	}
-	return true;
-}
-
-// Scene의 노드들의 정점 좌표들을 내가 사용할 정점으로 변환하는 함수
-bool FBXManager::LoadVertex( std::vector<CFbxMesh> *pOutMeshes )
-{
-	FbxNode *pfbxRootNode = m_pfbxScene->GetRootNode( );
-
-	if (pfbxRootNode)
-	{
-		pOutMeshes->resize( m_nMeshCount );
-
-		for (int i = 0; i < m_nMeshCount; i++)
+		// 버텍스 정보들을 옮긴 뒤 노드들 제거
+		for (int i = 0; i < m_pfbxScene->GetNodeCount( ); i++)
 		{
-			FbxNode* pfbxChildNode = pfbxRootNode->GetChild( i );
-
-			if (pfbxChildNode->GetNodeAttribute( ) == NULL)
-				continue;
-
-			FbxNodeAttribute::EType AttributeType = pfbxChildNode->GetNodeAttribute( )->GetAttributeType( );
-
-			if (AttributeType != FbxNodeAttribute::eMesh)
-				continue;
-
-			FbxMesh* pMesh = (FbxMesh*)pfbxChildNode->GetNodeAttribute( );
-
-			FbxVector4* pVertices = pMesh->GetControlPoints( );
-
-			// 정점 좌표들을 저장할 공간
-			int polygonCount = pMesh->GetPolygonCount( );		// 폴리곤의 개수
-			vector<XMFLOAT3> tempVector;
-			vector<UINT> tempIndex;
-
-			for (int j = 0; j < polygonCount; j++)
-			{
-				int iNumVertices = pMesh->GetPolygonSize( j );	// 폴리곤을 구성하는 정점의 개수
-				//	if (iNumVertices != 3)
-				//		return false;
-
-				int startIndex = static_cast<int>( tempIndex.size( ) );
-				tempIndex.push_back( startIndex );
-				tempIndex.push_back( startIndex + 1 );
-				tempIndex.push_back( startIndex + 2 );
-				tempIndex.push_back( startIndex + 3 );
-
-				for (int k = 0; k < iNumVertices; k++)
-				{
-					int iControlPointIndex = pMesh->GetPolygonVertex( j, k );
-
-					// 이 부분에서 각 버텍스를 메시에 저장하면 됌
-					XMFLOAT3 temp;
-
-					temp.x = (float)pVertices[iControlPointIndex].mData[0];
-					temp.y = (float)pVertices[iControlPointIndex].mData[2];
-					temp.z = (float)pVertices[iControlPointIndex].mData[1];
-
-					tempVector.push_back( temp );
-				}
-			}
-			// 정점 좌표들의 모임
-			( *pOutMeshes )[i].m_pvPositions = tempVector;
-			// vertex 개수
-			( *pOutMeshes )[i].m_nVertexCount = tempVector.size( );
-			// 인덱스들의 모임
-			( *pOutMeshes )[i].m_pvIndices = tempIndex;
-			// index 개수
-			( *pOutMeshes )[i].m_nIndexCount = tempIndex.size( );
-			// 레이어
-			( *pOutMeshes )[i].m_iLayer = m_vLayers[i];
-			// 타입
-			( *pOutMeshes )[i].m_iType = m_vTypes[i];
+			FbxNode* temp = m_pfbxScene->GetNode( i );
+			m_pfbxScene->RemoveNode( temp );
 		}
-	}
-	// 버텍스 정보들을 옮긴 뒤 노드들 제거
-	for (int i = 0; i < m_pfbxScene->GetNodeCount( ); i++)
-	{
-		FbxNode* temp = m_pfbxScene->GetNode( i );
-		m_pfbxScene->RemoveNode( temp );
-	}
-	m_nMeshCount = 0;
 
-	return true;
+		return true;
+	}
 }

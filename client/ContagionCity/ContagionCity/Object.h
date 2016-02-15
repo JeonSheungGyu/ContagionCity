@@ -175,7 +175,7 @@ public:
 	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera );
 };
 
-class CGround : public CGameObject
+class ObjectInfo : public CGameObject
 {
 protected:
 	// 위치, xyz축벡터
@@ -189,8 +189,8 @@ protected:
 	float m_fYaw;
 	float m_fRoll;
 public:
-	CGround( ID3D11Device *pd3dDevice, CFbxMesh vertex );
-	virtual ~CGround( );
+	ObjectInfo( ID3D11Device *pd3dDevice, CFbxMesh vertex );
+	virtual ~ObjectInfo( );
 
 	virtual void OnPrepareRender( );
 	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera );

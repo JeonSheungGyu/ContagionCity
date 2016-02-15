@@ -813,6 +813,7 @@ CGroundMesh::CGroundMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex ) : CMeshTex
 				break;
 		}
 	}
+
 	// 정점 버퍼 생성
 	D3D11_BUFFER_DESC d3dBufferDesc;
 	::ZeroMemory( &d3dBufferDesc, sizeof( D3D11_BUFFER_DESC ) );
@@ -898,7 +899,7 @@ void CGroundMesh::CreateRasterizerState( ID3D11Device *pd3dDevice )
 	::ZeroMemory( &d3dRastersizerDesc, sizeof( D3D11_RASTERIZER_DESC ) );
 	d3dRastersizerDesc.CullMode = D3D11_CULL_BACK;
 	// 솔리드와 와이어 설정할 수 있음
-	d3dRastersizerDesc.FrontCounterClockwise = FALSE;
+	d3dRastersizerDesc.FrontCounterClockwise = TRUE;
 //	d3dRastersizerDesc.FillMode = D3D11_FILL_WIREFRAME;
 	d3dRastersizerDesc.FillMode = D3D11_FILL_SOLID;
 	pd3dDevice->CreateRasterizerState( &d3dRastersizerDesc, &m_pd3dRasterizerState );
@@ -911,7 +912,6 @@ CGroundMesh::~CGroundMesh( )
 	if (m_pGroundTexture)
 		m_pGroundTexture->Release( );
 }
-
 
 void CGroundMesh::OnChangeTexture( ID3D11Device *pd3dDevice )
 {
@@ -936,7 +936,6 @@ void CGroundMesh::Render( ID3D11DeviceContext *pd3dDeviceContext )
 	pd3dDeviceContext->OMSetDepthStencilState( m_pd3dDepthStencilState, 1 );
 
 	m_pGroundTexture->UpdateTextureShaderVariable( pd3dDeviceContext, 0, 0 );
-//	pd3dDeviceContext->Draw( m_nVertices, 0 );
 	pd3dDeviceContext->DrawIndexed( m_nIndices, 0, 0 );
 	pd3dDeviceContext->OMSetDepthStencilState( NULL, 1 );
 }
