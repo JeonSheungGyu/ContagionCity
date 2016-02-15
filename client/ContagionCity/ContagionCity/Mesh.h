@@ -221,18 +221,23 @@ public:
 	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext );
 };
 
-class CGroundMesh : public CMeshTextured
+class CObjectMesh : public CMeshTextured
 {
 protected:
 	ID3D11DepthStencilState *m_pd3dDepthStencilState;
-	CTexture *m_pGroundTexture;
+	CTexture *m_pMeshTexture;
 
 public:
-	CGroundMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex );
-	virtual ~CGroundMesh( );
+	CObjectMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, _TCHAR *texturePath );
+	virtual ~CObjectMesh( );
 
-	void OnChangeTexture( ID3D11Device *pd3dDevice );
-	virtual void CGroundMesh::CreateRasterizerState( ID3D11Device *pd3dDevice );
+	void OnChangeTexture( ID3D11Device *pd3dDevice, _TCHAR *texturePath );
+
 	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext );
 
+	virtual void CreateRasterizerState( ID3D11Device *pd3dDevice );
+	// Cull Mode는 앞면을 그릴 것인지 뒷면을 그릴것인지
+	// ClockWise는 와인딩오더 설정, TRUE 이면 반시계, FALSE이면 시계
+	// Fill Mode는 솔리드로 할것인지 와이어프레임으로 할것인지
+	void ChangeRasterizerState( ID3D11Device* pd3dDevice, bool ClockWise, D3D11_CULL_MODE CullMode, D3D11_FILL_MODE FillMode );
 };

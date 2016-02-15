@@ -4,8 +4,8 @@
 
 CMesh::CMesh( )
 {
-//	m_vPositions = NULL;
-//	m_vnIndices = NULL;
+	//	m_vPositions = NULL;
+	//	m_vnIndices = NULL;
 
 	m_nBuffers = 0;
 	m_pd3dPositionBuffer = NULL;
@@ -31,8 +31,8 @@ CMesh::CMesh( )
 
 CMesh::CMesh( ID3D11Device *pd3dDevice )
 {
-//	m_vPositions = NULL;
-//	m_vnIndices = NULL;
+	//	m_vPositions = NULL;
+	//	m_vnIndices = NULL;
 
 	m_nBuffers = 0;
 	m_pd3dPositionBuffer = NULL;
@@ -59,9 +59,9 @@ CMesh::CMesh( ID3D11Device *pd3dDevice )
 
 CMesh::~CMesh( )
 {
-	if (!(m_vPositions.empty()))	m_vPositions.clear();
-	if (!(m_vnIndices.empty( )))	m_vnIndices.clear();
-	
+	if (!( m_vPositions.empty( ) ))	m_vPositions.clear( );
+	if (!( m_vnIndices.empty( ) ))	m_vnIndices.clear( );
+
 	if (m_pd3dRasterizerState)	m_pd3dRasterizerState->Release( );
 	if (m_pd3dPositionBuffer)	m_pd3dPositionBuffer->Release( );
 	if (m_pd3dIndexBuffer)		m_pd3dIndexBuffer->Release( );
@@ -77,7 +77,7 @@ void CMesh::AssembleToVertexBuffer( int nBuffers, ID3D11Buffer **ppd3dBuffers, U
 	ID3D11Buffer **ppd3dNewVertexBuffers = new ID3D11Buffer*[m_nBuffers + nBuffers];
 	UINT *pnNewVertexStrides = new UINT[m_nBuffers + nBuffers];
 	UINT *pnNewVertexOffsets = new UINT[m_nBuffers + nBuffers];
-	
+
 	if (m_nBuffers > 0)
 	{
 		for (int i = 0; i < m_nBuffers; i++)
@@ -90,17 +90,17 @@ void CMesh::AssembleToVertexBuffer( int nBuffers, ID3D11Buffer **ppd3dBuffers, U
 		if (m_pnVertexStrides)		delete[ ] m_pnVertexStrides;
 		if (m_pnVertexOffsets)		delete[ ] m_pnVertexOffsets;
 	}
-	
+
 	for (int i = 0; i < nBuffers; i++)
 	{
-		ppd3dNewVertexBuffers[m_nBuffers + i ] = ppd3dBuffers[i];
+		ppd3dNewVertexBuffers[m_nBuffers + i] = ppd3dBuffers[i];
 		pnNewVertexStrides[m_nBuffers + i] = pnBufferStrides[i];
 		pnNewVertexOffsets[m_nBuffers + i] = pnBufferOffsets[i];
 	}
 
 	m_nBuffers += nBuffers;
 	m_ppd3dVertexBuffers = ppd3dNewVertexBuffers;
-	m_pnVertexStrides = pnNewVertexStrides; 
+	m_pnVertexStrides = pnNewVertexStrides;
 	m_pnVertexOffsets = pnNewVertexOffsets;
 }
 
@@ -195,7 +195,7 @@ CCubeMeshDiffused::CCubeMeshDiffused( ID3D11Device *pd3dDevice, float fWidth, fl
 
 	// 직육면체 메시는 2개의 정점 버퍼로 구성
 	// 직육면체 메시의 정점 버퍼 생성
-	m_vPositions.resize(m_nVertices);
+	m_vPositions.resize( m_nVertices );
 	m_vPositions[0] = XMFLOAT3( -fx, +fy, -fz );
 	m_vPositions[1] = XMFLOAT3( +fx, +fy, -fz );
 	m_vPositions[2] = XMFLOAT3( +fx, +fy, +fz );
@@ -231,7 +231,7 @@ CCubeMeshDiffused::CCubeMeshDiffused( ID3D11Device *pd3dDevice, float fWidth, fl
 	AssembleToVertexBuffer( 2, pd3dBuffers, pnBufferStrides, pnBufferOffsets );
 
 	m_nIndices = 18;
-	m_vnIndices.resize(m_nIndices);
+	m_vnIndices.resize( m_nIndices );
 	m_vnIndices[0] = 5;		// 5 6 4 cw
 	m_vnIndices[1] = 6;		// 6 4 7 ccw
 	m_vnIndices[2] = 4;		// 4 7 0 cw
@@ -259,7 +259,7 @@ CCubeMeshDiffused::CCubeMeshDiffused( ID3D11Device *pd3dDevice, float fWidth, fl
 	::ZeroMemory( &d3dBufferData, sizeof( D3D11_SUBRESOURCE_DATA ) );
 	d3dBufferData.pSysMem = &m_vnIndices[0];
 	pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dIndexBuffer );
-	
+
 	CreateRasterizerState( pd3dDevice );
 
 	m_bcBoundingCube.m_vMin = XMFLOAT3( -fx, -fy, -fz );
@@ -354,14 +354,14 @@ void CMeshIlluminated::SetAverageVertexNormal( XMFLOAT3 *pvNormals, int nPrimiti
 		for (int j = 0; j < nPrimitives; j++)
 		{
 			UINT nIndex0 = ( bStrip ) ? ( ( ( j % 2 ) == 0 ) ? ( j*nOffset + 0 ) : ( j*nOffset + 1 ) ) : ( j*nOffset + 0 );
-			if (m_vnIndices.empty())
+			if (m_vnIndices.empty( ))
 				nIndex0 = m_vnIndices[nIndex0];
 			UINT nIndex1 = ( bStrip ) ? ( ( ( j % 2 ) == 0 ) ? ( j*nOffset + 1 ) : ( j*nOffset + 0 ) ) : ( j*nOffset + 1 );
 			if (m_vnIndices.empty( ))
 				nIndex1 = m_vnIndices[nIndex1];
 			UINT nIndex2 = ( m_vnIndices.empty( ) ) ? m_vnIndices[j*nOffset + 2] : ( j*nOffset + 2 );
 			if (nIndex0 == i || nIndex1 == i || nIndex2 == i)
-				MathHelper::GetInstance( )->Float3PlusFloat3( vSumOfNormal, CalculateTriangleNormal( nIndex0, nIndex1, nIndex2 ));
+				MathHelper::GetInstance( )->Float3PlusFloat3( vSumOfNormal, CalculateTriangleNormal( nIndex0, nIndex1, nIndex2 ) );
 		}
 		vSumOfNormal = MathHelper::GetInstance( )->NormalizeFloat( vSumOfNormal );
 		pvNormals[i] = vSumOfNormal;
@@ -461,7 +461,7 @@ CCubeMeshTextured::CCubeMeshTextured( ID3D11Device *pd3dDevice, float fWidth, fl
 
 	float fx = fWidth *0.5f, fy = fHeight * 0.5f, fz = fDepth * 0.5f;
 
-	m_vPositions.resize(m_nVertices);
+	m_vPositions.resize( m_nVertices );
 	XMFLOAT2 pvTexCoords[36];
 	int i = 0;
 
@@ -579,7 +579,7 @@ CSkyBoxMesh::CSkyBoxMesh( ID3D11Device *pd3dDevice, float fWidth, float fHeight,
 	m_nVertices = 24;
 	m_d3dPrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
 
-	m_vPositions.resize(m_nVertices);
+	m_vPositions.resize( m_nVertices );
 	XMFLOAT2 *pvTexCoords = new XMFLOAT2[m_nVertices];
 
 	int i = 0;
@@ -765,7 +765,7 @@ void CSkyBoxMesh::OnChangeSkyBoxTextures( ID3D11Device *pd3dDevice, int nIndex )
 
 void CSkyBoxMesh::Render( ID3D11DeviceContext *pd3dDeviceContext )
 {
-	pd3dDeviceContext->IASetVertexBuffers( m_nSlot, m_nBuffers, m_ppd3dVertexBuffers, m_pnVertexStrides, m_pnVertexOffsets);
+	pd3dDeviceContext->IASetVertexBuffers( m_nSlot, m_nBuffers, m_ppd3dVertexBuffers, m_pnVertexStrides, m_pnVertexOffsets );
 	pd3dDeviceContext->IASetIndexBuffer( m_pd3dIndexBuffer, m_dxgiIndexFormat, m_nIndexOffset );
 	pd3dDeviceContext->IASetPrimitiveTopology( m_d3dPrimitiveTopology );
 
@@ -784,12 +784,12 @@ void CSkyBoxMesh::Render( ID3D11DeviceContext *pd3dDeviceContext )
 }
 
 
-CGroundMesh::CGroundMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex ) : CMeshTextured( pd3dDevice )
+CObjectMesh::CObjectMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, _TCHAR *texturePath ) : CMeshTextured( pd3dDevice )
 {
 	m_nVertices = vertex.m_nVertexCount;
 	m_d3dPrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
-	m_vPositions.resize(m_nVertices);
+	m_vPositions.resize( m_nVertices );
 	XMFLOAT2 *pvTexCoords = new XMFLOAT2[m_nVertices];
 
 	m_vPositions = vertex.m_pvPositions;
@@ -872,7 +872,7 @@ CGroundMesh::CGroundMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex ) : CMeshTex
 	d3dDepthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
 	d3dDepthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
 	pd3dDevice->CreateDepthStencilState( &d3dDepthStencilDesc, &m_pd3dDepthStencilState );
-	
+
 	ID3D11SamplerState *pd3dSamplerState = NULL;
 	D3D11_SAMPLER_DESC d3dSamplerDesc;
 	::ZeroMemory( &d3dSamplerDesc, sizeof( D3D11_SAMPLER_DESC ) );
@@ -885,57 +885,70 @@ CGroundMesh::CGroundMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex ) : CMeshTex
 	d3dSamplerDesc.MaxLOD = 0;
 	pd3dDevice->CreateSamplerState( &d3dSamplerDesc, &pd3dSamplerState );
 
-	m_pGroundTexture = new CTexture( 1, 1, 0, 0 );
-	m_pGroundTexture->SetSampler( 0, pd3dSamplerState );
+	m_pMeshTexture = new CTexture( 1, 1, 0, 0 );
+	m_pMeshTexture->SetSampler( 0, pd3dSamplerState );
 	pd3dSamplerState->Release( );
-	m_pGroundTexture->AddRef( );
+	m_pMeshTexture->AddRef( );
 
-	OnChangeTexture( pd3dDevice );
+	OnChangeTexture( pd3dDevice, texturePath );
 }
 
-void CGroundMesh::CreateRasterizerState( ID3D11Device *pd3dDevice )
+void CObjectMesh::CreateRasterizerState( ID3D11Device *pd3dDevice )
 {
 	D3D11_RASTERIZER_DESC d3dRastersizerDesc;
 	::ZeroMemory( &d3dRastersizerDesc, sizeof( D3D11_RASTERIZER_DESC ) );
 	d3dRastersizerDesc.CullMode = D3D11_CULL_BACK;
 	// 솔리드와 와이어 설정할 수 있음
 	d3dRastersizerDesc.FrontCounterClockwise = TRUE;
-//	d3dRastersizerDesc.FillMode = D3D11_FILL_WIREFRAME;
+	//	d3dRastersizerDesc.FillMode = D3D11_FILL_WIREFRAME;
 	d3dRastersizerDesc.FillMode = D3D11_FILL_SOLID;
 	pd3dDevice->CreateRasterizerState( &d3dRastersizerDesc, &m_pd3dRasterizerState );
 }
 
-CGroundMesh::~CGroundMesh( )
+void CObjectMesh::ChangeRasterizerState( ID3D11Device* pd3dDevice, bool ClockWise, D3D11_CULL_MODE CullMode, D3D11_FILL_MODE FillMode )
+{
+	if (m_pd3dRasterizerState)
+		m_pd3dRasterizerState->Release( );
+
+	D3D11_RASTERIZER_DESC d3dRastersizerDesc;
+	::ZeroMemory( &d3dRastersizerDesc, sizeof( D3D11_RASTERIZER_DESC ) );
+	d3dRastersizerDesc.CullMode = CullMode;
+	d3dRastersizerDesc.FrontCounterClockwise = ClockWise;
+	d3dRastersizerDesc.FillMode = FillMode;
+	pd3dDevice->CreateRasterizerState( &d3dRastersizerDesc, &m_pd3dRasterizerState );
+}
+
+CObjectMesh::~CObjectMesh( )
 {
 	if (m_pd3dDepthStencilState)
 		m_pd3dDepthStencilState->Release( );
-	if (m_pGroundTexture)
-		m_pGroundTexture->Release( );
+	if (m_pMeshTexture)
+		m_pMeshTexture->Release( );
 }
 
-void CGroundMesh::OnChangeTexture( ID3D11Device *pd3dDevice )
+void CObjectMesh::OnChangeTexture( ID3D11Device *pd3dDevice, _TCHAR *texturePath )
 {
 	_TCHAR pstrTextureName[80];
 	ID3D11ShaderResourceView *pd3dsrvTexture = NULL;
 
 	// 그라운드 텍스처 지정
-	_stprintf_s( pstrTextureName, _T( "./SkyBox/SkyBox_Front_1.jpg" ), 0, 80 );
+	_stprintf_s( pstrTextureName, texturePath, 0, 80 );
 	D3DX11CreateShaderResourceViewFromFile( pd3dDevice, pstrTextureName, NULL, NULL, &pd3dsrvTexture, NULL );
-	m_pGroundTexture->SetTexture( 0, pd3dsrvTexture );
+	m_pMeshTexture->SetTexture( 0, pd3dsrvTexture );
 	pd3dsrvTexture->Release( );
 }
 
-void CGroundMesh::Render( ID3D11DeviceContext *pd3dDeviceContext )
+void CObjectMesh::Render( ID3D11DeviceContext *pd3dDeviceContext )
 {
 	pd3dDeviceContext->IASetVertexBuffers( m_nSlot, m_nBuffers, m_ppd3dVertexBuffers, m_pnVertexStrides, m_pnVertexOffsets );
 	pd3dDeviceContext->IASetIndexBuffer( m_pd3dIndexBuffer, m_dxgiIndexFormat, m_nIndexOffset );
 	pd3dDeviceContext->IASetPrimitiveTopology( m_d3dPrimitiveTopology );
 	pd3dDeviceContext->RSSetState( m_pd3dRasterizerState );
-	
-	m_pGroundTexture->UpdateSamplerShaderVariable( pd3dDeviceContext, 0, 0 );
+
+	m_pMeshTexture->UpdateSamplerShaderVariable( pd3dDeviceContext, 0, 0 );
 	pd3dDeviceContext->OMSetDepthStencilState( m_pd3dDepthStencilState, 1 );
 
-	m_pGroundTexture->UpdateTextureShaderVariable( pd3dDeviceContext, 0, 0 );
+	m_pMeshTexture->UpdateTextureShaderVariable( pd3dDeviceContext, 0, 0 );
 	pd3dDeviceContext->DrawIndexed( m_nIndices, 0, 0 );
 	pd3dDeviceContext->OMSetDepthStencilState( NULL, 1 );
 }

@@ -141,12 +141,10 @@ void CScene::LoadFBXs( )
 {
 	// fbx 파일 로딩
 	m_pFbxLoader->LoadFBX( &m_pMeshes, "res/City_Base_mod.FBX", LAYER_BACKGROUND, BACK_GROUND );
-	m_pFbxLoader->LoadFBX( &m_pMeshes, "res/City_Wire_Fance.FBX", LAYER_BACKGROUND, BACK_GROUND );
+	m_pFbxLoader->LoadFBX( &m_pMeshes, "res/City_Wire_Fance.FBX", LAYER_BACKGROUND, BACK_FENCE );
 //	m_pFbxLoader->LoadFBX( &m_pMeshes, "cyclop_soldier.fbx", LAYER_BACKGROUND, BACK_GROUND );
 
 	m_nFbxCount = m_pFbxLoader->getMeshCount( );
-
-
 }
 
 void CScene::ReleaseObjects( )
