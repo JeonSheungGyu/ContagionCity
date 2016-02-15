@@ -327,13 +327,10 @@ void CSkyBox::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera )
 		m_ppMeshes[0]->Render( pd3dDeviceContext );
 }
 
-
-CGround::CGround( ID3D11Device *pd3dDevice, CFbxMesh vertex ) : CGameObject( 1 )
+ObjectInfo::ObjectInfo( ID3D11Device *pd3dDevice, CFbxMesh vertex ) : CGameObject( 1 )
 {
 	this->m_iLayer = vertex.m_iLayer;
 	this->m_iType = vertex.m_iType;
-	CGroundMesh *pGroundMesh = new CGroundMesh( pd3dDevice, vertex );
-	SetMesh( pGroundMesh, 0 );
 
 	m_vPosition = XMFLOAT3( 0.0f, 0.0f, 0.0f );
 	m_vRight = XMFLOAT3( 1.0f, 0.0f, 0.0f );
@@ -344,13 +341,12 @@ CGround::CGround( ID3D11Device *pd3dDevice, CFbxMesh vertex ) : CGameObject( 1 )
 	m_fRoll = 0.0f;
 	m_fYaw = 0.0f;
 }
-
-CGround::~CGround( )
+ObjectInfo::~ObjectInfo( )
 {
 
 }
 
-void CGround::OnPrepareRender( )
+void ObjectInfo::OnPrepareRender( )
 {
 	m_mtxWorld._11 = m_vRight.x; m_mtxWorld._12 = m_vRight.y; m_mtxWorld._13 = m_vRight.z;
 	m_mtxWorld._21 = m_vUp.x;	 m_mtxWorld._22 = m_vUp.y;	  m_mtxWorld._23 = m_vUp.z;
@@ -360,12 +356,14 @@ void CGround::OnPrepareRender( )
 	m_mtxWorld._43 = m_vPosition.z;
 }
 
-void CGround::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera )
+void ObjectInfo::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera )
 {
-	SetPosition( 0.f, -2500.f,5000.f );
-	Rotate( 90.f, 0.f, 0.f );
 	CShader::UpdateShaderVariable( pd3dDeviceContext, &m_mtxWorld );
 
-	if (m_ppMeshes && m_ppMeshes[0])
-		m_ppMeshes[0]->Render( pd3dDeviceContext );
+	if (m_ppMeshes)
+	{
+		for (int i = 0; i < m_nMeshes; i++)
+			if (m_ppMeshes[i])
+				m_ppMeshes[i]->Render( pd3dDeviceContext );
+	}
 }

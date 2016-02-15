@@ -140,14 +140,12 @@ void CScene::BuildObjects( ID3D11Device *pd3dDevice )
 void CScene::LoadFBXs( )
 {
 	// fbx 파일 로딩
-//	m_pFbxLoader->LoadFBX( &m_pMeshes, "res/sample2.FBX", LAYER_BACKGROUND, BACK_GROUND ); 
+//	m_pFbxLoader->LoadFBX( &m_pMeshes, "res/sample.FBX", LAYER_BACKGROUND, BACK_GROUND ); 
+//	m_pFbxLoader->LoadFBX( &m_pMeshes, "res/female.fbx", LAYER_BACKGROUND, BACK_GROUND );
 	m_pFbxLoader->LoadFBX( &m_pMeshes, "res/City_Base_mod.FBX", LAYER_BACKGROUND, BACK_GROUND );
-//	m_pFbxLoader->LoadFBX( &m_pMeshes, "cyclop_soldier.fbx", LAYER_BACKGROUND, BACK_GROUND );
-	//m_pFbxLoader->LoadFBX( "" );
-	m_nFbxCount = m_pFbxLoader->getMeshCount( );
+//	m_pFbxLoader->LoadFBX( &m_pMeshes, "res/City_Wire_Fance.FBX", LAYER_BACKGROUND, BACK_FENCE );
 
-	// pMeshes에 정점 좌표들을, pMeshCount에 정점의 갯수들을 저장
-//	m_pFbxLoader->LoadVertex( &m_pMeshes );
+	m_nFbxCount = m_pFbxLoader->getMeshCount( );
 }
 
 void CScene::ReleaseObjects( )
