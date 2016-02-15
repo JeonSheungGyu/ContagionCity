@@ -175,8 +175,7 @@ public:
 	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera );
 };
 
-
-class ObjectInfo : public CGameObject
+class CGround : public CGameObject
 {
 protected:
 	// ¿ßƒ°, xyz√‡∫§≈Õ
@@ -189,10 +188,12 @@ protected:
 	float m_fPitch;
 	float m_fYaw;
 	float m_fRoll;
-
 public:
-	ObjectInfo( ID3D11Device *pd3dDevice, CFbxMesh vertex );
-	virtual ~ObjectInfo( );
+	CGround( ID3D11Device *pd3dDevice, CFbxMesh vertex );
+	virtual ~CGround( );
+
+	virtual void OnPrepareRender( );
+	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera );
 
 	XMFLOAT3 GetPosition( )							{ return m_vPosition; }
 	XMFLOAT3 GetLookVector( )						{ return m_vLook; }
@@ -207,7 +208,4 @@ public:
 	float GetYaw( ) const { return m_fYaw; }
 	float GetPitch( ) const { return m_fPitch; }
 	float GetRoll( ) const { return m_fRoll; }
-
-	virtual void OnPrepareRender( );
-	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera );
 };

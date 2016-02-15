@@ -236,38 +236,22 @@ void CBackgroundShader::BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbx
 
 	for (int i = 0; i < m_nObjects; i++)
 	{
-		ObjectInfo *pBackGroundObject = new ObjectInfo( pd3dDevice, vertex[i] );
-
 		switch (vertex[i].m_iType)
 		{
 			case ObjectType_BACKGROUND::BACK_GROUND:
 			{
-				CGroundMesh *pGroundMesh = new CGroundMesh( pd3dDevice, vertex[i] );
-				pBackGroundObject->SetMesh( pGroundMesh, 0 );
-				
+				CGround *pGround = new CGround( pd3dDevice, vertex[i] );
+				m_ppObjects[i] = pGround;
 				break;
 			}
+
 			case ObjectType_BACKGROUND::BACK_SHOP:
-			{
-				break;
-			}
-			case ObjectType_BACKGROUND::BACK_WALL:
-			{
-				break;
-			}
-			case ObjectType_BACKGROUND::BACK_FENCE:
-			{
-				break;
-			}
-			case ObjectType_BACKGROUND::BACK_SHALTER:
 			{
 				break;
 			}
 			default:
 				break;
 		}
-
-		m_ppObjects[i] = pBackGroundObject;
 	}
 }
 

@@ -49,74 +49,71 @@ bool FBXManager::LoadFBX( std::vector<CFbxMesh> *pOutMeshes, const char* pstrFil
 
 			FbxNodeAttribute::EType AttributeType = pfbxChildNode->GetNodeAttribute( )->GetAttributeType( );
 
-			
-			/*if (AttributeType != FbxNodeAttribute::eSkeleton)
-			{
-				FbxSkeleton* pMesh = (FbxSkeleton*)pfbxChildNode->GetNodeAttribute( );
-
-				FbxVector4* pVertices = pMesh->
-			}*/
-			if (AttributeType == FbxNodeAttribute::eMesh)
-			{
-
-				FbxMesh* pMesh = (FbxMesh*)pfbxChildNode->GetNodeAttribute( );
-
-				FbxVector4* pVertices = pMesh->GetControlPoints( );
-
-				// 정점 좌표들을 저장할 공간
-				int polygonCount = pMesh->GetPolygonCount( );		// 폴리곤의 개수
-				int vertexCount = pMesh->GetControlPointsCount( );
-
-				vector<XMFLOAT3> tempVector( vertexCount );
-				vector<UINT> tempIndex;
-
-				for (int j = 0; j < polygonCount; j++)
-				{
-					int iNumVertices = pMesh->GetPolygonSize( j );	// 폴리곤을 구성하는 정점의 개수
-					if (iNumVertices != 3)
-					{
-						pMesh->Destroy( );
-						return false;
-					}
-
-					for (int k = 0; k < iNumVertices; k++)
-					{
-						int iControlPointIndex = pMesh->GetPolygonVertex( j, k );
-
-						tempIndex.push_back( iControlPointIndex );
-
-						// 이 부분에서 각 버텍스를 메시에 저장하면 됌
-						XMFLOAT3 temp;
-
-						temp.x = (float)pVertices[iControlPointIndex].mData[0];
-						temp.y = (float)pVertices[iControlPointIndex].mData[2];
-						temp.z = (float)pVertices[iControlPointIndex].mData[1];
-
-						tempVector[iControlPointIndex] = temp;
-					}
-				}
-				CFbxMesh tempMesh;
-
-				// 정점 좌표들의 모임
-				tempMesh.m_pvPositions = tempVector;
-				// vertex 개수
-				tempMesh.m_nVertexCount = tempVector.size( );
-				// 인덱스들의 모임
-				tempMesh.m_pvIndices = tempIndex;
-				// index 개수
-				tempMesh.m_nIndexCount = tempIndex.size( );
-				// 레이어
-				tempMesh.m_iLayer = Layer;
-				// 타입
-				tempMesh.m_iType = Type;
-
-				pOutMeshes->push_back( tempMesh );
-			}
-			else
+			if (AttributeType != FbxNodeAttribute::eMesh)
 			{
 				m_nMeshCount--;
 				continue;
 			}
+
+			FbxMesh* pMesh = (FbxMesh*)pfbxChildNode->GetNodeAttribute( );
+
+			FbxVector4* pVertices = pMesh->GetControlPoints( );
+
+			// 정점 좌표들을 저장할 공간
+			int polygonCount = pMesh->GetPolygonCount( );		// 폴리곤의 개수
+			int vertexCount = pMesh->GetControlPointsCount( );
+
+			vector<XMFLOAT3> tempVector( vertexCount );
+			vector<UINT> tempIndex;
+
+			for (int j = 0; j < polygonCount; j++)
+			{
+				int iNumVertices = pMesh->GetPolygonSize( j );	// 폴리곤을 구성하는 정점의 개수
+				if (iNumVertices != 3)
+				{
+					pMesh->Destroy( );
+					return false;
+				}
+
+		//		int startIndex = static_cast<int>( tempIndex.size( ) );
+		//		tempIndex.push_back( startIndex );
+		//		tempIndex.push_back( startIndex + 1 );
+		//		tempIndex.push_back( startIndex + 2 );
+		//		tempIndex.push_back( startIndex + 3 );
+
+				for (int k = 0; k < iNumVertices; k++)
+				{
+					int iControlPointIndex = pMesh->GetPolygonVertex( j, k );
+
+					tempIndex.push_back( iControlPointIndex );
+
+					// 이 부분에서 각 버텍스를 메시에 저장하면 됌
+					XMFLOAT3 temp;
+
+					temp.x = (float)pVertices[iControlPointIndex].mData[0];
+					temp.y = (float)pVertices[iControlPointIndex].mData[2];
+					temp.z = (float)pVertices[iControlPointIndex].mData[1];
+
+					tempVector[iControlPointIndex] = temp;
+		//			tempVector.push_back( temp );
+				}
+			}
+			CFbxMesh tempMesh;
+
+			// 정점 좌표들의 모임
+			tempMesh.m_pvPositions = tempVector;
+			// vertex 개수
+			tempMesh.m_nVertexCount = tempVector.size( );
+			// 인덱스들의 모임
+			tempMesh.m_pvIndices = tempIndex;
+			// index 개수
+			tempMesh.m_nIndexCount = tempIndex.size( );
+			// 레이어
+			tempMesh.m_iLayer = Layer;
+			// 타입
+			tempMesh.m_iType = Type;
+
+			pOutMeshes->push_back( tempMesh );
 		}
 	}
 
