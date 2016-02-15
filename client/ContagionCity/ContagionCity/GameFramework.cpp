@@ -244,6 +244,7 @@ void CGameFramework::BuildObjects( )
 	m_pScene = new CScene( );
 	m_pScene->BuildObjects( m_pd3dDevice );
 
+	MakePlayer( m_pd3dDevice );
 	m_pPlayerShader = new CPlayerShader( );
 	m_pPlayerShader->CreateShader( m_pd3dDevice );
 	m_pPlayerShader->BuildObjects( m_pd3dDevice );
@@ -254,6 +255,14 @@ void CGameFramework::BuildObjects( )
 	m_pCamera->GenerateViewMatrix( );
 
 	m_pScene->SetCamera( m_pCamera );
+}
+
+void CGameFramework::MakePlayer( ID3D11Device* pd3dDevice )
+{
+	m_pPlayerShader = new CPlayerShader( );
+	m_pPlayerShader->CreateShader( m_pd3dDevice );
+	m_pPlayerShader->BuildObjects( m_pd3dDevice );
+	m_pPlayer = m_pPlayerShader->GetPlayer( );
 }
 
 void CGameFramework::ReleaseObjects( )

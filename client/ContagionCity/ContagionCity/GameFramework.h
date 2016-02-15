@@ -48,6 +48,7 @@ public:
 	// 렌더링할 메시, 객체를 생성하고 소멸하는 함수
 	void BuildObjects( );
 	void ReleaseObjects( );
+	void MakePlayer( ID3D11Device* pd3dDevice );
 
 	// 프레임워크의 핵심을 구성하는 함수
 	void ProcessInput( );

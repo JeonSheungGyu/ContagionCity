@@ -11,14 +11,18 @@ private:
 	FbxManager* m_pfbxManager;
 	FbxImporter* m_pfbxImporter;
 	FbxScene* m_pfbxScene;
-	int m_nMeshCount;
+
+	FBXManager( );
 
 public:
-	FBXManager( );
+	static FBXManager *Instance;
+	static FBXManager *GetInstance( ) {	if (Instance == NULL) Instance = new FBXManager; return Instance; }
 	~FBXManager( );
 
-	bool LoadFBX( std::vector<CFbxMesh> *pOutMeshes, const char* pstrFileName, int Layer, int Type );
+	std::vector<CFbxMesh> m_pMeshes;
 
-	int getMeshCount( ){ return m_nMeshCount; }
+	bool LoadFBX( const char* pstrFileName, int Layer, int Type );
+
+	void ClearMeshes( ){ m_pMeshes.clear( ); }
+	
 };
-

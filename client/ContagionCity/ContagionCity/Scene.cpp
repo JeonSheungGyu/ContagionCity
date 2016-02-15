@@ -10,14 +10,11 @@ CScene::CScene( )
 
 	m_pLights = NULL;
 	m_pd3dcbLights = NULL;
-
-	m_pFbxLoader = new FBXManager;
-	m_nFbxCount = 0;
 }
 
 CScene::~CScene( )
 {
-	delete m_pFbxLoader;
+
 }
 
 void CScene::CreateShaderVariables( ID3D11Device *pd3dDevice )
@@ -95,31 +92,33 @@ void CScene::BuildObjects( ID3D11Device *pd3dDevice )
 
 	for (int i = 0; i < m_nFbxCount; i++)
 	{
-		int layer = m_pMeshes[i].m_iLayer;
+		CFbxMesh tempMesh = FBXManager::GetInstance( )->m_pMeshes[i];
+		int layer = tempMesh.m_iLayer;
 		switch (layer)
 		{
 			case ObjectLayer::LAYER_BACKGROUND:	
 			{
-				background.push_back( m_pMeshes[i] );
+				background.push_back( tempMesh );
 				break;
 			}
 			case ObjectLayer::LAYER_ENEMY:
 			{
-				background.push_back( m_pMeshes[i] );
+				background.push_back( tempMesh );
 				break;
 			}
 			case ObjectLayer::LAYER_NPC:
 			{
-				background.push_back( m_pMeshes[i] );
+				background.push_back( tempMesh );
 				break;
 			}
 			default:
 				break;
 		}
 	}
+	FBXManager::GetInstance( )->ClearMeshes( );
 
 	// 현재 셰이더 개수에 fbx개수를 더한 뒤 셰이더를 생성하여 만듬
-	m_nShaders = 2;		// 0은 스카이박스 , 1은 배경, 2는 적, 3은 엔피시 
+	m_nShaders = 2;		// 0은 스카이박스 , 1은 배경, 2는 엔피시, 3은 적 
 	m_ppShaders = new CShader*[m_nShaders];
 
 	// 첫번째로 그릴 객체는 스카이박스
@@ -127,6 +126,7 @@ void CScene::BuildObjects( ID3D11Device *pd3dDevice )
 	m_ppShaders[0]->CreateShader( pd3dDevice );
 	m_ppShaders[0]->BuildObjects( pd3dDevice );
 
+	// 두번째는 배경
 	m_ppShaders[1] = new CBackgroundShader( );
 	m_ppShaders[1]->CreateShader( pd3dDevice );
 	( (CBackgroundShader*)m_ppShaders[1] )->BuildObjects( pd3dDevice, background );
@@ -140,11 +140,10 @@ void CScene::BuildObjects( ID3D11Device *pd3dDevice )
 void CScene::LoadFBXs( )
 {
 	// fbx 파일 로딩
-	m_pFbxLoader->LoadFBX( &m_pMeshes, "res/City_Base_mod.FBX", LAYER_BACKGROUND, BACK_GROUND );
-	m_pFbxLoader->LoadFBX( &m_pMeshes, "res/City_Wire_Fance.FBX", LAYER_BACKGROUND, BACK_FENCE );
-//	m_pFbxLoader->LoadFBX( &m_pMeshes, "cyclop_soldier.fbx", LAYER_BACKGROUND, BACK_GROUND );
+	FBXManager::GetInstance( )->LoadFBX( "res/City_Base_mod.FBX", LAYER_BACKGROUND, BACK_GROUND );
+	FBXManager::GetInstance( )->LoadFBX( "res/City_Wire_Fance.FBX", LAYER_BACKGROUND, BACK_FENCE );
 
-	m_nFbxCount = m_pFbxLoader->getMeshCount( );
+	m_nFbxCount = FBXManager::GetInstance( )->m_pMeshes.size( );
 }
 
 void CScene::ReleaseObjects( )

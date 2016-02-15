@@ -4,8 +4,6 @@
 
 FBXManager::FBXManager( )
 {
-	m_nMeshCount = 0;
-
 	m_pfbxManager = FbxManager::Create( );
 	FbxIOSettings* pfbxIOSettings = FbxIOSettings::Create( m_pfbxManager, IOSROOT );
 	m_pfbxManager->SetIOSettings( pfbxIOSettings );
@@ -21,7 +19,7 @@ FBXManager::~FBXManager( )
 }
 
 // FBX 파일을 Scene의 노드에 추가하는 함수
-bool FBXManager::LoadFBX( std::vector<CFbxMesh> *pOutMeshes, const char* pstrFileName, int Layer, int Type )
+bool FBXManager::LoadFBX( const char* pstrFileName, int Layer, int Type )
 {
 	// 파일 이름을 로딩
 	bool bResult = m_pfbxImporter->Initialize( pstrFileName, -1, m_pfbxManager->GetIOSettings( ) );
@@ -35,8 +33,6 @@ bool FBXManager::LoadFBX( std::vector<CFbxMesh> *pOutMeshes, const char* pstrFil
 
 	FbxNode *pfbxRootNode = m_pfbxScene->GetRootNode( );
 	// 현재 Scene에 저장되어있는 메시들의 개수를 저장
-
-	m_nMeshCount += m_pfbxScene->GetRootNode( )->GetChildCount( );
 
 	if (pfbxRootNode)
 	{
@@ -102,11 +98,10 @@ bool FBXManager::LoadFBX( std::vector<CFbxMesh> *pOutMeshes, const char* pstrFil
 				// 타입
 				tempMesh.m_iType = Type;
 
-				pOutMeshes->push_back( tempMesh );
+				m_pMeshes.push_back( tempMesh );
 			}
 			else
 			{
-				m_nMeshCount--;
 				continue;
 			}
 		}
