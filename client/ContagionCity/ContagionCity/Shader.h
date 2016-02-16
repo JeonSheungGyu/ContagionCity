@@ -91,7 +91,7 @@ public:
 	virtual ~CPlayerShader( );
 
 	virtual void CreateShader( ID3D11Device *pd3dDevice );
-	virtual void BuildObjects( ID3D11Device *pd3dDevice );
+	virtual void BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbxMesh> meshes );
 	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera = NULL );
 
 	CPlayer* GetPlayer( int nIndex = 0 ){ return (CPlayer*)m_ppObjects[nIndex]; }

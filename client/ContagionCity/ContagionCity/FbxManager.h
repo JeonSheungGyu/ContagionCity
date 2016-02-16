@@ -24,5 +24,4 @@ public:
 	bool LoadFBX( const char* pstrFileName, int Layer, int Type );
 
 	void ClearMeshes( ){ m_pMeshes.clear( ); }
-	
 };

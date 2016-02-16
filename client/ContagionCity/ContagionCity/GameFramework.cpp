@@ -245,10 +245,6 @@ void CGameFramework::BuildObjects( )
 	m_pScene->BuildObjects( m_pd3dDevice );
 
 	MakePlayer( m_pd3dDevice );
-	m_pPlayerShader = new CPlayerShader( );
-	m_pPlayerShader->CreateShader( m_pd3dDevice );
-	m_pPlayerShader->BuildObjects( m_pd3dDevice );
-	m_pPlayer = m_pPlayerShader->GetPlayer( );
 
 	m_pCamera = m_pPlayer->GetCamera( );
 	m_pCamera->SetViewport( m_pd3dDeviceContext, 0, 0, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT, 0.0f, 1.0f );
@@ -259,9 +255,13 @@ void CGameFramework::BuildObjects( )
 
 void CGameFramework::MakePlayer( ID3D11Device* pd3dDevice )
 {
+	FBXManager::GetInstance( )->LoadFBX( "res/hero_low.FBX", LAYER_PLAYER, PLAYER_MAN );
+	std::vector<CFbxMesh> tempMesh = FBXManager::GetInstance( )->m_pMeshes;
+	FBXManager::GetInstance( )->ClearMeshes( );
+
 	m_pPlayerShader = new CPlayerShader( );
 	m_pPlayerShader->CreateShader( m_pd3dDevice );
-	m_pPlayerShader->BuildObjects( m_pd3dDevice );
+	m_pPlayerShader->BuildObjects( m_pd3dDevice, tempMesh );
 	m_pPlayer = m_pPlayerShader->GetPlayer( );
 }
 
@@ -321,7 +321,7 @@ void CGameFramework::ProcessInput( )
 			이동 거리는 시간에 비례하도록 한다. 플레이어의 이동 속력은 (50/초)로 가정한다.
 			만약 플레이어의 이동 속력이 있다면 그 값을 사용한다.*/
 			if (dwDirection)
-				m_pPlayer->Move( dwDirection, 50.0f * m_GameTimer.GetTimeElapsed( ), true );
+				m_pPlayer->Move( dwDirection, 50.0f * m_GameTimer.GetTimeElapsed( ), false );
 		}
 	}
 	m_pPlayer->Update( m_GameTimer.GetTimeElapsed( ) );

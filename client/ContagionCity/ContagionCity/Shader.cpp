@@ -190,14 +190,19 @@ void CPlayerShader::CreateShader( ID3D11Device *pd3dDevice )
 	CShader::CreateShader( pd3dDevice );
 }
 
-void CPlayerShader::BuildObjects( ID3D11Device *pd3dDevice )
+void CPlayerShader::BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbxMesh> meshes )
 {
-	m_nObjects = 1;
+	m_nObjects = meshes.size();
 	m_ppObjects = new CGameObject*[m_nObjects];
 
-	CCubeMeshDiffused *pCubeMesh = new CCubeMeshDiffused( pd3dDevice, 4.0f, 12.0f, 4.0f, XMCOLOR( 0.5f, 0.0f, 0.0f, 0.0f ) );
 	CPlayer *pPlayer = new CPlayer( );
-	pPlayer->SetMesh( pCubeMesh );
+
+	for (int i = 0; i < m_nObjects; i++)
+	{
+		CObjectMesh *pPlayerMesh = new CObjectMesh( pd3dDevice, meshes[i], _T( "./SkyBox/SkyBox_Top_1.jpg" ) );
+		pPlayer->SetMesh( pPlayerMesh, i );
+	}
+	pPlayer->SetPosition( 0.0f, 0.0f, 50.0f );
 	pPlayer->CreateShaderVariables( pd3dDevice );
 	pPlayer->ChangeCamera( pd3dDevice, THIRD_PERSON_CAMERA, 0.0f );
 

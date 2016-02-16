@@ -51,11 +51,14 @@ void CPlayer::Move( DWORD dwDirection, float fDistance, bool bUpdateVelocity )
 	if (dwDirection)
 	{
 		XMFLOAT3 vShift = XMFLOAT3( 0.0f, 0.0f, 0.0f );
-		if (dwDirection & DIR_FORWARD)		MathHelper::GetInstance( )->Float3PlusFloat3( vShift, MathHelper::GetInstance()->Float3MulFloat( m_vLook,fDistance ));
-		if (dwDirection & DIR_BACKWARD)		MathHelper::GetInstance( )->Float3MinusFloat3( vShift, MathHelper::GetInstance( )->Float3MulFloat( m_vLook, fDistance ) );
-
-		if (dwDirection & DIR_RIGHT)		MathHelper::GetInstance( )->Float3PlusFloat3( vShift, MathHelper::GetInstance( )->Float3MulFloat( m_vRight, fDistance ) );
-		if (dwDirection & DIR_LEFT)			MathHelper::GetInstance( )->Float3MinusFloat3( vShift, MathHelper::GetInstance( )->Float3MulFloat( m_vRight, fDistance ) );
+		if (dwDirection & DIR_FORWARD)		
+			vShift = MathHelper::GetInstance( )->Float3PlusFloat3( vShift, MathHelper::GetInstance( )->Float3MulFloat( m_vLook, fDistance ) );
+		if (dwDirection & DIR_BACKWARD)		
+			vShift = MathHelper::GetInstance( )->Float3MinusFloat3( vShift, MathHelper::GetInstance( )->Float3MulFloat( m_vLook, fDistance ) );
+		if (dwDirection & DIR_RIGHT)		
+			vShift = MathHelper::GetInstance( )->Float3PlusFloat3( vShift, MathHelper::GetInstance( )->Float3MulFloat( m_vRight, fDistance ) );
+		if (dwDirection & DIR_LEFT)			
+			vShift = MathHelper::GetInstance( )->Float3MinusFloat3( vShift, MathHelper::GetInstance( )->Float3MulFloat( m_vRight, fDistance ) );
 
 		Move( vShift, bUpdateVelocity );
 	}
@@ -65,7 +68,7 @@ void CPlayer::Move( XMFLOAT3& vShift, bool bUpdateVelocity )
 {
 	if (bUpdateVelocity)
 	{
-		MathHelper::GetInstance( )->Float3PlusFloat3( m_vVelocity, vShift );
+		m_vVelocity = MathHelper::GetInstance( )->Float3PlusFloat3( m_vVelocity, vShift );
 	}
 	else
 	{
