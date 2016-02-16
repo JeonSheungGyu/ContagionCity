@@ -205,7 +205,7 @@ void CPlayerShader::BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbxMesh
 	pPlayer->SetPosition( 0.0f, 0.0f, 50.0f );
 	pPlayer->CreateShaderVariables( pd3dDevice );
 	pPlayer->ChangeCamera( pd3dDevice, THIRD_PERSON_CAMERA, 0.0f );
-
+	pPlayer->GetCamera( )->Rotate( 0.0f, 180.0f, 0.0f );
 	m_ppObjects[0] = pPlayer;
 }
 

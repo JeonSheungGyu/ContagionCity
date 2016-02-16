@@ -219,6 +219,7 @@ public:
 	void OnChangeSkyBoxTextures( ID3D11Device *pd3dDevice, int nIndex = 0 );
 
 	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext );
+	void ChangeRasterizerState( ID3D11Device* pd3dDevice, bool ClockWise, D3D11_CULL_MODE CullMode, D3D11_FILL_MODE FillMode );
 };
 
 class CObjectMesh : public CMeshTextured

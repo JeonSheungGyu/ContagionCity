@@ -783,6 +783,18 @@ void CSkyBoxMesh::Render( ID3D11DeviceContext *pd3dDeviceContext )
 	pd3dDeviceContext->OMSetDepthStencilState( NULL, 1 );
 }
 
+void CSkyBoxMesh::ChangeRasterizerState( ID3D11Device* pd3dDevice, bool ClockWise, D3D11_CULL_MODE CullMode, D3D11_FILL_MODE FillMode )
+{
+	if (m_pd3dRasterizerState)
+		m_pd3dRasterizerState->Release( );
+
+	D3D11_RASTERIZER_DESC d3dRastersizerDesc;
+	::ZeroMemory( &d3dRastersizerDesc, sizeof( D3D11_RASTERIZER_DESC ) );
+	d3dRastersizerDesc.CullMode = CullMode;
+	d3dRastersizerDesc.FrontCounterClockwise = ClockWise;
+	d3dRastersizerDesc.FillMode = FillMode;
+	pd3dDevice->CreateRasterizerState( &d3dRastersizerDesc, &m_pd3dRasterizerState );
+}
 
 CObjectMesh::CObjectMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, _TCHAR *texturePath ) : CMeshTextured( pd3dDevice )
 {
@@ -897,10 +909,9 @@ void CObjectMesh::CreateRasterizerState( ID3D11Device *pd3dDevice )
 {
 	D3D11_RASTERIZER_DESC d3dRastersizerDesc;
 	::ZeroMemory( &d3dRastersizerDesc, sizeof( D3D11_RASTERIZER_DESC ) );
-	d3dRastersizerDesc.CullMode = D3D11_CULL_BACK;
+	d3dRastersizerDesc.CullMode = D3D11_CULL_FRONT;
 	// 솔리드와 와이어 설정할 수 있음
-	d3dRastersizerDesc.FrontCounterClockwise = TRUE;
-	//	d3dRastersizerDesc.FillMode = D3D11_FILL_WIREFRAME;
+	d3dRastersizerDesc.FrontCounterClockwise = FALSE;
 	d3dRastersizerDesc.FillMode = D3D11_FILL_SOLID;
 	pd3dDevice->CreateRasterizerState( &d3dRastersizerDesc, &m_pd3dRasterizerState );
 }
