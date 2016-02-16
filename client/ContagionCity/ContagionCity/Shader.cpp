@@ -242,7 +242,7 @@ void CBackgroundShader::BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbx
 	for (int i = 0; i < m_nObjects; i++)
 	{
 		ObjectInfo *pGround = new ObjectInfo( pd3dDevice, vertex[i] );
-		CObjectMesh *pGroundMesh = new CObjectMesh( pd3dDevice, vertex[i], _T( "./SkyBox/SkyBox_Left_1.jpg" ) );
+		CObjectMesh *pGroundMesh = new CObjectMesh( pd3dDevice, vertex[i], _T( "./res/city_base_texture.jpg" ) );
 		pGround->SetMesh( pGroundMesh, 0 );
 		m_ppObjects[i] = pGround;
 	}
