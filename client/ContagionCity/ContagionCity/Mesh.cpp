@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Mesh.h"
 #include "Object.h"
+#include "MyFunction.h"
 
 CMesh::CMesh( )
 {
@@ -661,13 +662,12 @@ CSkyBoxMesh::CSkyBoxMesh( ID3D11Device *pd3dDevice, float fWidth, float fHeight,
 	UINT pnBufferOffsets[2] = { 0, 0 };
 	AssembleToVertexBuffer( 2, pd3dBuffers, pnBufferStrides, pnBufferOffsets );
 
-	// 삼각형 스트립으로 사각형 1개를 그리기 위해서는 인덱스 4개가 필요
 	m_nIndices = 4;
 	m_vnIndices.resize( m_nIndices );
 
 	m_vnIndices[0] = 0;
-	m_vnIndices[1] = 1;
-	m_vnIndices[2] = 3;
+	m_vnIndices[1] = 3;
+	m_vnIndices[2] = 1;
 	m_vnIndices[3] = 2;
 
 	::ZeroMemory( &d3dBufferDesc, sizeof( D3D11_BUFFER_DESC ) );
@@ -805,25 +805,14 @@ CObjectMesh::CObjectMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, _TCHAR *tex
 	XMFLOAT2 *pvTexCoords = new XMFLOAT2[m_nVertices];
 
 	m_vPositions = vertex.m_pvPositions;
+	FindMinMax( );
+
 	for (int i = 0; i < m_nVertices; i++)
 	{
-		int tmp = i % 4;
-
-		switch (tmp)
-		{
-			case 0:
-				pvTexCoords[i] = XMFLOAT2( 0.0f, 0.0f );
-				break;
-			case 1:
-				pvTexCoords[i] = XMFLOAT2( 1.0f, 0.0f );
-				break;
-			case 2:
-				pvTexCoords[i] = XMFLOAT2( 1.0f, 1.0f );
-				break;
-			case 3:
-				pvTexCoords[i] = XMFLOAT2( 0.0f, 1.0f );
-				break;
-		}
+		XMFLOAT3 temp = m_vPositions[i];
+		float coordX = ( ( temp.x / max.x ) + 1 ) / 2;
+		float coordZ = ( ( temp.z / max.z ) + 1 ) / 2;
+		pvTexCoords[i] = XMFLOAT2( coordX, coordZ );
 	}
 
 	// 정점 버퍼 생성
@@ -962,4 +951,34 @@ void CObjectMesh::Render( ID3D11DeviceContext *pd3dDeviceContext )
 	m_pMeshTexture->UpdateTextureShaderVariable( pd3dDeviceContext, 0, 0 );
 	pd3dDeviceContext->DrawIndexed( m_nIndices, 0, 0 );
 	pd3dDeviceContext->OMSetDepthStencilState( NULL, 1 );
+}
+
+void CObjectMesh::FindMinMax( )
+{
+	float *arrX = new float[m_nVertices];
+	float *arrY = new float[m_nVertices];
+	float *arrZ = new float[m_nVertices];
+
+	for (int i = 0; i < m_nVertices; i++)
+	{
+		arrX[i] = m_vPositions[i].x;
+		arrY[i] = m_vPositions[i].y;
+		arrZ[i] = m_vPositions[i].z;
+	}
+
+	QuickSort( arrX, 0, m_nVertices-1 );
+	QuickSort( arrY, 0, m_nVertices-1 );
+	QuickSort( arrZ, 0, m_nVertices-1 );
+
+	min.x = arrX[0];
+	min.y = arrY[0];
+	min.z = arrZ[0];
+	
+	max.x = arrX[m_nVertices-1];
+	max.y = arrY[m_nVertices-1];
+	max.z = arrZ[m_nVertices-1];
+	
+	delete[ ] arrX;
+	delete[ ] arrY;
+	delete[ ] arrZ;
 }

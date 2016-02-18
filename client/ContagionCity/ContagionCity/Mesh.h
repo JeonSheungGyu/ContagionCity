@@ -228,6 +228,10 @@ protected:
 	ID3D11DepthStencilState *m_pd3dDepthStencilState;
 	CTexture *m_pMeshTexture;
 
+	// 정점들의 최대 최소
+	XMFLOAT3 min;
+	XMFLOAT3 max;
+
 public:
 	CObjectMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, _TCHAR *texturePath );
 	virtual ~CObjectMesh( );
@@ -241,4 +245,5 @@ public:
 	// ClockWise는 와인딩오더 설정, TRUE 이면 반시계, FALSE이면 시계
 	// Fill Mode는 솔리드로 할것인지 와이어프레임으로 할것인지
 	void ChangeRasterizerState( ID3D11Device* pd3dDevice, bool ClockWise, D3D11_CULL_MODE CullMode, D3D11_FILL_MODE FillMode );
+	void FindMinMax( );
 };
