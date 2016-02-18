@@ -1,51 +1,42 @@
-template<class T>
+#pragma once
 
-class CCircularQueue{
+typedef struct _QUEUE_DATA
+{
+	VOID	*Object;
+	BYTE	Data[MAX_BUFFER_LENGTH];
+	DWORD	DataLength;
+
+	CHAR	RemoteAddress[32];
+	USHORT	RemotePort;
+
+	DWORD	Protocol;
+} QUEUE_DATA;
+
+class CCircularQueue : public CMultiThreadSync<CCircularQueue>
+{
+public:
+	CCircularQueue(VOID);
+	~CCircularQueue(VOID);
 
 private:
-	T mQueue[MAX_QUEUE_LENTH];
-	DWORD mQueueHead;
-	DWORD mQueueTail;
+	QUEUE_DATA	mQueue[MAX_QUEUE_LENGTH];
+	DWORD		mQueueHead;
+	DWORD		mQueueTail;
 
 public:
-	CCircularQueue(VOID){
-		ZeroMemory(mQueue, sizeof(mQueue));
-		mQueueHead = mQueueTail = 0;
-	}
-	~CCircularQueue(VOID){}
+	BOOL		Begin(VOID);
+	BOOL		End(VOID);
 
-	BOOL Begin(VOID){
-		ZeroMemory(mQueue, sizeof(mQueue));
-		mQueueHead = mQueueTail = 0;
-		return true;
-	}
-	BOOL End(VOID){ return true; }
-	BOOL Push(T data){
-		DWORD TempTail = (mQueueTail + 1) % MAX_QUEUE_LENTH;
-		if (TempTail == mQueueHead)
-			return FALSE;
-		
-		CopyMemory(&mQueue[TempTail], &data, sizeof(T));
-		mQueueTail = TempTail;
+	BYTE*		Push(VOID *object, BYTE *data, DWORD dataLength);
+	BYTE*		Push(VOID *object, BYTE *data, DWORD dataLength, LPCSTR remoteAddress, USHORT remotePort);
+	BYTE*		Push(VOID *object, DWORD protocol, BYTE *data, DWORD dataLength);
+	BYTE*		Push(VOID *object, DWORD protocol, BYTE *data, DWORD dataLength, LPCSTR remoteAddress, USHORT remotePort);
 
-		return TRUE;
-	}
+	BOOL		Pop(VOID **object, BYTE *data, DWORD &dataLength);
+	BOOL		Pop(VOID **object, BYTE *data, DWORD &dataLength, LPSTR remoteAddress, USHORT &remotePort);
+	BOOL		Pop(VOID **object, DWORD &protocol, BYTE *data, DWORD &dataLength);
+	BOOL		Pop(VOID **object, DWORD &protocol, BYTE *data, DWORD &dataLength, LPSTR remoteAddress, USHORT &remotePort);
+	BOOL		Pop(VOID);
 
-	BOOL Pop(T& data){
-		if (mQueueHead == mQueueTail)
-			return FALSE;
-
-		DWORD TempHead = (mQueueHead + 1) % MAX_QUEUE_LENTH;
-
-		CopyMemory(&data, &mQueue[TempHead], sizeof(T));
-
-		mQueueHead = TempHead;
-
-		return TRUE;
-	}
-
-	BOOL IsEmpty(VOID){
-		if (mQueueHead == mQueueTail) return TRUE;
-		return FALSE;
-	}
+	BOOL		IsEmpty(VOID);
 };
