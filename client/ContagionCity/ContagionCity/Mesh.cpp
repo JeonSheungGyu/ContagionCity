@@ -810,11 +810,10 @@ CObjectMesh::CObjectMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, _TCHAR *tex
 	for (int i = 0; i < m_nVertices; i++)
 	{
 		XMFLOAT3 temp = m_vPositions[i];
-		float coordX = ( ( temp.x / max.x ) + 1 ) / 2;
-		float coordZ = ( ( temp.z / max.z ) + 1 ) / 2;
+		float coordX = temp.x / ( max.x - min.x ) + 0.5f;
+		float coordZ = temp.z / ( max.z - min.z ) + 0.5f;
 		pvTexCoords[i] = XMFLOAT2( coordX, coordZ );
 	}
-
 	// 정점 버퍼 생성
 	D3D11_BUFFER_DESC d3dBufferDesc;
 	::ZeroMemory( &d3dBufferDesc, sizeof( D3D11_BUFFER_DESC ) );
