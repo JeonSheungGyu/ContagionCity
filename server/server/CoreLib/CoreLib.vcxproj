@@ -76,11 +76,6 @@
   <ItemGroup>
     <ClInclude Include="CircularQueue.h" />
     <ClInclude Include="Crypt.h" />
-    <ClInclude Include="CriticalSection.h" />
-    <ClInclude Include="Random.h" />
-    <ClInclude Include="MultiThreadSync.h" />
-    <ClInclude Include="MemoryLeak.h" />
-    <ClInclude Include="MiniDump.h" />
     <ClInclude Include="Service.h" />
     <ClInclude Include="MemoryPool.h" />
     <ClInclude Include="Log.h" />
@@ -97,8 +92,6 @@
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="Crypt.cpp" />
     <ClCompile Include="Service.cpp" />
-    <ClCompile Include="MiniDump.cpp" />
-    <ClCompile Include="Random.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>

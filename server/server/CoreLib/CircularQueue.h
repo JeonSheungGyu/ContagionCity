@@ -1,42 +1,51 @@
-#pragma once
+template<class T>
 
-typedef struct _QUEUE_DATA
-{
-	VOID	*Object;
-	BYTE	Data[MAX_BUFFER_LENGTH];
-	DWORD	DataLength;
-
-	CHAR	RemoteAddress[32];
-	USHORT	RemotePort;
-
-	DWORD	Protocol;
-} QUEUE_DATA;
-
-class CCircularQueue : public CMultiThreadSync<CCircularQueue>
-{
-public:
-	CCircularQueue(VOID);
-	~CCircularQueue(VOID);
+class CCircularQueue{
 
 private:
-	QUEUE_DATA	mQueue[MAX_QUEUE_LENGTH];
-	DWORD		mQueueHead;
-	DWORD		mQueueTail;
+	T mQueue[MAX_QUEUE_LENTH];
+	DWORD mQueueHead;
+	DWORD mQueueTail;
 
 public:
-	BOOL		Begin(VOID);
-	BOOL		End(VOID);
+	CCircularQueue(VOID){
+		ZeroMemory(mQueue, sizeof(mQueue));
+		mQueueHead = mQueueTail = 0;
+	}
+	~CCircularQueue(VOID){}
 
-	BYTE*		Push(VOID *object, BYTE *data, DWORD dataLength);
-	BYTE*		Push(VOID *object, BYTE *data, DWORD dataLength, LPCSTR remoteAddress, USHORT remotePort);
-	BYTE*		Push(VOID *object, DWORD protocol, BYTE *data, DWORD dataLength);
-	BYTE*		Push(VOID *object, DWORD protocol, BYTE *data, DWORD dataLength, LPCSTR remoteAddress, USHORT remotePort);
+	BOOL Begin(VOID){
+		ZeroMemory(mQueue, sizeof(mQueue));
+		mQueueHead = mQueueTail = 0;
+		return true;
+	}
+	BOOL End(VOID){ return true; }
+	BOOL Push(T data){
+		DWORD TempTail = (mQueueTail + 1) % MAX_QUEUE_LENTH;
+		if (TempTail == mQueueHead)
+			return FALSE;
+		
+		CopyMemory(&mQueue[TempTail], &data, sizeof(T));
+		mQueueTail = TempTail;
 
-	BOOL		Pop(VOID **object, BYTE *data, DWORD &dataLength);
-	BOOL		Pop(VOID **object, BYTE *data, DWORD &dataLength, LPSTR remoteAddress, USHORT &remotePort);
-	BOOL		Pop(VOID **object, DWORD &protocol, BYTE *data, DWORD &dataLength);
-	BOOL		Pop(VOID **object, DWORD &protocol, BYTE *data, DWORD &dataLength, LPSTR remoteAddress, USHORT &remotePort);
-	BOOL		Pop(VOID);
+		return TRUE;
+	}
 
-	BOOL		IsEmpty(VOID);
+	BOOL Pop(T& data){
+		if (mQueueHead == mQueueTail)
+			return FALSE;
+
+		DWORD TempHead = (mQueueHead + 1) % MAX_QUEUE_LENTH;
+
+		CopyMemory(&data, &mQueue[TempHead], sizeof(T));
+
+		mQueueHead = TempHead;
+
+		return TRUE;
+	}
+
+	BOOL IsEmpty(VOID){
+		if (mQueueHead == mQueueTail) return TRUE;
+		return FALSE;
+	}
 };
