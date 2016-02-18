@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "MemoryPool.h"
 #include "Stream.h"
 
 CStream::CStream(VOID)

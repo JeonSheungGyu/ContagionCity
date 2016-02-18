@@ -1,6 +1,6 @@
 #pragma once
 
-class CStream 
+class CStream : public CMemoryPool<CStream>
 {
 public:
 	CStream(VOID);

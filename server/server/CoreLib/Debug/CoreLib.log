@@ -1,14 +1,15 @@
-﻿Build started 2016-02-17 오전 3:26:12.
+﻿Build started 2016-02-18 오후 9:53:52.
      1>Project "C:\Users\Sheunggyu\Documents\GitHub\ContagionCity\server\server\CoreLib\CoreLib.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _LIB /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yc"stdafx.h" /Fp"Debug\CoreLib.pch" /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt stdafx.cpp
-         stdafx.cpp
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _LIB /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"Debug\CoreLib.pch" /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt Registry.cpp Stream.cpp
-         Stream.cpp
-         Registry.cpp
-         Generating Code...
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _LIB /D _CRT_SECURE_NO_WARNINGS /D _CRT_NON_CONFORMING_SWPRINTFS /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"Debug\CoreLib.pch" /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt Service.cpp
+         Service.cpp
        Lib:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\Lib.exe /OUT:"C:\Users\Sheunggyu\Documents\GitHub\ContagionCity\server\server\Debug\CoreLib.lib" /NOLOGO Debug\Registry.obj
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\Lib.exe /OUT:"C:\Users\Sheunggyu\Documents\GitHub\ContagionCity\server\server\Debug\CoreLib.lib" /NOLOGO Debug\IniFile.obj
+         Debug\Registry.obj
+         Debug\CircularQueue.obj
+         Debug\Log.obj
+         Debug\Crypt.obj
+         Debug\Service.obj
          Debug\stdafx.obj
          Debug\Stream.obj
          CoreLib.vcxproj -> C:\Users\Sheunggyu\Documents\GitHub\ContagionCity\server\server\Debug\CoreLib.lib
@@ -16,4 +17,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:01.22
+Time Elapsed 00:00:00.65

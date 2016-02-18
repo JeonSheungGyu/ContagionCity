@@ -45,7 +45,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;_CRT_NON_CONFORMING_SWPRINTFS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
@@ -75,6 +75,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CircularQueue.h" />
+    <ClInclude Include="Crypt.h" />
+    <ClInclude Include="Service.h" />
+    <ClInclude Include="MemoryPool.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="IniFile.h" />
     <ClInclude Include="Registry.h" />
@@ -87,6 +90,8 @@
     <ClCompile Include="Registry.cpp" />
     <ClCompile Include="CircularQueue.cpp" />
     <ClCompile Include="Log.cpp" />
+    <ClCompile Include="Crypt.cpp" />
+    <ClCompile Include="Service.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>

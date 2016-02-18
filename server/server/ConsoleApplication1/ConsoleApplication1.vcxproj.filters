@@ -21,7 +21,10 @@
     <ClCompile Include="stream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LibTest.cpp">
+    <ClCompile Include="StreamLogTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MemoryPoolTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
