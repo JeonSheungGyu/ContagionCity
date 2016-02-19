@@ -810,8 +810,8 @@ CObjectMesh::CObjectMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, _TCHAR *tex
 	for (int i = 0; i < m_nVertices; i++)
 	{
 		XMFLOAT3 temp = m_vPositions[i];
-		float coordX = temp.x / ( max.x - min.x ) + 0.5f;
-		float coordZ = temp.z / ( max.z - min.z ) + 0.5f;
+		float coordX = ( temp.x - min.x ) / ( max.x - min.x );
+		float coordZ = ( temp.z - min.z ) / ( max.z - min.z );
 		pvTexCoords[i] = XMFLOAT2( coordX, coordZ );
 	}
 	// 정점 버퍼 생성
