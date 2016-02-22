@@ -796,7 +796,7 @@ void CSkyBoxMesh::ChangeRasterizerState( ID3D11Device* pd3dDevice, bool ClockWis
 	pd3dDevice->CreateRasterizerState( &d3dRastersizerDesc, &m_pd3dRasterizerState );
 }
 
-CObjectMesh::CObjectMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, _TCHAR *texturePath ) : CMeshTextured( pd3dDevice )
+CObjectMesh::CObjectMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, int TextureCount ) : CMeshTextured( pd3dDevice )
 {
 	m_nVertices = vertex.m_nVertexCount;
 	m_d3dPrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
@@ -885,12 +885,10 @@ CObjectMesh::CObjectMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, _TCHAR *tex
 	d3dSamplerDesc.MaxLOD = 0;
 	pd3dDevice->CreateSamplerState( &d3dSamplerDesc, &pd3dSamplerState );
 
-	m_pMeshTexture = new CTexture( 1, 1, 0, 0 );
+	m_pMeshTexture = new CTexture( TextureCount, 1, 0, 0 );
 	m_pMeshTexture->SetSampler( 0, pd3dSamplerState );
 	pd3dSamplerState->Release( );
 	m_pMeshTexture->AddRef( );
-
-	OnChangeTexture( pd3dDevice, texturePath );
 }
 
 void CObjectMesh::CreateRasterizerState( ID3D11Device *pd3dDevice )
@@ -925,7 +923,7 @@ CObjectMesh::~CObjectMesh( )
 		m_pMeshTexture->Release( );
 }
 
-void CObjectMesh::OnChangeTexture( ID3D11Device *pd3dDevice, _TCHAR *texturePath )
+void CObjectMesh::OnChangeTexture( ID3D11Device *pd3dDevice, _TCHAR *texturePath, int index )
 {
 	_TCHAR pstrTextureName[80];
 	ID3D11ShaderResourceView *pd3dsrvTexture = NULL;
@@ -933,7 +931,7 @@ void CObjectMesh::OnChangeTexture( ID3D11Device *pd3dDevice, _TCHAR *texturePath
 	// 그라운드 텍스처 지정
 	_stprintf_s( pstrTextureName, texturePath, 0, 80 );
 	D3DX11CreateShaderResourceViewFromFile( pd3dDevice, pstrTextureName, NULL, NULL, &pd3dsrvTexture, NULL );
-	m_pMeshTexture->SetTexture( 0, pd3dsrvTexture );
+	m_pMeshTexture->SetTexture( index, pd3dsrvTexture );
 	pd3dsrvTexture->Release( );
 }
 
