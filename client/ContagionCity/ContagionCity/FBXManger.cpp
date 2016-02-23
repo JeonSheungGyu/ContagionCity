@@ -43,67 +43,71 @@ bool FBXManager::LoadFBX( const char* pstrFileName, int Layer, int Type )
 			if (pfbxChildNode->GetNodeAttribute( ) == NULL)
 				continue;
 
-			FbxNodeAttribute::EType AttributeType = pfbxChildNode->GetNodeAttribute( )->GetAttributeType( );
+			FbxMesh* pMesh = (FbxMesh*)pfbxChildNode->GetNodeAttribute( );
+			
+			//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 정점 좌표 가져오기ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+			FbxVector4* pVertices = pMesh->GetControlPoints( );
 
-			if (AttributeType == FbxNodeAttribute::eMesh)
+			// 정점 좌표들을 저장할 공간
+			int polygonCount = pMesh->GetPolygonCount( );		// 폴리곤의 개수
+			int vertexCount = pMesh->GetControlPointsCount( );
+
+			vector<XMFLOAT3> tempVector;
+			for (int polyCount = 0; polyCount < polygonCount; polyCount++)
 			{
-				FbxMesh* pMesh = (FbxMesh*)pfbxChildNode->GetNodeAttribute( );
+				tempVector.push_back( XMFLOAT3(pVertices[polyCount].mData[0], pVertices[polyCount].mData[1], pVertices[polyCount].mData[2]) );
+			}
 
-				FbxVector4* pVertices = pMesh->GetControlPoints( );
+			//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 인덱스 정보 가져오기ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+			vector<UINT> tempIndex;
 
-				// 정점 좌표들을 저장할 공간
-				int polygonCount = pMesh->GetPolygonCount( );		// 폴리곤의 개수
-				int vertexCount = pMesh->GetControlPointsCount( );
-
-				vector<XMFLOAT3> tempVector( vertexCount );
-				vector<UINT> tempIndex;
-
-				for (int j = 0; j < polygonCount; j++)
+			for (int j = 0; j < polygonCount; j++)
+			{
+				int iNumVertices = pMesh->GetPolygonSize( j );	// 폴리곤을 구성하는 정점의 개수
+				if (iNumVertices != 3)
 				{
-					int iNumVertices = pMesh->GetPolygonSize( j );	// 폴리곤을 구성하는 정점의 개수
-					if (iNumVertices != 3)
-					{
-						pMesh->Destroy( );
-						return false;
-					}
-
-					for (int k = 0; k < iNumVertices; k++)
-					{
-						int iControlPointIndex = pMesh->GetPolygonVertex( j, k );
-
-						tempIndex.push_back( iControlPointIndex );
-
-						// 이 부분에서 각 버텍스를 메시에 저장하면 됌
-						XMFLOAT3 temp;
-
-						temp.x = (float)pVertices[iControlPointIndex].mData[0];
-						temp.y = (float)pVertices[iControlPointIndex].mData[2];
-						temp.z = (float)pVertices[iControlPointIndex].mData[1];
-
-						tempVector[iControlPointIndex] = temp;
-					}
+					pMesh->Destroy( );
+					return false;
 				}
-				CFbxMesh tempMesh;
 
-				// 정점 좌표들의 모임
-				tempMesh.m_pvPositions = tempVector;
-				// vertex 개수
-				tempMesh.m_nVertexCount = tempVector.size( );
-				// 인덱스들의 모임
-				tempMesh.m_pvIndices = tempIndex;
-				// index 개수
-				tempMesh.m_nIndexCount = tempIndex.size( );
-				// 레이어
-				tempMesh.m_iLayer = Layer;
-				// 타입
-				tempMesh.m_iType = Type;
+				for (int k = 0; k < iNumVertices; k++)
+				{
+					int iControlPointIndex = pMesh->GetPolygonVertex( j, k );
 
-				m_pMeshes.push_back( tempMesh );
+					tempIndex.push_back( iControlPointIndex );
+				}
 			}
-			else
+
+			//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ UV 좌표 가져오기ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+			std::vector<XMFLOAT2> tempUVVector;
+			LoadUVInformation( pMesh, &tempUVVector );
+
+			std::vector<XMFLOAT2> UVVectorByControlPoint( tempVector.size( )+1 );
+			for (int idx = 0; idx < tempIndex.size( ); idx++)
 			{
-				continue;
+				UVVectorByControlPoint[tempIndex[idx]] = tempUVVector[idx];
 			}
+
+			UVVectorByControlPoint[13].y = 0.5f;
+			//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 자료들 저장하기ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+			CFbxMesh tempMesh;
+
+			// 정점 좌표들의 모임
+			tempMesh.m_pvPositions = tempVector;
+			// vertex 개수
+			tempMesh.m_nVertexCount = tempVector.size( );
+			// 인덱스들의 모임
+			tempMesh.m_pvIndices = tempIndex;
+			// index 개수
+			tempMesh.m_nIndexCount = tempIndex.size( );
+			// 레이어
+			tempMesh.m_iLayer = Layer;
+			// 타입
+			tempMesh.m_iType = Type;
+			// UV 좌표
+			tempMesh.m_vTextureUV = UVVectorByControlPoint;
+
+			m_pMeshes.push_back( tempMesh );
 		}
 
 		// 버텍스 정보들을 옮긴 뒤 노드들 제거
@@ -114,5 +118,85 @@ bool FBXManager::LoadFBX( const char* pstrFileName, int Layer, int Type )
 		}
 
 		return true;
+	}
+}
+
+void FBXManager::LoadUVInformation( FbxMesh* pMesh, std::vector<XMFLOAT2> *pVector )
+{
+	//get all UV set names
+	FbxStringList lUVSetNameList;
+	pMesh->GetUVSetNames( lUVSetNameList );
+
+	//iterating over all uv sets
+	for (int lUVSetIndex = 0; lUVSetIndex < lUVSetNameList.GetCount( ); lUVSetIndex++)
+	{
+		//get lUVSetIndex-th uv set
+		const char* lUVSetName = lUVSetNameList.GetStringAt( lUVSetIndex );
+		const FbxGeometryElementUV* lUVElement = pMesh->GetElementUV( lUVSetName );
+
+		if (!lUVElement)
+			continue;
+
+		// only support mapping mode eByPolygonVertex and eByControlPoint
+		if (lUVElement->GetMappingMode( ) != FbxGeometryElement::eByPolygonVertex &&
+			lUVElement->GetMappingMode( ) != FbxGeometryElement::eByControlPoint)
+			return;
+
+		//index array, where holds the index referenced to the uv data
+		const bool lUseIndex = lUVElement->GetReferenceMode( ) != FbxGeometryElement::eDirect;
+		const int lIndexCount = ( lUseIndex ) ? lUVElement->GetIndexArray( ).GetCount( ) : 0;
+
+		//iterating through the data by polygon
+		const int lPolyCount = pMesh->GetPolygonCount( );
+
+		if (lUVElement->GetMappingMode( ) == FbxGeometryElement::eByControlPoint)
+		{
+			for (int lPolyIndex = 0; lPolyIndex < lPolyCount; ++lPolyIndex)
+			{
+				// build the max index array that we need to pass into MakePoly
+				const int lPolySize = pMesh->GetPolygonSize( lPolyIndex );
+				for (int lVertIndex = 0; lVertIndex < lPolySize; ++lVertIndex)
+				{
+					FbxVector2 lUVValue;
+
+					//get the index of the current vertex in control points array
+					int lPolyVertIndex = pMesh->GetPolygonVertex( lPolyIndex, lVertIndex );
+
+					//the UV index depends on the reference mode
+					int lUVIndex = lUseIndex ? lUVElement->GetIndexArray( ).GetAt( lPolyVertIndex ) : lPolyVertIndex;
+
+					lUVValue = lUVElement->GetDirectArray( ).GetAt( lUVIndex );
+
+					XMFLOAT2 temp( lUVValue[0], lUVValue[1] );
+					pVector->push_back( temp );
+				}
+			}
+		}
+		else if (lUVElement->GetMappingMode( ) == FbxGeometryElement::eByPolygonVertex)
+		{
+			int lPolyIndexCounter = 0;
+			for (int lPolyIndex = 0; lPolyIndex < lPolyCount; ++lPolyIndex)
+			{
+				// build the max index array that we need to pass into MakePoly
+				const int lPolySize = pMesh->GetPolygonSize( lPolyIndex );
+				for (int lVertIndex = 0; lVertIndex < lPolySize; ++lVertIndex)
+				{
+					if (lPolyIndexCounter < lIndexCount)
+					{
+						FbxVector2 lUVValue;
+
+						//the UV index depends on the reference mode
+						int lUVIndex = lUseIndex ? lUVElement->GetIndexArray( ).GetAt( lPolyIndexCounter ) : lPolyIndexCounter;
+
+						lUVValue = lUVElement->GetDirectArray( ).GetAt( lUVIndex );
+
+						XMFLOAT2 temp( lUVValue[0], lUVValue[1] );
+						pVector->push_back( temp );
+
+						lPolyIndexCounter++;
+					}
+				}
+			}
+		}
 	}
 }

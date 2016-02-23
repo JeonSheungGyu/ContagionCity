@@ -27,6 +27,9 @@ struct CFbxMesh
 public:
 	std::vector<XMFLOAT3> m_pvPositions;
 	std::vector<UINT> m_pvIndices;
+	std::vector<XMFLOAT2> m_vTextureUV;
+	std::vector<XMFLOAT3> m_vNormal;
+
 	int m_nIndexCount;
 	int m_nVertexCount;
 	int m_iLayer;

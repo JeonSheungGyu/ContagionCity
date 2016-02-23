@@ -666,8 +666,8 @@ CSkyBoxMesh::CSkyBoxMesh( ID3D11Device *pd3dDevice, float fWidth, float fHeight,
 	m_vnIndices.resize( m_nIndices );
 
 	m_vnIndices[0] = 0;
-	m_vnIndices[1] = 3;
-	m_vnIndices[2] = 1;
+	m_vnIndices[1] = 1;
+	m_vnIndices[2] = 3;
 	m_vnIndices[3] = 2;
 
 	::ZeroMemory( &d3dBufferDesc, sizeof( D3D11_BUFFER_DESC ) );
@@ -802,18 +802,21 @@ CObjectMesh::CObjectMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, int Texture
 	m_d3dPrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
 	m_vPositions.resize( m_nVertices );
-	XMFLOAT2 *pvTexCoords = new XMFLOAT2[m_nVertices];
+	vector<XMFLOAT2> pvTexCoords( m_nVertices );
 
 	m_vPositions = vertex.m_pvPositions;
 	FindMinMax( );
 
-	for (int i = 0; i < m_nVertices; i++)
+	pvTexCoords = vertex.m_vTextureUV;
+
+	/*for (int i = 0; i < m_nVertices; i++)
 	{
 		XMFLOAT3 temp = m_vPositions[i];
 		float coordX = ( temp.x - min.x ) / ( max.x - min.x );
 		float coordZ = ( temp.z - min.z ) / ( max.z - min.z );
 		pvTexCoords[i] = XMFLOAT2( coordX, coordZ );
-	}
+	}*/
+
 	// 정점 버퍼 생성
 	D3D11_BUFFER_DESC d3dBufferDesc;
 	::ZeroMemory( &d3dBufferDesc, sizeof( D3D11_BUFFER_DESC ) );
@@ -827,10 +830,10 @@ CObjectMesh::CObjectMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, int Texture
 	pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dPositionBuffer );
 
 	d3dBufferDesc.ByteWidth = sizeof( XMFLOAT2 ) * m_nVertices;
-	d3dBufferData.pSysMem = pvTexCoords;
+	d3dBufferData.pSysMem = &pvTexCoords[0];
 	pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dTexCoordBuffer );
 
-	delete[ ] pvTexCoords;
+	pvTexCoords.clear( );
 
 	ID3D11Buffer *pd3dBuffers[2] = { m_pd3dPositionBuffer, m_pd3dTexCoordBuffer };
 	UINT pnBufferStrides[2] = { sizeof( XMFLOAT3 ), sizeof( XMFLOAT2 ) };
@@ -897,7 +900,7 @@ void CObjectMesh::CreateRasterizerState( ID3D11Device *pd3dDevice )
 	::ZeroMemory( &d3dRastersizerDesc, sizeof( D3D11_RASTERIZER_DESC ) );
 	d3dRastersizerDesc.CullMode = D3D11_CULL_FRONT;
 	// 솔리드와 와이어 설정할 수 있음
-	d3dRastersizerDesc.FrontCounterClockwise = FALSE;
+	d3dRastersizerDesc.FrontCounterClockwise = TRUE;
 	d3dRastersizerDesc.FillMode = D3D11_FILL_SOLID;
 	pd3dDevice->CreateRasterizerState( &d3dRastersizerDesc, &m_pd3dRasterizerState );
 }

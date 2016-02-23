@@ -22,6 +22,7 @@ public:
 	std::vector<CFbxMesh> m_pMeshes;
 
 	bool LoadFBX( const char* pstrFileName, int Layer, int Type );
+	void LoadUVInformation( FbxMesh* pMesh, std::vector<XMFLOAT2> *pVector );
 
 	void ClearMeshes( ){ m_pMeshes.clear( ); }
 };

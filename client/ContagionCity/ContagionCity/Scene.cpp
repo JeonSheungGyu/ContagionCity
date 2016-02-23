@@ -140,7 +140,7 @@ void CScene::BuildObjects( ID3D11Device *pd3dDevice )
 void CScene::LoadFBXs( )
 {
 	// fbx 파일 로딩
-	FBXManager::GetInstance( )->LoadFBX( "res/City_Base_mod.FBX", LAYER_BACKGROUND, BACK_GROUND );
+	FBXManager::GetInstance( )->LoadFBX( "res/City_Base_map.FBX", LAYER_BACKGROUND, BACK_GROUND );
 	FBXManager::GetInstance( )->LoadFBX( "res/City_Wire_Fance.FBX", LAYER_BACKGROUND, BACK_FENCE );
 
 	m_nFbxCount = FBXManager::GetInstance( )->m_pMeshes.size( );
