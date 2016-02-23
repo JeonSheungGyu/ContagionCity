@@ -55,7 +55,7 @@ bool FBXManager::LoadFBX( const char* pstrFileName, int Layer, int Type )
 			vector<XMFLOAT3> tempVector;
 			for (int polyCount = 0; polyCount < polygonCount; polyCount++)
 			{
-				tempVector.push_back( XMFLOAT3(pVertices[polyCount].mData[0], pVertices[polyCount].mData[1], pVertices[polyCount].mData[2]) );
+				tempVector.push_back( XMFLOAT3(pVertices[polyCount].mData[0], pVertices[polyCount].mData[2], pVertices[polyCount].mData[1]) );
 			}
 
 			//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 인덱스 정보 가져오기ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
