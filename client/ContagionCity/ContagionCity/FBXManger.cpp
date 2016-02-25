@@ -53,7 +53,7 @@ bool FBXManager::LoadFBX( const char* pstrFileName, int Layer, int Type )
 			int vertexCount = pMesh->GetControlPointsCount( );
 
 			vector<XMFLOAT3> tempVector;
-			for (int polyCount = 0; polyCount < polygonCount; polyCount++)
+			for (int polyCount = 0; polyCount < vertexCount; polyCount++)
 			{
 				tempVector.push_back( XMFLOAT3(pVertices[polyCount].mData[0], pVertices[polyCount].mData[2], pVertices[polyCount].mData[1]) );
 			}
@@ -82,13 +82,13 @@ bool FBXManager::LoadFBX( const char* pstrFileName, int Layer, int Type )
 			std::vector<XMFLOAT2> tempUVVector;
 			LoadUVInformation( pMesh, &tempUVVector );
 
-			std::vector<XMFLOAT2> UVVectorByControlPoint( tempVector.size( )+1 );
+			std::vector<XMFLOAT2> UVVectorByControlPoint( tempVector.size( ) );
 			for (int idx = 0; idx < tempIndex.size( ); idx++)
 			{
 				UVVectorByControlPoint[tempIndex[idx]] = tempUVVector[idx];
 			}
 
-			UVVectorByControlPoint[13].y = 0.5f;
+	//		UVVectorByControlPoint[13].y = 0.5f;
 			//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 자료들 저장하기ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 			CFbxMesh tempMesh;
 
@@ -126,9 +126,10 @@ void FBXManager::LoadUVInformation( FbxMesh* pMesh, std::vector<XMFLOAT2> *pVect
 	//get all UV set names
 	FbxStringList lUVSetNameList;
 	pMesh->GetUVSetNames( lUVSetNameList );
+	int NameListCount = lUVSetNameList.GetCount( );
 
 	//iterating over all uv sets
-	for (int lUVSetIndex = 0; lUVSetIndex < lUVSetNameList.GetCount( ); lUVSetIndex++)
+	for (int lUVSetIndex = 0; lUVSetIndex < NameListCount; lUVSetIndex++)
 	{
 		//get lUVSetIndex-th uv set
 		const char* lUVSetName = lUVSetNameList.GetStringAt( lUVSetIndex );
@@ -167,7 +168,7 @@ void FBXManager::LoadUVInformation( FbxMesh* pMesh, std::vector<XMFLOAT2> *pVect
 
 					lUVValue = lUVElement->GetDirectArray( ).GetAt( lUVIndex );
 
-					XMFLOAT2 temp( lUVValue[0], lUVValue[1] );
+					XMFLOAT2 temp( lUVValue.mData[0], lUVValue.mData[1] );
 					pVector->push_back( temp );
 				}
 			}
@@ -190,7 +191,7 @@ void FBXManager::LoadUVInformation( FbxMesh* pMesh, std::vector<XMFLOAT2> *pVect
 
 						lUVValue = lUVElement->GetDirectArray( ).GetAt( lUVIndex );
 
-						XMFLOAT2 temp( lUVValue[0], lUVValue[1] );
+						XMFLOAT2 temp( lUVValue.mData[0], lUVValue.mData[1] );
 						pVector->push_back( temp );
 
 						lPolyIndexCounter++;

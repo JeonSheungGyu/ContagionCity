@@ -363,8 +363,8 @@ void ObjectInfo::OnPrepareRender( )
 
 void ObjectInfo::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera )
 {
-	SetPosition( 0.f, 0.0f, 0.0f );
-	Rotate( 0.0f, 0.0f, 0.0f );
+	SetPosition( 0.f, -2500.0f, 5000.0f );
+	Rotate( 90.0f, 0.0f, 0.0f );
 
 	CShader::UpdateShaderVariable( pd3dDeviceContext, &m_mtxWorld );
 
