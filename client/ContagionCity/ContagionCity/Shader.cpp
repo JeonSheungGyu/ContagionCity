@@ -244,7 +244,7 @@ void CBackgroundShader::BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbx
 	{
 		ObjectInfo *pGround = new ObjectInfo( pd3dDevice, vertex[i] );
 		CObjectMesh *pGroundMesh = new CObjectMesh( pd3dDevice, vertex[i], 1 );
-		pGroundMesh->OnChangeTexture( pd3dDevice, _T( "./res/city_base_texture.jpg" ), 0 );
+		pGroundMesh->OnChangeTexture( pd3dDevice, _T( "./res/City_base_0225 texture.jpg" ), 0 );
 		pGround->SetMesh( pGroundMesh, 0 );
 		m_ppObjects[i] = pGround;
 	}

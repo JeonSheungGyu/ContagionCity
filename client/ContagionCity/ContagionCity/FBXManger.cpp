@@ -53,13 +53,16 @@ bool FBXManager::LoadFBX( const char* pstrFileName, int Layer, int Type )
 			int vertexCount = pMesh->GetControlPointsCount( );
 
 			vector<XMFLOAT3> tempVector;
-			for (int polyCount = 0; polyCount < vertexCount; polyCount++)
-			{
-				tempVector.push_back( XMFLOAT3(pVertices[polyCount].mData[0], pVertices[polyCount].mData[2], pVertices[polyCount].mData[1]) );
-			}
+// 정점의 개수를 줄이려 했으나 UV 좌표 에러로 인해 막음
+// 최적화 단계에서 수정요망
+//			for (int polyCount = 0; polyCount < vertexCount; polyCount++)
+//			{
+//				tempVector.push_back( XMFLOAT3(pVertices[polyCount].mData[0], pVertices[polyCount].mData[2], pVertices[polyCount].mData[1]) );
+//			}
 
 			//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 인덱스 정보 가져오기ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 			vector<UINT> tempIndex;
+			int count = 0;
 
 			for (int j = 0; j < polygonCount; j++)
 			{
@@ -74,7 +77,14 @@ bool FBXManager::LoadFBX( const char* pstrFileName, int Layer, int Type )
 				{
 					int iControlPointIndex = pMesh->GetPolygonVertex( j, k );
 
-					tempIndex.push_back( iControlPointIndex );
+					XMFLOAT3 temp;
+					temp.x = (float)pVertices[iControlPointIndex].mData[0];
+					temp.y = (float)pVertices[iControlPointIndex].mData[2];
+					temp.z = (float)pVertices[iControlPointIndex].mData[1];
+
+					tempVector.push_back( temp );
+//					tempIndex.push_back( iControlPointIndex );
+					tempIndex.push_back( count++ );
 				}
 			}
 
@@ -82,11 +92,13 @@ bool FBXManager::LoadFBX( const char* pstrFileName, int Layer, int Type )
 			std::vector<XMFLOAT2> tempUVVector;
 			LoadUVInformation( pMesh, &tempUVVector );
 
-			std::vector<XMFLOAT2> UVVectorByControlPoint( tempVector.size( ) );
-			for (int idx = 0; idx < tempIndex.size( ); idx++)
-			{
-				UVVectorByControlPoint[tempIndex[idx]] = tempUVVector[idx];
-			}
+// 정점의 개수를 줄이려 했으나 UV 좌표 에러로 인해 막음
+// 최적화 단계에서 수정요망
+//			std::vector<XMFLOAT2> UVVectorByControlPoint( tempVector.size( ) );
+//			for (int idx = 0; idx < tempIndex.size( ); idx++)
+//			{
+//				UVVectorByControlPoint[tempIndex[idx]] = tempUVVector[idx];
+//			}
 
 			//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 자료들 저장하기ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 			CFbxMesh tempMesh;
@@ -104,7 +116,7 @@ bool FBXManager::LoadFBX( const char* pstrFileName, int Layer, int Type )
 			// 타입
 			tempMesh.m_iType = Type;
 			// UV 좌표
-			tempMesh.m_vTextureUV = UVVectorByControlPoint;
+			tempMesh.m_vTextureUV = tempUVVector;
 
 			m_pMeshes.push_back( tempMesh );
 		}
