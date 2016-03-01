@@ -88,7 +88,6 @@ bool FBXManager::LoadFBX( const char* pstrFileName, int Layer, int Type )
 				UVVectorByControlPoint[tempIndex[idx]] = tempUVVector[idx];
 			}
 
-	//		UVVectorByControlPoint[13].y = 0.5f;
 			//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 자료들 저장하기ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 			CFbxMesh tempMesh;
 

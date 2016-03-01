@@ -900,7 +900,7 @@ void CObjectMesh::CreateRasterizerState( ID3D11Device *pd3dDevice )
 	::ZeroMemory( &d3dRastersizerDesc, sizeof( D3D11_RASTERIZER_DESC ) );
 	d3dRastersizerDesc.CullMode = D3D11_CULL_FRONT;
 	// 솔리드와 와이어 설정할 수 있음
-	d3dRastersizerDesc.FrontCounterClockwise = TRUE;
+	d3dRastersizerDesc.FrontCounterClockwise = FALSE;
 	d3dRastersizerDesc.FillMode = D3D11_FILL_SOLID;
 	pd3dDevice->CreateRasterizerState( &d3dRastersizerDesc, &m_pd3dRasterizerState );
 }
