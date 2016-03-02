@@ -796,24 +796,27 @@ void CSkyBoxMesh::ChangeRasterizerState( ID3D11Device* pd3dDevice, bool ClockWis
 	pd3dDevice->CreateRasterizerState( &d3dRastersizerDesc, &m_pd3dRasterizerState );
 }
 
-CObjectMesh::CObjectMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, _TCHAR *texturePath ) : CMeshTextured( pd3dDevice )
+CObjectMesh::CObjectMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, int TextureCount ) : CMeshTextured( pd3dDevice )
 {
 	m_nVertices = vertex.m_nVertexCount;
 	m_d3dPrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
 	m_vPositions.resize( m_nVertices );
-	XMFLOAT2 *pvTexCoords = new XMFLOAT2[m_nVertices];
+	vector<XMFLOAT2> pvTexCoords( m_nVertices );
 
 	m_vPositions = vertex.m_pvPositions;
 	FindMinMax( );
 
-	for (int i = 0; i < m_nVertices; i++)
+	pvTexCoords = vertex.m_vTextureUV;
+
+	/*for (int i = 0; i < m_nVertices; i++)
 	{
 		XMFLOAT3 temp = m_vPositions[i];
-		float coordX = temp.x / ( max.x - min.x ) + 0.5f;
-		float coordZ = temp.z / ( max.z - min.z ) + 0.5f;
+		float coordX = ( temp.x - min.x ) / ( max.x - min.x );
+		float coordZ = ( temp.z - min.z ) / ( max.z - min.z );
 		pvTexCoords[i] = XMFLOAT2( coordX, coordZ );
-	}
+	}*/
+
 	// 정점 버퍼 생성
 	D3D11_BUFFER_DESC d3dBufferDesc;
 	::ZeroMemory( &d3dBufferDesc, sizeof( D3D11_BUFFER_DESC ) );
@@ -827,10 +830,10 @@ CObjectMesh::CObjectMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, _TCHAR *tex
 	pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dPositionBuffer );
 
 	d3dBufferDesc.ByteWidth = sizeof( XMFLOAT2 ) * m_nVertices;
-	d3dBufferData.pSysMem = pvTexCoords;
+	d3dBufferData.pSysMem = &pvTexCoords[0];
 	pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dTexCoordBuffer );
 
-	delete[ ] pvTexCoords;
+	pvTexCoords.clear( );
 
 	ID3D11Buffer *pd3dBuffers[2] = { m_pd3dPositionBuffer, m_pd3dTexCoordBuffer };
 	UINT pnBufferStrides[2] = { sizeof( XMFLOAT3 ), sizeof( XMFLOAT2 ) };
@@ -885,12 +888,10 @@ CObjectMesh::CObjectMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, _TCHAR *tex
 	d3dSamplerDesc.MaxLOD = 0;
 	pd3dDevice->CreateSamplerState( &d3dSamplerDesc, &pd3dSamplerState );
 
-	m_pMeshTexture = new CTexture( 1, 1, 0, 0 );
+	m_pMeshTexture = new CTexture( TextureCount, 1, 0, 0 );
 	m_pMeshTexture->SetSampler( 0, pd3dSamplerState );
 	pd3dSamplerState->Release( );
 	m_pMeshTexture->AddRef( );
-
-	OnChangeTexture( pd3dDevice, texturePath );
 }
 
 void CObjectMesh::CreateRasterizerState( ID3D11Device *pd3dDevice )
@@ -925,7 +926,7 @@ CObjectMesh::~CObjectMesh( )
 		m_pMeshTexture->Release( );
 }
 
-void CObjectMesh::OnChangeTexture( ID3D11Device *pd3dDevice, _TCHAR *texturePath )
+void CObjectMesh::OnChangeTexture( ID3D11Device *pd3dDevice, _TCHAR *texturePath, int index )
 {
 	_TCHAR pstrTextureName[80];
 	ID3D11ShaderResourceView *pd3dsrvTexture = NULL;
@@ -933,7 +934,7 @@ void CObjectMesh::OnChangeTexture( ID3D11Device *pd3dDevice, _TCHAR *texturePath
 	// 그라운드 텍스처 지정
 	_stprintf_s( pstrTextureName, texturePath, 0, 80 );
 	D3DX11CreateShaderResourceViewFromFile( pd3dDevice, pstrTextureName, NULL, NULL, &pd3dsrvTexture, NULL );
-	m_pMeshTexture->SetTexture( 0, pd3dsrvTexture );
+	m_pMeshTexture->SetTexture( index, pd3dsrvTexture );
 	pd3dsrvTexture->Release( );
 }
 

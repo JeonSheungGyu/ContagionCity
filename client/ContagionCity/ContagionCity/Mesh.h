@@ -27,6 +27,9 @@ struct CFbxMesh
 public:
 	std::vector<XMFLOAT3> m_pvPositions;
 	std::vector<UINT> m_pvIndices;
+	std::vector<XMFLOAT2> m_vTextureUV;
+	std::vector<XMFLOAT3> m_vNormal;
+
 	int m_nIndexCount;
 	int m_nVertexCount;
 	int m_iLayer;
@@ -233,10 +236,10 @@ protected:
 	XMFLOAT3 max;
 
 public:
-	CObjectMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, _TCHAR *texturePath );
+	CObjectMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, int TextureCount );
 	virtual ~CObjectMesh( );
 
-	void OnChangeTexture( ID3D11Device *pd3dDevice, _TCHAR *texturePath );
+	void OnChangeTexture( ID3D11Device *pd3dDevice, _TCHAR *texturePath, int index );
 
 	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext );
 

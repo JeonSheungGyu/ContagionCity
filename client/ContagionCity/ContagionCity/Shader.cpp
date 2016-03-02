@@ -199,10 +199,11 @@ void CPlayerShader::BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbxMesh
 
 	for (int i = 0; i < m_nObjects; i++)
 	{
-		CObjectMesh *pPlayerMesh = new CObjectMesh( pd3dDevice, meshes[i], _T( "./SkyBox/SkyBox_Top_1.jpg" ) );
+		CObjectMesh *pPlayerMesh = new CObjectMesh( pd3dDevice, meshes[i], 1 );
+		pPlayerMesh->OnChangeTexture( pd3dDevice, _T( "./SkyBox/SkyBox_Top_1.jpg" ), 0 );
 		pPlayer->SetMesh( pPlayerMesh, i );
 	}
-	pPlayer->SetPosition( 0.0f, 0.0f, 50.0f );
+	pPlayer->SetPosition( 0.0f, 0.0f, 0.0f );
 	pPlayer->CreateShaderVariables( pd3dDevice );
 	pPlayer->ChangeCamera( pd3dDevice, THIRD_PERSON_CAMERA, 0.0f );
 	pPlayer->GetCamera( )->Rotate( 0.0f, 180.0f, 0.0f );
@@ -242,7 +243,8 @@ void CBackgroundShader::BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbx
 	for (int i = 0; i < m_nObjects; i++)
 	{
 		ObjectInfo *pGround = new ObjectInfo( pd3dDevice, vertex[i] );
-		CObjectMesh *pGroundMesh = new CObjectMesh( pd3dDevice, vertex[i], _T( "./res/city_base_texture.jpg" ) );
+		CObjectMesh *pGroundMesh = new CObjectMesh( pd3dDevice, vertex[i], 1 );
+		pGroundMesh->OnChangeTexture( pd3dDevice, _T( "./res/city_base_texture.jpg" ), 0 );
 		pGround->SetMesh( pGroundMesh, 0 );
 		m_ppObjects[i] = pGround;
 	}
