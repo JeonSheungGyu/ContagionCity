@@ -1,10 +1,11 @@
-﻿Build started 2016-02-19 오전 2:35:33.
+﻿Build started 2016-03-07 오후 6:03:45.
      1>Project "C:\Users\Sheunggyu\Documents\GitHub\ContagionCity\server\server\CoreLib\CoreLib.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _LIB /D _CRT_SECURE_NO_WARNINGS /D _CRT_NON_CONFORMING_SWPRINTFS /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"Debug\CoreLib.pch" /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt Random.cpp
-         Random.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _LIB /D _CRT_SECURE_NO_WARNINGS /D _CRT_NON_CONFORMING_SWPRINTFS /D _WINSOCK_DEPRECATED_NO_WARNINGS /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"Debug\CoreLib.pch" /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt NetworkSession.cpp
+         NetworkSession.cpp
        Lib:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\Lib.exe /OUT:"C:\Users\Sheunggyu\Documents\GitHub\ContagionCity\server\server\Debug\CoreLib.lib" /NOLOGO Debug\IniFile.obj
+         Debug\NetworkSession.obj
          Debug\Registry.obj
          Debug\CircularQueue.obj
          Debug\Log.obj
@@ -19,4 +20,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:00.27
+Time Elapsed 00:00:00.70
