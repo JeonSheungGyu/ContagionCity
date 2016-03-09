@@ -255,7 +255,7 @@ void CGameFramework::BuildObjects( )
 
 void CGameFramework::MakePlayer( ID3D11Device* pd3dDevice )
 {
-	FBXManager::GetInstance( )->LoadFBX( "res/hero_low_resize.FBX", LAYER_PLAYER, PLAYER_MAN );
+	FBXManager::GetInstance( )->LoadFBX( "res/girl_npc_animation.FBX", LAYER_PLAYER, PLAYER_MAN );
 	std::vector<CFbxMesh> tempMesh = FBXManager::GetInstance( )->m_pMeshes;
 	FBXManager::GetInstance( )->ClearMeshes( );
 

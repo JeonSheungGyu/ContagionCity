@@ -36,99 +36,201 @@ bool FBXManager::LoadFBX( const char* pstrFileName, int Layer, int Type )
 
 	if (pfbxRootNode)
 	{
+		int count = m_pfbxScene->GetRootNode( )->GetChildCount( );
+
 		for (int i = 0; i < m_pfbxScene->GetRootNode( )->GetChildCount( ); i++)
 		{
 			FbxNode* pfbxChildNode = pfbxRootNode->GetChild( i );
 
-			if (pfbxChildNode->GetNodeAttribute( ) == NULL)
+			FbxNodeAttribute *nodeAttribute = pfbxChildNode->GetNodeAttributeByIndex( i );
+			if (nodeAttribute == NULL)
 				continue;
+			FbxNodeAttribute::EType attributeType = nodeAttribute->GetAttributeType( );
 
 			FbxMesh* pMesh = (FbxMesh*)pfbxChildNode->GetNodeAttribute( );
-			
-			//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 정점 좌표 가져오기ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-			FbxVector4* pVertices = pMesh->GetControlPoints( );
-
-			// 정점 좌표들을 저장할 공간
-			int polygonCount = pMesh->GetPolygonCount( );		// 폴리곤의 개수
-			int vertexCount = pMesh->GetControlPointsCount( );
-
-			vector<XMFLOAT3> tempVector;
-// 정점의 개수를 줄이려 했으나 UV 좌표 에러로 인해 막음
-// 최적화 단계에서 수정요망
-//			for (int polyCount = 0; polyCount < vertexCount; polyCount++)
-//			{
-//				tempVector.push_back( XMFLOAT3(pVertices[polyCount].mData[0], pVertices[polyCount].mData[2], pVertices[polyCount].mData[1]) );
-//			}
-
-			//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 인덱스 정보 가져오기ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-			vector<UINT> tempIndex;
-			int count = 0;
-
-			for (int j = 0; j < polygonCount; j++)
+			switch (attributeType)
 			{
-				int iNumVertices = pMesh->GetPolygonSize( j );	// 폴리곤을 구성하는 정점의 개수
-				if (iNumVertices != 3)
+				case FbxNodeAttribute::eMesh:
 				{
-					pMesh->Destroy( );
-					return false;
-				}
+					FbxMesh* pMesh = (FbxMesh*)pfbxChildNode->GetNodeAttribute( );
 
-				for (int k = 0; k < iNumVertices; k++)
-				{
-					int iControlPointIndex = pMesh->GetPolygonVertex( j, k );
+					//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 정점 좌표, 인덱스 정보 가져오기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+					vector<XMFLOAT3> tempVertex;
+					vector<UINT> tempIndex;
+					LoadVertexAndIndexInfomation( pMesh, &tempVertex, &tempIndex );
 
-					XMFLOAT3 temp;
-					temp.x = (float)pVertices[iControlPointIndex].mData[0];
-					temp.y = (float)pVertices[iControlPointIndex].mData[2];
-					temp.z = (float)pVertices[iControlPointIndex].mData[1];
+					// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ normal 정보 가져오기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+					std::vector<XMFLOAT3> tempNormal;
+					LoadNormalInfoamtion( pMesh, &tempNormal );
 
-					tempVector.push_back( temp );
-//					tempIndex.push_back( iControlPointIndex );
-					tempIndex.push_back( count++ );
+					//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ UV 좌표 가져오기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+					std::vector<XMFLOAT2> tempUVVector;
+					LoadUVInformation( pMesh, &tempUVVector );
+					// 정점의 개수를 줄이려 했으나 UV 좌표 에러로 인해 막음
+					// 최적화 단계에서 수정요망
+					//			std::vector<XMFLOAT2> UVVectorByControlPoint( tempVertex.size( ) );
+					//			for (int idx = 0; idx < tempIndex.size( ); idx++)
+					//			{
+					//				UVVectorByControlPoint[tempIndex[idx]] = tempUVVector[idx];
+					//			}
+
+					//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 애니메이션 정보 가져오기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+					LoadBoneInfomation( pfbxChildNode );
+
+					//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 자료들 저장하기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+					SaveData( tempVertex, tempIndex, tempUVVector, Layer, Type );
+					break;
 				}
 			}
 
-			//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ UV 좌표 가져오기ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-			std::vector<XMFLOAT2> tempUVVector;
-			LoadUVInformation( pMesh, &tempUVVector );
-
-// 정점의 개수를 줄이려 했으나 UV 좌표 에러로 인해 막음
-// 최적화 단계에서 수정요망
-//			std::vector<XMFLOAT2> UVVectorByControlPoint( tempVector.size( ) );
-//			for (int idx = 0; idx < tempIndex.size( ); idx++)
-//			{
-//				UVVectorByControlPoint[tempIndex[idx]] = tempUVVector[idx];
-//			}
-
-			//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 자료들 저장하기ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-			CFbxMesh tempMesh;
-
-			// 정점 좌표들의 모임
-			tempMesh.m_pvPositions = tempVector;
-			// vertex 개수
-			tempMesh.m_nVertexCount = tempVector.size( );
-			// 인덱스들의 모임
-			tempMesh.m_pvIndices = tempIndex;
-			// index 개수
-			tempMesh.m_nIndexCount = tempIndex.size( );
-			// 레이어
-			tempMesh.m_iLayer = Layer;
-			// 타입
-			tempMesh.m_iType = Type;
-			// UV 좌표
-			tempMesh.m_vTextureUV = tempUVVector;
-
-			m_pMeshes.push_back( tempMesh );
 		}
-
 		// 버텍스 정보들을 옮긴 뒤 노드들 제거
 		for (int i = 0; i < m_pfbxScene->GetNodeCount( ); i++)
 		{
 			FbxNode* temp = m_pfbxScene->GetNode( i );
 			m_pfbxScene->RemoveNode( temp );
 		}
-
 		return true;
+	}
+}
+void FBXManager::LoadNormalInfoamtion( FbxMesh *pMesh, std::vector<XMFLOAT3> *pOut )
+{
+	for (int i = 0; i < pMesh->GetPolygonVertexCount( ); i++)
+	{
+		XMFLOAT3 tempNormal;
+		FbxGeometryElementNormal* vertexNormal = pMesh->GetElementNormal( 0 );
+
+		switch (vertexNormal->GetMappingMode( ))
+		{
+			case FbxGeometryElement::eByControlPoint:
+				switch (vertexNormal->GetReferenceMode( ))
+				{
+					case FbxGeometryElement::eDirect:
+					{
+						tempNormal.x = static_cast<float>( vertexNormal->GetDirectArray( ).GetAt( i ).mData[0] );
+						tempNormal.y = static_cast<float>( vertexNormal->GetDirectArray( ).GetAt( i ).mData[2] );
+						tempNormal.z = static_cast<float>( vertexNormal->GetDirectArray( ).GetAt( i ).mData[1] );
+					}
+					break;
+
+					case FbxGeometryElement::eIndexToDirect:
+					{
+						int index = vertexNormal->GetIndexArray( ).GetAt( i );
+						tempNormal.x = static_cast<float>( vertexNormal->GetDirectArray( ).GetAt( index ).mData[0] );
+						tempNormal.y = static_cast<float>( vertexNormal->GetDirectArray( ).GetAt( index ).mData[2] );
+						tempNormal.z = static_cast<float>( vertexNormal->GetDirectArray( ).GetAt( index ).mData[1] );
+					}
+					break;
+				}
+				break;
+
+			case FbxGeometryElement::eByPolygonVertex:
+				switch (vertexNormal->GetReferenceMode( ))
+				{
+					case FbxGeometryElement::eDirect:
+					{
+						int inVertexCounter = pMesh->GetPolygonVertexCount( );
+						tempNormal.x = static_cast<float>( vertexNormal->GetDirectArray( ).GetAt( i ).mData[0] );
+						tempNormal.y = static_cast<float>( vertexNormal->GetDirectArray( ).GetAt( i ).mData[2] );
+						tempNormal.z = static_cast<float>( vertexNormal->GetDirectArray( ).GetAt( i ).mData[1] );
+					}
+					break;
+
+					case FbxGeometryElement::eIndexToDirect:
+					{
+						int inVertexCounter = pMesh->GetPolygonVertexCount( );
+						int index = vertexNormal->GetIndexArray( ).GetAt( inVertexCounter );
+						tempNormal.x = static_cast<float>( vertexNormal->GetDirectArray( ).GetAt( index ).mData[0] );
+						tempNormal.y = static_cast<float>( vertexNormal->GetDirectArray( ).GetAt( index ).mData[2] );
+						tempNormal.z = static_cast<float>( vertexNormal->GetDirectArray( ).GetAt( index ).mData[1] );
+					}
+					break;
+				}
+				break;
+		}
+		pOut->push_back( tempNormal );
+	}
+}
+
+void FBXManager::LoadBoneInfomation( FbxNode* pNode )
+{
+	int numStack = m_pfbxScene->GetSrcObjectCount<FbxAnimStack>( );
+
+	for (int i = 0; i < numStack; i++)
+	{
+		FbxAnimStack* lAnimStack = m_pfbxScene->GetSrcObject<FbxAnimStack>( i );
+		int numAnimLayer = lAnimStack->GetMemberCount<FbxAnimLayer>( );
+
+		for (int j = 0; j < numAnimLayer; j++)
+		{
+			FbxAnimLayer* lAnimLayer = lAnimStack->GetMember<FbxAnimLayer>( );
+			//	FbxAnimCurve* lAnimCurve = pNode->LclTranslation.GetCurve( lAnimLayer, FBXSDK_CURVENODE_COMPONENT_X );
+
+		}
+	}
+}
+
+void FBXManager::SaveData( std::vector<XMFLOAT3> Vertex, std::vector<UINT> Index, std::vector<XMFLOAT2> UVVector, int iLayer, int iType )
+{
+	CFbxMesh tempMesh;
+
+	// 정점 좌표들의 모임
+	tempMesh.m_pvPositions = Vertex;
+	// vertex 개수
+	tempMesh.m_nVertexCount = Vertex.size( );
+	// 인덱스들의 모임
+	tempMesh.m_pvIndices = Index;
+	// index 개수
+	tempMesh.m_nIndexCount = Index.size( );
+	// 레이어
+	tempMesh.m_iLayer = iLayer;
+	// 타입
+	tempMesh.m_iType = iType;
+	// UV 좌표
+	tempMesh.m_vTextureUV = UVVector;
+
+	m_pMeshes.push_back( tempMesh );
+}
+
+void FBXManager::LoadVertexAndIndexInfomation( FbxMesh* pMesh, std::vector<XMFLOAT3> *pVertex, std::vector<UINT> *pIndex )
+{
+	FbxVector4* pVertices = pMesh->GetControlPoints( );
+
+	// 정점 좌표들을 저장할 공간
+	int polygonCount = pMesh->GetPolygonCount( );		// 폴리곤의 개수
+	//	int vertexCount = pMesh->GetControlPointsCount( );
+
+	// 정점의 개수를 줄이려 했으나 UV 좌표 에러로 인해 막음
+	// 최적화 단계에서 수정요망
+	//	for (int polyCount = 0; polyCount < vertexCount; polyCount++)
+	//	{
+	//		tempVector.push_back( XMFLOAT3(pVertices[polyCount].mData[0], pVertices[polyCount].mData[2], pVertices[polyCount].mData[1]) );
+	//	}
+
+	int count = 0;
+
+	for (int j = 0; j < polygonCount; j++)
+	{
+		int iNumVertices = pMesh->GetPolygonSize( j );	// 폴리곤을 구성하는 정점의 개수
+		if (iNumVertices != 3)
+		{
+			pMesh->Destroy( );
+			return;
+		}
+
+		for (int k = 0; k < iNumVertices; k++)
+		{
+			int iControlPointIndex = pMesh->GetPolygonVertex( j, k );
+
+			XMFLOAT3 temp;
+			temp.x = (float)pVertices[iControlPointIndex].mData[0];
+			temp.y = (float)pVertices[iControlPointIndex].mData[2];
+			temp.z = (float)pVertices[iControlPointIndex].mData[1];
+
+			pVertex->push_back( temp );
+			//			tempIndex.push_back( iControlPointIndex );
+			pIndex->push_back( count++ );
+		}
 	}
 }
 
@@ -212,3 +314,4 @@ void FBXManager::LoadUVInformation( FbxMesh* pMesh, std::vector<XMFLOAT2> *pVect
 		}
 	}
 }
+
