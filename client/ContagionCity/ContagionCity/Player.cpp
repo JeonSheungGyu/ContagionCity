@@ -317,7 +317,7 @@ void CPlayer::ChangeCamera( ID3D11Device *pd3dDevice, DWORD nNewCameraMode, floa
 			SetMaxVelocityY( 400.0f );
 			m_pCamera = OnChangeCamera( pd3dDevice, THIRD_PERSON_CAMERA, nCurrentCameraMode );
 			m_pCamera->SetTimeLag( 0.25f );
-			m_pCamera->SetOffset( XMFLOAT3( 0.0f, 80.0f, 150.0f ) );
+			m_pCamera->SetOffset( XMFLOAT3( 0.0f, 200.0f, 400.0f ) );
 			m_pCamera->GenerateProjectionMatrix( 1.01f, 50000.0f, ASPECT_RATIO, 60.0f );
 			break;
 
