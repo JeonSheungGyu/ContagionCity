@@ -1,5 +1,7 @@
 #pragma once
 
+class CCriticalSection;
+
 template <class T>
 class CMultiThreadSync
 {
