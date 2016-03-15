@@ -1,6 +1,30 @@
 #include "stdafx.h"
 #include "ServerIocp.h"
 
+
+
+DWORD WINAPI KeepThreadCallback(LPVOID pParameter){
+	CServerIocp *pOwner = (CServerIocp*)pParameter;
+	pOwner->KeepThreadCallback();
+	return 0;
+}
+
+VOID CServerIocp::KeepThreadCallback(VOID){
+	DWORD dwKeepAlive = 0xFFFF;
+
+
+	while (TRUE){
+		//종료가 아니면 30초마다 KeepAlive 패킷을 SessionManager의 WriteAll 함수를 사용하여 전송한다.
+		DWORD dwResult = WaitForSingleObject(m_hKeepThreadDestroyEvent, 30000);
+
+		if (dwResult == WAIT_OBJECT_0) return;
+
+		//패킷전송
+		m_oConnectedSessionManager.WriteAll(0x3000000, (BYTE*)&dwKeepAlive, sizeof(DWORD));
+	}
+}
+
+
 CServerIocp::CServerIocp(VOID){
 
 }
@@ -33,7 +57,7 @@ BOOL CServerIocp::Begin(VOID){
 
 		return FALSE;
 	}
-	
+
 	//포트 1820으로 Listen을 하고  사용자수를 최대 100으로 설정한다.
 	if (!m_pListen->Listen(DEFAULT_PORT, MAX_USER)){
 		//실패했을때 ENd함수를 호출하고 종료한다.
@@ -55,10 +79,37 @@ BOOL CServerIocp::Begin(VOID){
 		return FALSE;
 	}
 
+	//KeepAlive
+	m_hKeepThreadDestroyEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	if (!m_hKeepThreadDestroyEvent){
+		CServerIocp::End();
+		return FALSE;
+	}
+
+	//KeepAlive Thread
+	m_hKeepThread = CreateThread(NULL, 0, ::KeepThreadCallback, this, 0, NULL);
+	if (!m_hKeepThread){
+		CServerIocp::End();
+		return FALSE;
+	}
 	return TRUE;
 }
 
 VOID CServerIocp::End(VOID){
+	//KeepAlive 
+	//스레드 종료 및 이벤트 해제
+	if (m_hKeepThread){
+		SetEvent(m_hKeepThreadDestroyEvent);
+
+		WaitForSingleObject(m_hKeepThread, INFINITE);
+
+		CloseHandle(m_hKeepThread);
+		m_hKeepThread = NULL;
+	}
+	if (m_hKeepThreadDestroyEvent){
+		CloseHandle(m_hKeepThreadDestroyEvent);
+		m_hKeepThreadDestroyEvent = NULL;
+	}
 	//IOCP를 종료합니다.
 	CIocp::End();
 	m_oConnectedSessionManager.End();
@@ -85,12 +136,16 @@ VOID CServerIocp::OnIoConnected(VOID *pObject){
 		pConnectedSession->Restart(m_pListen->GetSocket());
 		return;
 	}
+
+	pConnectedSession->SetConnected(TRUE);
 }
 
 VOID CServerIocp::OnIoDisconnected(VOID *pObject){
 	CConnectedSession *pConnectedSession = reinterpret_cast<CConnectedSession*>(pObject);
 	//접속을 종료하였기 떄문에 개체를 재시작해줍니다.
 	pConnectedSession->Restart(m_pListen->GetSocket());
+
+	pConnectedSession->SetConnected(FALSE);
 }
 
 
@@ -101,3 +156,4 @@ VOID CServerIocp::OnIoWrote(VOID *pObject, DWORD dwDataLenth){
 VOID CServerIocp::OnIoRead(VOID *pObject, DWORD dwDataLength){
 
 }
+

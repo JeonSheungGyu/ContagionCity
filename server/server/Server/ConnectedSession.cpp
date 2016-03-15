@@ -2,7 +2,7 @@
 #include "ConnectedSession.h"
 
 CConnectedSession::CConnectedSession(VOID){
-
+	m_bConnected = FALSE;
 }
 
 CConnectedSession::~CConnectedSession(VOID){

@@ -55,3 +55,14 @@ VOID CConnectedSessionManager::End(VOID){
 	//관리하는 벡터의 내용을 모두 지웁니다.
 	m_vConnectedSessions.clear();
 }
+
+VOID CConnectedSessionManager::WriteAll(DWORD dwProtocol, BYTE * pData, DWORD dwLength){
+	CThreadSync Sync;
+
+	for (DWORD i = 0; i < m_vConnectedSessions.size(); i++){
+		//접속이 체크되어 있는 Session에 대해서 KeepAlive 패킷을 날립니다.
+		if (m_vConnectedSessions[i]->GetConnected())
+			m_vConnectedSessions[i]->WritePacket(dwProtocol, pData, dwLength);
+
+	}
+}
