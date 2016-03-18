@@ -60,8 +60,8 @@ bool FBXManager::LoadFBX( const char* pstrFileName, int Layer, int Type )
 					LoadVertexAndIndexInfomation( pMesh, &tempVertex, &tempIndex );
 
 					// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ normal 정보 가져오기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-					std::vector<XMFLOAT3> tempNormal;
-					LoadNormalInfoamtion( pMesh, &tempNormal );
+	//				std::vector<XMFLOAT3> tempNormal;
+	//				LoadNormalInfoamtion( pMesh, &tempNormal );
 
 					//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ UV 좌표 가져오기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 					std::vector<XMFLOAT2> tempUVVector;
@@ -75,7 +75,7 @@ bool FBXManager::LoadFBX( const char* pstrFileName, int Layer, int Type )
 					//			}
 
 					//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 애니메이션 정보 가져오기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-					LoadBoneInfomation( pfbxChildNode );
+	//				LoadBoneInfomation( pfbxChildNode );
 
 					//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 자료들 저장하기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 					SaveData( tempVertex, tempIndex, tempUVVector, Layer, Type );
@@ -174,8 +174,16 @@ void FBXManager::SaveData( std::vector<XMFLOAT3> Vertex, std::vector<UINT> Index
 {
 	CFbxMesh tempMesh;
 
-	// 정점 좌표들의 모임
-	tempMesh.m_pvPositions = Vertex;
+	tempMesh.m_pVertexes.resize( Vertex.size() );
+	
+	for (int i = 0; i < Vertex.size( ); i++)
+	{
+		// 정점 저장
+		tempMesh.m_pVertexes[i].m_position = Vertex[i];
+		// UV좌표 저장
+		tempMesh.m_pVertexes[i].m_textureUV = UVVector[i];
+	}
+
 	// vertex 개수
 	tempMesh.m_nVertexCount = Vertex.size( );
 	// 인덱스들의 모임
@@ -186,8 +194,7 @@ void FBXManager::SaveData( std::vector<XMFLOAT3> Vertex, std::vector<UINT> Index
 	tempMesh.m_iLayer = iLayer;
 	// 타입
 	tempMesh.m_iType = iType;
-	// UV 좌표
-	tempMesh.m_vTextureUV = UVVector;
+	
 
 	m_pMeshes.push_back( tempMesh );
 }

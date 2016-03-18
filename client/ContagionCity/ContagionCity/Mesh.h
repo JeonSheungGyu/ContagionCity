@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <map>
 
 #define RANDOM_COLOR XMCOLOR((rand() * 0xFFFFFF) / RAND_MAX)
 
@@ -22,13 +23,87 @@ public:
 	~CVertex( );
 };
 
+// 애니메이션 정보를 가지는 프레임, 특정 시간에서의 변환 정보를 가짐
+// 시간에 따른 값들을 저장함
+struct Keyframe
+{
+	Keyframe( );
+	~Keyframe( );
+
+	float TimePos;
+	XMFLOAT3 Translation;
+	XMFLOAT3 Scale;
+	XMFLOAT4 RotationQuat;
+};
+
+// 하나의 뼈대, 애니메이션 정보들을 가지고 있음
+struct BoneAnimation
+{
+	// 시간에 따른 변환 값들을 저장, 뼈대가 움직이는 모양
+	std::vector<Keyframe> Keyframes;
+
+	float GetStartTime( ) const;
+	float GetEndTime( ) const;
+
+	void Interpolate( float t, XMFLOAT4X4& M );
+};
+
+// 애니메이션 클립 만들기, 걷기, 뛰기, 공격 등의 개별적인 애니메이션을 의미함
+struct AnimationClip
+{
+	// 현재 클립의 모든 뼈대의 시작 시간 중 가장 빠른 것을 반환
+	float GetClipStartTime( ) const;
+	// 현재 클립의 모든 뼈대의 종료 시간 중 가장 늦은 것을 반환
+	float GetClipEndTime( ) const;
+
+	// 이 클립의 각 BoneAnimation을 훑으면서 애니메이션들을 보간
+	void Interpolate( float t, std::vector<XMFLOAT4X4>& boneTransforms );
+
+	//  뼈대별 애니메이션들
+	std::vector<BoneAnimation> BoneAnimations;
+};
+
+// 스키닝 애니메이션 자료를 담을 클래스
+class SkinnedData
+{
+	UINT BoneCount( ) const;
+	float GetClipStartTime( const std::string& clipName ) const;
+	float GetClipEndTime( const std::string& clipName ) const;
+
+	void Set(
+		std::vector<int>& boneHierarchy,
+		std::vector<XMFLOAT4X4>& boneOffsets,
+		std::map<std::string, AnimationClip>& animations );
+
+	// 최종변환을 구하는 함수, 오프셋 변환까지 마친 변환 매트릭스이다.
+	void GetFinalTransforms( const std::string& clipName, float timePos,
+		std::vector<XMFLOAT4X4>& finalTransforms );
+
+private:
+	// i번 뼈대의 부모의 색인을 담는다, i번 뼈대는 애니메이션 클립의 i번째 BoneAnimaion인스턴스에 대응된다.
+	std::vector<int> mBoneHierarchy;
+
+	// i번 뼈대의 오프셋 변환
+	std::vector<XMFLOAT4X4> mBoneOffsets;
+
+	// 애니메이션 정보를 클립별로 저장
+	std::map<std::string, AnimationClip> mAnimations;
+};
+
+struct CFbxVertex
+{
+	XMFLOAT3 m_position;
+	XMFLOAT2 m_textureUV;
+	XMFLOAT4 m_tangentU;
+	XMFLOAT3 m_weights;		// 가중치
+	BYTE m_boneIndices[4];	// 이 정점에 영향을 주는 뼈대
+};
+
 struct CFbxMesh
 {
 public:
-	std::vector<XMFLOAT3> m_pvPositions;
+	std::vector<CFbxVertex> m_pVertexes;
 	std::vector<UINT> m_pvIndices;
-	std::vector<XMFLOAT2> m_vTextureUV;
-	std::vector<XMFLOAT3> m_vNormal;
 
 	int m_nIndexCount;
 	int m_nVertexCount;

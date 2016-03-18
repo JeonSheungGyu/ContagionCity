@@ -43,4 +43,15 @@ public:
 
 	void ChangeVector3Data( XMVECTOR& vec, float x = GARBAGE, float = GARBAGE, float z = GARBAGE );
 	float Clamp( float &n, float minN, float maxN );
+	template<typename T>
+	static T Min( const T& a, const T& b )
+	{
+		return a < b ? a : b;
+	}
+
+	template<typename T>
+	static T Max( const T& a, const T& b )
+	{
+		return a > b ? a : b;
+	}
 };

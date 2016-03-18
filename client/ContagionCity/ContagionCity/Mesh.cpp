@@ -3,6 +3,174 @@
 #include "Object.h"
 #include "MyFunction.h"
 
+Keyframe::Keyframe( )
+	: TimePos( 0.0f ),
+	Translation( 0.0f, 0.0f, 0.0f ),
+	Scale( 1.0f, 1.0f, 1.0f ),
+	RotationQuat( 0.0f, 0.0f, 0.0f, 1.0f )
+{
+}
+
+Keyframe::~Keyframe( )
+{
+}
+
+float BoneAnimation::GetStartTime( )const
+{
+	return Keyframes.front( ).TimePos;
+}
+
+float BoneAnimation::GetEndTime( )const
+{
+	float f = Keyframes.back( ).TimePos;
+
+	return f;
+}
+
+void BoneAnimation::Interpolate( float t, XMFLOAT4X4& M )
+{
+	if (t <= Keyframes.front( ).TimePos)
+	{
+		XMVECTOR S = XMLoadFloat3( &Keyframes.front( ).Scale );
+		XMVECTOR P = XMLoadFloat3( &Keyframes.front( ).Translation );
+		XMVECTOR Q = XMLoadFloat4( &Keyframes.front( ).RotationQuat );
+
+		XMVECTOR zero = XMVectorSet( 0.0f, 0.0f, 0.0f, 1.0f );
+		XMStoreFloat4x4( &M, XMMatrixAffineTransformation( S, zero, Q, P ) );
+	}
+	else if (t >= Keyframes.back( ).TimePos)
+	{
+		XMVECTOR S = XMLoadFloat3( &Keyframes.back( ).Scale );
+		XMVECTOR P = XMLoadFloat3( &Keyframes.back( ).Translation );
+		XMVECTOR Q = XMLoadFloat4( &Keyframes.back( ).RotationQuat );
+
+		XMVECTOR zero = XMVectorSet( 0.0f, 0.0f, 0.0f, 1.0f );
+		XMStoreFloat4x4( &M, XMMatrixAffineTransformation( S, zero, Q, P ) );
+	}
+	else
+	{
+		for (UINT i = 0; i < Keyframes.size( ) - 1; ++i)
+		{
+			if (t >= Keyframes[i].TimePos && t <= Keyframes[i + 1].TimePos)
+			{
+				float lerpPercent = ( t - Keyframes[i].TimePos ) / ( Keyframes[i + 1].TimePos - Keyframes[i].TimePos );
+
+				XMVECTOR s0 = XMLoadFloat3( &Keyframes[i].Scale );
+				XMVECTOR s1 = XMLoadFloat3( &Keyframes[i + 1].Scale );
+
+				XMVECTOR p0 = XMLoadFloat3( &Keyframes[i].Translation );
+				XMVECTOR p1 = XMLoadFloat3( &Keyframes[i + 1].Translation );
+
+				XMVECTOR q0 = XMLoadFloat4( &Keyframes[i].RotationQuat );
+				XMVECTOR q1 = XMLoadFloat4( &Keyframes[i + 1].RotationQuat );
+
+				XMVECTOR S = XMVectorLerp( s0, s1, lerpPercent );
+				XMVECTOR P = XMVectorLerp( p0, p1, lerpPercent );
+				XMVECTOR Q = XMQuaternionSlerp( q0, q1, lerpPercent );
+
+				XMVECTOR zero = XMVectorSet( 0.0f, 0.0f, 0.0f, 1.0f );
+				XMStoreFloat4x4( &M, XMMatrixAffineTransformation( S, zero, Q, P ) );
+
+				break;
+			}
+		}
+	}
+}
+
+float AnimationClip::GetClipStartTime( )const
+{
+	float t = 100000.f;
+	for (UINT i = 0; i < BoneAnimations.size( ); ++i)
+	{
+		t = MathHelper::Min( t, BoneAnimations[i].GetStartTime( ) );
+	}
+
+	return t;
+}
+
+float AnimationClip::GetClipEndTime( )const
+{
+	float t = 0.0f;
+	for (UINT i = 0; i < BoneAnimations.size( ); ++i)
+	{
+		t = MathHelper::Max( t, BoneAnimations[i].GetEndTime( ) );
+	}
+
+	return t;
+}
+
+void AnimationClip::Interpolate( float t, std::vector<XMFLOAT4X4>& boneTransforms )
+{
+	for (UINT i = 0; i < BoneAnimations.size( ); ++i)
+	{
+		BoneAnimations[i].Interpolate( t, boneTransforms[i] );
+	}
+}
+
+float SkinnedData::GetClipStartTime( const std::string& clipName )const
+{
+	auto clip = mAnimations.find( clipName );
+	return clip->second.GetClipStartTime( );
+}
+
+float SkinnedData::GetClipEndTime( const std::string& clipName )const
+{
+	auto clip = mAnimations.find( clipName );
+	return clip->second.GetClipEndTime( );
+}
+
+UINT SkinnedData::BoneCount( )const
+{
+	return mBoneHierarchy.size( );
+}
+
+void SkinnedData::Set( std::vector<int>& boneHierarchy,
+	std::vector<XMFLOAT4X4>& boneOffsets,
+	std::map<std::string, AnimationClip>& animations )
+{
+	mBoneHierarchy = boneHierarchy;
+	mBoneOffsets = boneOffsets;
+	mAnimations = animations;
+}
+
+void SkinnedData::GetFinalTransforms( const std::string& clipName, float timePos, std::vector<XMFLOAT4X4>& finalTransforms )
+{
+	UINT numBones = mBoneOffsets.size( );
+
+	std::vector<XMFLOAT4X4> toParentTransforms( numBones );
+
+	// 이 클립의 모든 뼈대를 주어진 시간에 맞게 보간
+	auto clip = mAnimations.find( clipName );
+	clip->second.Interpolate( timePos, toParentTransforms );
+
+	// 뼈대 계층구조를 훑으면서 모든 뼈대를 뿌리공간으로 변환
+	std::vector<XMFLOAT4X4> toRootTransforms( numBones );
+
+	// 뿌리 뼈대의 인덱스는 0, 뿌리뼈대는 부모가 없으므로 그냥 그대로 둔다.
+	toRootTransforms[0] = toParentTransforms[0];
+
+	// 자식 뼈대들의 뿌리변환을 구함
+	for (UINT i = 1; i < numBones; ++i)
+	{
+		XMMATRIX toParent = XMLoadFloat4x4( &toParentTransforms[i] );
+
+		int parentIndex = mBoneHierarchy[i];
+		XMMATRIX parentToRoot = XMLoadFloat4x4( &toRootTransforms[parentIndex] );
+
+		XMMATRIX toRoot = XMMatrixMultiply( toParent, parentToRoot );
+
+		XMStoreFloat4x4( &toRootTransforms[i], toRoot );
+	}
+
+	// 뼈대 오프셋 변환을 곱해 최종변환을 구함
+	for (UINT i = 0; i < numBones; ++i)
+	{
+		XMMATRIX offset = XMLoadFloat4x4( &mBoneOffsets[i] );
+		XMMATRIX toRoot = XMLoadFloat4x4( &toRootTransforms[i] );
+		XMStoreFloat4x4( &finalTransforms[i], XMMatrixMultiply( offset, toRoot ) );
+	}
+}
+
 CMesh::CMesh( )
 {
 	//	m_vPositions = NULL;
@@ -804,18 +972,13 @@ CObjectMesh::CObjectMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, int Texture
 	m_vPositions.resize( m_nVertices );
 	vector<XMFLOAT2> pvTexCoords( m_nVertices );
 
-	m_vPositions = vertex.m_pvPositions;
-	FindMinMax( );
-
-	pvTexCoords = vertex.m_vTextureUV;
-
-	/*for (int i = 0; i < m_nVertices; i++)
+	for (int i = 0; i < m_nVertices; i++)
 	{
-		XMFLOAT3 temp = m_vPositions[i];
-		float coordX = ( temp.x - min.x ) / ( max.x - min.x );
-		float coordZ = ( temp.z - min.z ) / ( max.z - min.z );
-		pvTexCoords[i] = XMFLOAT2( coordX, coordZ );
-	}*/
+		m_vPositions[i] = vertex.m_pVertexes[i].m_position;
+		pvTexCoords[i] = vertex.m_pVertexes[i].m_textureUV;
+	}
+
+	FindMinMax( );
 
 	// 정점 버퍼 생성
 	D3D11_BUFFER_DESC d3dBufferDesc;
