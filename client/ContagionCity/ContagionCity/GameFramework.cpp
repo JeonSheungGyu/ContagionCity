@@ -30,6 +30,9 @@ bool CGameFramework::OnCreate( HINSTANCE hInstance, HWND hMainWnd )
 	m_hInstance = hInstance;
 	m_hWnd = hMainWnd;
 
+	// FMOD 사운드 시스템 초기화
+	SoundManager::GetInstance( )->Init( );
+
 	// Direct3D 디바이스, 디바이스 컨텍스트, 스왑 체인 등을 생성하는 함수를 호출한다.
 	if (!CreateDirect3DDisplay( )) return false;
 
