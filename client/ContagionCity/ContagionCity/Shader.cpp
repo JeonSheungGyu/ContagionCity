@@ -232,21 +232,38 @@ CBackgroundShader::~CBackgroundShader( )
 
 void CBackgroundShader::CreateShader( ID3D11Device *pd3dDevice )
 {
-	CTexturedShader::CreateShader( pd3dDevice );
+	D3D11_INPUT_ELEMENT_DESC d3dInputElements[ ] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },		// 범프매핑 하면 이거 필요없음
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 2, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	};
+	UINT nElements = ARRAYSIZE( d3dInputElements );
+	CreateVertexShaderFromFile( pd3dDevice, L"Effect.fx", "VSTexturedLightingColor", "vs_5_0", &m_pd3dVertexShader, d3dInputElements, nElements, &m_pd3dVertexLayout );
+	CreatePixelShaderFromFile( pd3dDevice, L"Effect.fx", "PSTexturedLightingColor", "ps_5_0", &m_pd3dPixelShader );
 }
 
 void CBackgroundShader::BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbxMesh> vertex )
 {
-	m_nObjects = vertex.size();
+	m_nObjects = vertex.size( );
 	m_ppObjects = new CGameObject*[m_nObjects];
 
 	for (int i = 0; i < m_nObjects; i++)
 	{
 		ObjectInfo *pGround = new ObjectInfo( pd3dDevice, vertex[i] );
-		CObjectMesh *pGroundMesh = new CObjectMesh( pd3dDevice, vertex[i], 1 );
-		pGroundMesh->OnChangeTexture( pd3dDevice, _T( "./res/City_base_0225 texture.jpg" ), 0 );
+		CObjectMesh *pGroundMesh = new CObjectMesh( pd3dDevice, vertex[i], 2 );
+		pGroundMesh->OnChangeTexture( pd3dDevice, _T( "./res/city_base_0314_texture.dds" ), 0 );
+		pGroundMesh->OnChangeTexture( pd3dDevice, _T( "./res/city_base_0314_normal.dds" ), 1 );
 		pGround->SetMesh( pGroundMesh, 0 );
 		m_ppObjects[i] = pGround;
+
+		CMaterial *pTerrainMaterial = new CMaterial;
+		pTerrainMaterial->m_Material.m_cDiffuse = D3DXCOLOR( 1.0f, 1.0f, 1.0f, 1.0f );
+		pTerrainMaterial->m_Material.m_cAmbient = D3DXCOLOR( 1.0f, 1.0f, 1.0f, 1.0f );
+		pTerrainMaterial->m_Material.m_cSpecular = D3DXCOLOR( 1.0f, 1.0f, 1.0f, 10.0f );
+		pTerrainMaterial->m_Material.m_cEmissive = D3DXCOLOR( 0.0f, 0.0f, 0.0f, 1.0f );
+
+		m_ppObjects[i]->SetMaterial( pTerrainMaterial );
 	}
 }
 

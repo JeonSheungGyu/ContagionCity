@@ -13,9 +13,9 @@ using namespace std;
 // 하나의 조명 구조체
 struct LIGHT
 {
-	XMCOLOR m_cAmbient;
-	XMCOLOR m_cDiffuse;
-	XMCOLOR m_cSpecular;
+	D3DXCOLOR m_cAmbient;
+	D3DXCOLOR m_cDiffuse;
+	D3DXCOLOR m_cSpecular;
 	XMFLOAT3 m_vPosition;
 	float m_fRange;
 	XMFLOAT3 m_vDirection;
@@ -32,7 +32,7 @@ struct LIGHT
 struct LIGHTS
 {	
 	LIGHT m_pLights[MAX_LIGHTS];
-	XMCOLOR m_cGlobalAmbient;
+	D3DXCOLOR m_cGlobalAmbient;
 	XMFLOAT4 m_vCameraPosition;
 };
 

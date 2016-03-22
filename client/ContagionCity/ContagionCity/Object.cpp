@@ -367,6 +367,8 @@ void ObjectInfo::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamer
 	Rotate( 00.0f, 0.0f, 0.0f );
 
 	CShader::UpdateShaderVariable( pd3dDeviceContext, &m_mtxWorld );
+	if (m_pMaterial)
+		CIlluminatedShader::UpdateShaderVariable( pd3dDeviceContext, &m_pMaterial->m_Material );
 
 	if (m_ppMeshes && m_ppMeshes[0])
 		m_ppMeshes[0]->Render( pd3dDeviceContext );

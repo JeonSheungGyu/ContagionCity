@@ -17,9 +17,13 @@ cbuffer cbWorldMatrix : register(b1)
 //s는 샘플러
 Texture2D gtxtTexture : register(t0);
 SamplerState gSamplerState : register(s0);
+
+Texture2D gtxtNormalTexture : register( t1 );
+SamplerState gNormalSamplerState : register( s1 );
+
 //디테일
-Texture2D gtxtDetailTexture : register(t1);
-SamplerState gDetailSamplerState : register(s1);
+Texture2D gtxtDetailTexture : register(t2);
+SamplerState gDetailSamplerState : register(s2);
 
 
 
@@ -403,6 +407,8 @@ VS_TEXTURED_LIGHTING_COLOR_OUTPUT VSTexturedLightingColor(VS_TEXTURED_LIGHTING_C
 float4 PSTexturedLightingColor(VS_TEXTURED_LIGHTING_COLOR_OUTPUT input) : SV_Target
 {
 	input.normalW = normalize(input.normalW);
+	input.normalW = gtxtNormalTexture.Sample( gSamplerState, input.texCoord );
+
 	float4 cIllumination = Lighting(input.positionW, input.normalW);
 		float4 cColor = gtxtTexture.Sample(gSamplerState, input.texCoord) * cIllumination;
 

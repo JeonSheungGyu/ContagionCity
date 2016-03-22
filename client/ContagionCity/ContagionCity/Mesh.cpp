@@ -355,7 +355,7 @@ CMeshDiffused::~CMeshDiffused( )
 		m_pd3dColorBuffer->Release( );
 }
 
-CCubeMeshDiffused::CCubeMeshDiffused( ID3D11Device *pd3dDevice, float fWidth, float fHeight, float fDepth, XMCOLOR color ) : CMeshDiffused( pd3dDevice )
+CCubeMeshDiffused::CCubeMeshDiffused( ID3D11Device *pd3dDevice, float fWidth, float fHeight, float fDepth, D3DXCOLOR color ) : CMeshDiffused( pd3dDevice )
 {
 	m_nVertices = 8;
 	m_d3dPrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
@@ -386,16 +386,16 @@ CCubeMeshDiffused::CCubeMeshDiffused( ID3D11Device *pd3dDevice, float fWidth, fl
 	pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dPositionBuffer );
 
 	// 직육면체 메시의 정점 버퍼 생성
-	XMCOLOR pColors[8];
+	D3DXCOLOR pColors[8];
 	for (int i = 0; i < 8; i++)
 		pColors[i] = color + RANDOM_COLOR;
 
-	d3dBufferDesc.ByteWidth = sizeof( XMCOLOR ) * m_nVertices;
+	d3dBufferDesc.ByteWidth = sizeof( D3DXCOLOR ) * m_nVertices;
 	d3dBufferData.pSysMem = pColors;
 	pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dColorBuffer );
 
 	ID3D11Buffer *pd3dBuffers[2] = { m_pd3dPositionBuffer, m_pd3dColorBuffer };
-	UINT pnBufferStrides[2] = { sizeof( XMFLOAT3 ), sizeof( XMCOLOR ) };
+	UINT pnBufferStrides[2] = { sizeof( XMFLOAT3 ), sizeof( D3DXCOLOR ) };
 	UINT pnBufferOffsets[2] = { 0, 0 };
 	AssembleToVertexBuffer( 2, pd3dBuffers, pnBufferStrides, pnBufferOffsets );
 
@@ -971,14 +971,19 @@ CObjectMesh::CObjectMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, int Texture
 
 	m_vPositions.resize( m_nVertices );
 	vector<XMFLOAT2> pvTexCoords( m_nVertices );
+	vector<XMFLOAT3> pvNormals( m_nVertices );
 
-	for (int i = 0; i < m_nVertices; i++)
+	for (int i = 0; i < vertex.m_pVertexes.size( ); i++)
 	{
 		m_vPositions[i] = vertex.m_pVertexes[i].m_position;
 		pvTexCoords[i] = vertex.m_pVertexes[i].m_textureUV;
 	}
 
-	FindMinMax( );
+	//pvNormals.resize( 26 );
+	for (int i = 0; i < pvNormals.size( ); i++)
+	{
+		pvNormals[i] = XMFLOAT3( 0.6f, 0.3f, 0.f );
+	}
 
 	// 정점 버퍼 생성
 	D3D11_BUFFER_DESC d3dBufferDesc;
@@ -992,16 +997,20 @@ CObjectMesh::CObjectMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, int Texture
 	d3dBufferData.pSysMem = &m_vPositions[0];
 	pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dPositionBuffer );
 
-	d3dBufferDesc.ByteWidth = sizeof( XMFLOAT2 ) * m_nVertices;
+	// UV 좌표
+	d3dBufferDesc.ByteWidth = sizeof( XMFLOAT2 ) * pvTexCoords.size( );
 	d3dBufferData.pSysMem = &pvTexCoords[0];
 	pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dTexCoordBuffer );
 
-	pvTexCoords.clear( );
+	// normal 좌표
+	d3dBufferDesc.ByteWidth = sizeof( XMFLOAT3 ) * pvNormals.size( );
+	d3dBufferData.pSysMem = &pvNormals[0];
+	pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dNormalBuffer );
 
-	ID3D11Buffer *pd3dBuffers[2] = { m_pd3dPositionBuffer, m_pd3dTexCoordBuffer };
-	UINT pnBufferStrides[2] = { sizeof( XMFLOAT3 ), sizeof( XMFLOAT2 ) };
-	UINT pnBufferOffsets[2] = { 0, 0 };
-	AssembleToVertexBuffer( 2, pd3dBuffers, pnBufferStrides, pnBufferOffsets );
+	ID3D11Buffer *pd3dBuffers[3] = { m_pd3dPositionBuffer, m_pd3dNormalBuffer, m_pd3dTexCoordBuffer };
+	UINT pnBufferStrides[3] = { sizeof( XMFLOAT3 ), sizeof( XMFLOAT3 ), sizeof( XMFLOAT2 ) };
+	UINT pnBufferOffsets[3] = { 0, 0, 0 };
+	AssembleToVertexBuffer( 3, pd3dBuffers, pnBufferStrides, pnBufferOffsets );
 
 	// 인덱스 버퍼 생성
 	// n개의 정점으로 만들 수 있는 삼각형의 개수는 n-2 개
@@ -1051,8 +1060,11 @@ CObjectMesh::CObjectMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, int Texture
 	d3dSamplerDesc.MaxLOD = 0;
 	pd3dDevice->CreateSamplerState( &d3dSamplerDesc, &pd3dSamplerState );
 
-	m_pMeshTexture = new CTexture( TextureCount, 1, 0, 0 );
-	m_pMeshTexture->SetSampler( 0, pd3dSamplerState );
+	m_pMeshTexture = new CTexture( TextureCount, TextureCount, 0, 0 );
+
+	for (int i = 0; i < TextureCount; i++)
+		m_pMeshTexture->SetSampler( i, pd3dSamplerState );
+
 	pd3dSamplerState->Release( );
 	m_pMeshTexture->AddRef( );
 }

@@ -12,10 +12,10 @@
 
 struct MATERIAL
 {
-	XMCOLOR m_cAmbient;
-	XMCOLOR m_cDiffuse;
-	XMCOLOR m_cSpecular;
-	XMCOLOR m_cEmissive;
+	D3DXCOLOR m_cAmbient;
+	D3DXCOLOR m_cDiffuse;
+	D3DXCOLOR m_cSpecular;
+	D3DXCOLOR m_cEmissive;
 };
 
 class CMaterial

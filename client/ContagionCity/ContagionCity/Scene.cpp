@@ -22,14 +22,14 @@ void CScene::CreateShaderVariables( ID3D11Device *pd3dDevice )
 	m_pLights = new LIGHTS;
 	::ZeroMemory( m_pLights, sizeof( LIGHTS ) );
 	// 월드 전체를 비추는 주변 조명을 설정
-	m_pLights->m_cGlobalAmbient = XMCOLOR( 0.1f, 0.1f, 0.1f, 1.0f );
+	m_pLights->m_cGlobalAmbient = D3DXCOLOR( 0.1f, 0.1f, 0.1f, 1.0f );
 
 	// 태양
 	m_pLights->m_pLights[0].m_bEnable = true;
 	m_pLights->m_pLights[0].m_nType = DIRECTIONAL_LIGHT;
-	m_pLights->m_pLights[0].m_cAmbient = XMCOLOR( 0.2f, 0.2f, 0.2f, 1.0f );
-	m_pLights->m_pLights[0].m_cDiffuse = XMCOLOR( 0.4f, 0.4f, 0.4f, 1.0f );
-	m_pLights->m_pLights[0].m_cSpecular = XMCOLOR( 0.0f, 0.0f, 0.0f, 0.0f );
+	m_pLights->m_pLights[0].m_cAmbient = D3DXCOLOR( 0.2f, 0.2f, 0.2f, 1.0f );
+	m_pLights->m_pLights[0].m_cDiffuse = D3DXCOLOR( 0.4f, 0.4f, 0.4f, 1.0f );
+	m_pLights->m_pLights[0].m_cSpecular = D3DXCOLOR( 0.0f, 0.0f, 0.0f, 0.0f );
 	m_pLights->m_pLights[0].m_vDirection = XMFLOAT3( 0.0f, -1.0f, 0.0f );
 
 	D3D11_BUFFER_DESC d3dBufferDesc;
@@ -39,7 +39,7 @@ void CScene::CreateShaderVariables( ID3D11Device *pd3dDevice )
 	d3dBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	d3dBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	D3D11_SUBRESOURCE_DATA d3dBufferData;
-	::ZeroMemory( &d3dBufferDesc, sizeof( D3D11_SUBRESOURCE_DATA ) );
+	::ZeroMemory( &d3dBufferData, sizeof( D3D11_SUBRESOURCE_DATA ) );
 	d3dBufferData.pSysMem = m_pLights;
 	pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dcbLights );
 }

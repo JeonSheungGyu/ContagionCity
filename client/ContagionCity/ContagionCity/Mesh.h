@@ -2,7 +2,7 @@
 #include <vector>
 #include <map>
 
-#define RANDOM_COLOR XMCOLOR((rand() * 0xFFFFFF) / RAND_MAX)
+#define RANDOM_COLOR D3DXCOLOR((rand() * 0xFFFFFF) / RAND_MAX)
 
 struct MESHINTERSECTINFO
 {
@@ -114,12 +114,12 @@ public:
 class CDiffusedVertex
 {
 	XMFLOAT3 m_vPosition;
-	XMCOLOR m_cDiffuse;
+	D3DXCOLOR m_cDiffuse;
 
 public:
-	CDiffusedVertex( float x, float y, float z, XMCOLOR cDiffuse ) { m_vPosition = XMFLOAT3( x, y, z ); m_cDiffuse = cDiffuse; }
-	CDiffusedVertex( XMFLOAT3 vPosition, XMCOLOR cDiffuse ) { m_vPosition = vPosition; m_cDiffuse = cDiffuse; }
-	CDiffusedVertex( ){ m_vPosition = XMFLOAT3( 0.0f, 0.0f, 0.0f ); m_cDiffuse = XMCOLOR( 0.0f, 0.0f, 0.0f, 0.0f ); }
+	CDiffusedVertex( float x, float y, float z, D3DXCOLOR cDiffuse ) { m_vPosition = XMFLOAT3( x, y, z ); m_cDiffuse = cDiffuse; }
+	CDiffusedVertex( XMFLOAT3 vPosition, D3DXCOLOR cDiffuse ) { m_vPosition = vPosition; m_cDiffuse = cDiffuse; }
+	CDiffusedVertex( ){ m_vPosition = XMFLOAT3( 0.0f, 0.0f, 0.0f ); m_cDiffuse = D3DXCOLOR( 0.0f, 0.0f, 0.0f, 0.0f ); }
 	~CDiffusedVertex( ) {}
 };
 
@@ -228,7 +228,7 @@ class CCubeMeshDiffused : public CMeshDiffused
 {
 public:
 	// 직육면체의 가로, 세로, 높이의 크기를 지정하여 직육면체 메시를 생성
-	CCubeMeshDiffused( ID3D11Device *pd3dDevice, float fWidth, float fHeight, float fDepth, XMCOLOR Color );
+	CCubeMeshDiffused( ID3D11Device *pd3dDevice, float fWidth, float fHeight, float fDepth, D3DXCOLOR Color );
 	virtual ~CCubeMeshDiffused( );
 
 	virtual void CreateRasterizerState( ID3D11Device *pd3dDevice );
@@ -304,6 +304,7 @@ class CObjectMesh : public CMeshTextured
 {
 protected:
 	ID3D11DepthStencilState *m_pd3dDepthStencilState;
+	ID3D11Buffer *m_pd3dNormalBuffer;
 	CTexture *m_pMeshTexture;
 
 	// 정점들의 최대 최소

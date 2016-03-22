@@ -1,5 +1,6 @@
-#include "SoundManager.h"
+#include "stdafx.h"
 #include <fmod_errors.h>
+#include "SoundManager.h"
 
 void SoundManager::Init( )
 {
