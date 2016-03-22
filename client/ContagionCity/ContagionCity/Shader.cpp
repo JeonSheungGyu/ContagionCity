@@ -157,26 +157,6 @@ void CShader::UpdateShaderVariable( ID3D11DeviceContext *pd3dDeviceContext, XMFL
 	pd3dDeviceContext->VSSetConstantBuffers( VS_SLOT_WORLD_MATRIX, 1, &m_pd3dcbWorldMatrix );
 }
 
-CDiffusedShader::CDiffusedShader( )
-{
-}
-
-CDiffusedShader::~CDiffusedShader( )
-{
-}
-
-void CDiffusedShader::CreateShader( ID3D11Device *pd3dDevice )
-{
-	D3D11_INPUT_ELEMENT_DESC d3dInputElements[ ] =
-	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-	};
-	UINT nElements = ARRAYSIZE( d3dInputElements );
-	CreateVertexShaderFromFile( pd3dDevice, L"Effect.fx", "VSDiffusedColor", "vs_5_0", &m_pd3dVertexShader, d3dInputElements, nElements, &m_pd3dVertexLayout );
-	CreatePixelShaderFromFile( pd3dDevice, L"Effect.fx", "PSDiffusedColor", "ps_5_0", &m_pd3dPixelShader );
-}
-
 CPlayerShader::CPlayerShader( )
 {
 }
@@ -335,27 +315,6 @@ void CTexturedShader::CreateShader( ID3D11Device *pd3dDevice )
 	UINT nElements = ARRAYSIZE( d3dInputElements );
 	CreateVertexShaderFromFile( pd3dDevice, L"Effect.fx", "VSTexturedColor", "vs_5_0", &m_pd3dVertexShader, d3dInputElements, nElements, &m_pd3dVertexLayout );
 	CreatePixelShaderFromFile( pd3dDevice, L"Effect.fx", "PSTexturedColor", "ps_5_0", &m_pd3dPixelShader );
-}
-
-CDetailTexturedShader::CDetailTexturedShader( )
-{
-}
-
-CDetailTexturedShader::~CDetailTexturedShader( )
-{
-}
-
-void CDetailTexturedShader::CreateShader( ID3D11Device *pd3dDevice )
-{
-	D3D11_INPUT_ELEMENT_DESC d3dInputElements[ ] =
-	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 1, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 2, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-	};
-	UINT nElements = ARRAYSIZE( d3dInputElements );
-	CreateVertexShaderFromFile( pd3dDevice, L"Effect.fx", "VSDetailTexturedColor", "vs_5_0", &m_pd3dVertexShader, d3dInputElements, nElements, &m_pd3dVertexLayout );
-	CreatePixelShaderFromFile( pd3dDevice, L"Effect.fx", "PSDetailTexturedColor", "ps_5_0", &m_pd3dPixelShader );
 }
 
 CSkyBoxShader::CSkyBoxShader( )

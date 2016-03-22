@@ -214,54 +214,6 @@ public:
 	virtual void RenderInstanced( ID3D11DeviceContext *pd3dDeviceContext, int nInstances = 0, int nStartInstance = 0 );
 };
 
-class CMeshDiffused : public CMesh
-{
-public:
-	CMeshDiffused( ID3D11Device *pd3dDevice );
-	virtual ~CMeshDiffused( );
-
-protected:
-	ID3D11Buffer *m_pd3dColorBuffer;
-};
-
-class CCubeMeshDiffused : public CMeshDiffused
-{
-public:
-	// 직육면체의 가로, 세로, 높이의 크기를 지정하여 직육면체 메시를 생성
-	CCubeMeshDiffused( ID3D11Device *pd3dDevice, float fWidth, float fHeight, float fDepth, D3DXCOLOR Color );
-	virtual ~CCubeMeshDiffused( );
-
-	virtual void CreateRasterizerState( ID3D11Device *pd3dDevice );
-	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext );
-};
-
-class CMeshIlluminated : public CMesh
-{
-public:
-	CMeshIlluminated( ID3D11Device *pd3dDevice );
-	virtual ~CMeshIlluminated( );
-
-protected:
-	// 조명의 영향을 계산하기 위한 법선벡터
-	ID3D11Buffer *m_pd3dNormalBuffer;
-
-public:
-	// 정점이 포함된 삼각형의 법선벡터를 계산하는 함수
-	XMFLOAT3 CalculateTriangleNormal( UINT nIndex0, UINT nIndex1, UINT nIndex2 );
-	void SetTriangleListVertexNormal( XMFLOAT3 *pvNormals );
-	// 정점의 법선벡터의 평균을 계산하는 함수
-	void SetAverageVertexNormal( XMFLOAT3 *pvNormals, int nPrimitives, int nOffset, bool bStrip );
-	void CalculateVertexNormal( XMFLOAT3 *pvNormals );
-};
-
-// 조명을 사용하여 정점의 색상을 결정하기 위하여 정점이 법선벡터를 갖는 직육면체 메시 클래스
-class CCubeMeshIlluminated : public CMeshIlluminated
-{
-public:
-	CCubeMeshIlluminated( ID3D11Device *pd3dDevice, float fWidth = 2.0f, float fHeight = 2.0f, float fDepth = 2.0f );
-	virtual ~CCubeMeshIlluminated( );
-};
-
 class CMeshTextured : public CMesh
 {
 public:
@@ -272,14 +224,6 @@ protected:
 	// 텍스처 매핑을 하기 위하여 텍스처 좌표가 필요
 	ID3D11Buffer *m_pd3dTexCoordBuffer;
 };
-
-class CCubeMeshTextured : public CMeshTextured
-{
-public:
-	CCubeMeshTextured( ID3D11Device *pd3dDevice, float fWidth = 2.0f, float fHeight = 2.0f, float fDepth = 2.0f );
-	virtual ~CCubeMeshTextured( );
-};
-
 
 class CTexture;
 

@@ -54,15 +54,6 @@ protected:
 	static ID3D11Buffer *m_pd3dcbWorldMatrix;
 };
 
-class CDiffusedShader : public CShader
-{
-public:
-	CDiffusedShader( );
-	virtual ~CDiffusedShader( );
-
-	virtual void CreateShader( ID3D11Device *pd3dDevice );
-};
-
 class CTexturedShader : public CShader
 {
 public:
@@ -84,7 +75,7 @@ public:
 };
 
 // 플레이어를 렌더링하기 위한 세이더 클래스
-class CPlayerShader : public CDiffusedShader
+class CPlayerShader : public CTexturedShader
 {
 public:
 	CPlayerShader( );
@@ -124,16 +115,6 @@ public:
 
 	// 재질을 셰이더 변수에 설정하기 위한 함수
 	static void UpdateShaderVariable( ID3D11DeviceContext *pd3dDeviceContext, MATERIAL *pMaterial );
-};
-
-
-class CDetailTexturedShader : public CTexturedShader
-{
-public:
-	CDetailTexturedShader( );
-	virtual ~CDetailTexturedShader( );
-
-	virtual void CreateShader( ID3D11Device *pd3dDevice );
 };
 
 class CSkyBoxShader : public CTexturedShader

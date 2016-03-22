@@ -1,2 +1,19 @@
-﻿  Object.cpp
+﻿  Shader.cpp
+  Object.cpp
+  Mesh.cpp
+c:\users\garam\documents\github\contagioncity\contagioncity\client\contagioncity\contagioncity\mesh.cpp(588): warning C4018: '<' : signed 또는 unsigned가 일치하지 않습니다.
+c:\users\garam\documents\github\contagioncity\contagioncity\client\contagioncity\contagioncity\mesh.cpp(595): warning C4018: '<' : signed 또는 unsigned가 일치하지 않습니다.
+  코드를 생성하고 있습니다...
+  컴파일하고 있습니다...
+  Scene.cpp
+  Player.cpp
+  GameFramework.cpp
+  ContagionCity.cpp
+  Camera.cpp
+  코드를 생성하고 있습니다...
+  FBXManger.cpp
+c:\users\garam\documents\github\contagioncity\contagioncity\client\contagioncity\contagioncity\fbxmanger.cpp(179): warning C4018: '<' : signed 또는 unsigned가 일치하지 않습니다.
+c:\users\garam\documents\github\contagioncity\contagioncity\client\contagioncity\contagioncity\fbxmanger.cpp(291): warning C4244: '인수' : 'fbxsdk_2015_1::FbxDouble'에서 'FLOAT'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\garam\documents\github\contagioncity\contagioncity\client\contagioncity\contagioncity\fbxmanger.cpp(314): warning C4244: '인수' : 'fbxsdk_2015_1::FbxDouble'에서 'FLOAT'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\garam\documents\github\contagioncity\contagioncity\client\contagioncity\contagioncity\fbxmanger.cpp(95): warning C4715: 'FBXManager::LoadFBX' : 모든 제어 경로에서 값을 반환하지는 않습니다.
   ContagionCity.vcxproj -> C:\Users\Garam\Documents\GitHub\ContagionCity\ContagionCity\client\ContagionCity\Debug\ContagionCity.exe
