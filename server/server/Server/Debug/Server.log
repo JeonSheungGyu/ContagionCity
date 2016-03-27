@@ -1,19 +1,25 @@
-﻿Build started 2016-03-14 오후 8:51:48.
+﻿Build started 2016-03-27 오후 6:02:37.
      1>Project "C:\Users\Sheunggyu\Documents\GitHub\ContagionCity\server\server\Server\Server.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _LIB /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"Debug\Server.pch" /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt ConnectedSessionManager.cpp ServerIocp.cpp
-         ServerIocp.cpp
-         ConnectedSessionManager.cpp
-         Generating Code...
-       Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Sheunggyu\Documents\GitHub\ContagionCity\server\server\Debug\Server.exe" /INCREMENTAL /NOLOGO ws2_32.lib Mswsock.lib ../CoreLib/Debug/CoreLib.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\Sheunggyu\Documents\GitHub\ContagionCity\server\server\Debug\Server.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Sheunggyu\Documents\GitHub\ContagionCity\server\server\Debug\Server.lib" /MACHINE:X86 Debug\Server.obj
-         Debug\ServerIocp.obj
-         Debug\ConnectedSession.obj
-         Debug\ConnectedSessionManager.obj
-         Debug\stdafx.obj
-         Server.vcxproj -> C:\Users\Sheunggyu\Documents\GitHub\ContagionCity\server\server\Debug\Server.exe
-     1>Done Building Project "C:\Users\Sheunggyu\Documents\GitHub\ContagionCity\server\server\Server\Server.vcxproj" (Build target(s)).
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _LIB /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yc"stdafx.h" /Fp"Debug\Server.pch" /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt stdafx.cpp
+         stdafx.cpp
+     1>c:\users\sheunggyu\documents\github\contagioncity\server\server\server\connecteduser.h(21): error C2143: syntax error : missing ';' before '*'
+     1>c:\users\sheunggyu\documents\github\contagioncity\server\server\server\connecteduser.h(21): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+     1>c:\users\sheunggyu\documents\github\contagioncity\server\server\server\connecteduser.h(61): error C2061: syntax error : identifier 'CRoom'
+     1>c:\users\sheunggyu\documents\github\contagioncity\server\server\server\connecteduser.h(62): error C2143: syntax error : missing ';' before '*'
+     1>c:\users\sheunggyu\documents\github\contagioncity\server\server\server\connecteduser.h(62): error C2433: 'CConnectedUser::CRoom' : 'inline' not permitted on data declarations
+     1>c:\users\sheunggyu\documents\github\contagioncity\server\server\server\connecteduser.h(62): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+     1>c:\users\sheunggyu\documents\github\contagioncity\server\server\server\connecteduser.h(62): warning C4183: 'GetEnteredRoom': missing return type; assumed to be a member function returning 'int'
+     1>c:\users\sheunggyu\documents\github\contagioncity\server\server\server\connecteduser.h(61): error C2065: 'mEnteredRoom' : undeclared identifier
+     1>c:\users\sheunggyu\documents\github\contagioncity\server\server\server\connecteduser.h(61): error C2065: 'room' : undeclared identifier
+     1>c:\users\sheunggyu\documents\github\contagioncity\server\server\server\connecteduser.h(62): error C2065: 'mEnteredRoom' : undeclared identifier
+     1>c:\users\sheunggyu\documents\github\contagioncity\server\server\server\room.h(33): error C2061: syntax error : identifier 'CGameIocp'
+     1>c:\users\sheunggyu\documents\github\contagioncity\server\server\server\room.h(43): error C2061: syntax error : identifier 'CGameIocp'
+     1>c:\users\sheunggyu\documents\github\contagioncity\server\server\server\room.h(45): error C2065: 'mRemainGameTime' : undeclared identifier
+     1>c:\users\sheunggyu\documents\github\contagioncity\server\server\server\serveriocp.h(32): error C2146: syntax error : missing ';' before identifier 'm_oConnectedSessionManager'
+     1>c:\users\sheunggyu\documents\github\contagioncity\server\server\server\serveriocp.h(32): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+     1>Done Building Project "C:\Users\Sheunggyu\Documents\GitHub\ContagionCity\server\server\Server\Server.vcxproj" (Build target(s)) -- FAILED.
 
-Build succeeded.
+Build FAILED.
 
-Time Elapsed 00:00:00.53
+Time Elapsed 00:00:01.11

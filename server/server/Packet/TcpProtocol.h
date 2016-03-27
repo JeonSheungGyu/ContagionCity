@@ -1,0 +1,203 @@
+#pragma once
+
+typedef struct _SLOT_USER_DATA{
+	WCHAR UserID[32]; //사용자 아이디
+	DWORD_PTR SessionID; //사용자 고유번호
+	WCHAR VirtualAddress[32]; //사용자의 사설 아이피
+	USHORT VirtualPort;
+	WCHAR RealAddress[32];
+	USHORT RealPort;
+	BOOL IsReady; //  레디상태 FLAG
+}SLOT_USER_DATA;
+
+//서버 프로토콜
+
+typedef enum TCP_PROTOCOL{
+
+	//프로토콜 버전
+	//구조가 크게 바뀔 경우 숫자를 증가시켜 준다.
+	PT_VERSION = 0x1000000,
+	PT_CHANNEL_ENTER,
+	/*
+		WCHAR : USER_ID[32]
+		WCHAR : VIRTUAL_ADDRESS[32]
+		USHORT : VIRTUAL_PORT
+	*/
+	PT_CHANNEL_ENTER_SUCC_U,
+	/*
+		DOWRD_PTR : SESSION_ID
+		WCHAR : VIRTUAL_ADDRESS[32]
+		USHORT : VIRTUAL_PORT
+		WCHAR : REAL_ADDRESS[32]
+		USHORT : REAL_PORT
+
+	*/
+	PT_CHANNEL_ENTER_FAIL_U,
+	/*
+		DWORD : ERRROR_CODE
+	*/
+	
+	//방에 입장한 사용자 정보
+	//모든 사람에게 뿌리는 입장정보
+
+	PT_ROOM_ENTER_M,
+	/*
+		DWORD : SLOT_POSITION
+		WCHAR : USER_ID[32]
+		DWORD_PTR : SESSION_ID
+		DWORD : VIRTUAL_ADDRESS[32]
+		USHORT : VIRTUAL_PORT 
+		WCHAR : REAL_ADDRESS[32]
+		USHORT : REAL_PORT
+	*/
+	PT_ROOM_REQ_INFO,
+	/*
+	*/
+	PT_ROOM_REQ_INFO_SUCC_U,
+	/*
+		DWORD : ROOM_INDEX 
+		WCHAR : TITLE[32] 
+		DWORD : MAP_INDEX 
+		USHORT : CURRENT_USER_COUNT 
+		DWORD_PTR : ROOT_USER_SESSION_ID 
+		SLOT_USER_DATA : DATA[8] 
+	*/
+	PT_ROOM_REQ_INFO_FAIL_U,
+	/*
+		DWORD : ERROR_CODE
+	*/
+	//방 나가기
+	PT_ROOM_LEAVE,
+	/*
+	*/
+	PT_ROOM_LEAVE_SUCC_U,
+	/*
+	*/
+	PT_ROOM_LEAVE_FAIL_U,
+	/*
+		DWORD : ERROR_CODE
+	*/
+	//방 나간 사용자 알림
+	PT_ROOM_LEAVE_M,
+	/*
+		DWORD_PTR : SESSION_ID 
+		DWORD_PTR : ROOT_USER_SESSION_ID 
+	*/
+
+	//맵 번경
+	//게임을 진행할 맵을 변경한다.
+	PT_ROOM_MAP_CHANGE,
+	/*
+		DWORD : MAP_INDEX 
+	*/
+	PT_ROOM_MAP_SUCC_U,
+	/*
+	*/
+	PT_ROOM_MAP_FAIL_U,
+	/*
+		DWORD : ERROR_CODE 
+	*/
+	//맵 변경 알림
+	PT_ROOM_MAP_CHANGE_M,
+	/*
+		DWORD : MAP_INDEX
+	*/
+	PT_ROOM_CHATTING,
+	/*
+		WCHAR : CHAT[256] 
+	*/
+	PT_ROOM_CHATTING_SUCC_U,
+	/*
+	*/
+	PT_ROOM_CHATTING_FAIL_U,
+	/*
+		DWORD : ERROR_CODE
+	*/
+	//채팅 전송 알림
+	PT_ROOM_CHATTING_M,
+	/*
+		DWORD_PTR : SESSION_ID 
+		WCHAR : CHAT[256]
+	*/
+	//사용자 레디 
+	PT_ROOM_READY,
+	/*
+		BOOL : READY 
+	*/
+	PT_ROOM_READY_SUCC_U,
+	/*
+	*/
+	PT_ROOM_READY_FAIL_U,
+	/*
+		DWORD : ERROR_CODE 
+	*/
+	//레디 알림
+	PT_ROOM_READY_M,
+	/*
+		DWORD_PTR : SESSION_ID 
+		BOOL : READY 
+	*/
+	//게임시작
+	PT_ROOM_START,
+	/*
+	*/
+	PT_ROOM_START_SUCC_U,
+	/*
+	*/
+	PT_ROOM_START_FAIL_U,
+	/*
+		DWORD : ERROR_CODE
+	*/
+	//게임시작 알림
+	PT_ROOM_START_M,
+	/*
+	*/
+	//로딩완료
+	PT_GAME_LOAD_COMPLETE,
+	/*
+	*/
+	PT_GAME_LOAD_COMPLETE_SUCC_U,
+	/*
+	*/
+	PT_GAME_LOAD_COMPLETE_FAIL_U,
+	/*
+		DWORD : ERROR_CODE
+	*/
+	//로딩완료알림
+	PT_GAME_LOAD_COMPLETE_M,
+	/*
+		DWORD_PTR : SESSION_ID 
+	*/
+	//모든 사용자가 로딩이 완료됨
+	PT_GAME_ALL_LOAD_COMPLETE_M,
+	/*
+	*/
+	//필드 소개 
+	PT_GAME_INTRO_COMPLETE,
+	/*
+	*/
+	PT_GAME_INTRO_COMPLETE_SUCC_U,
+	/*
+	*/
+	PT_GAME_INTRO_COMPLETE_FAIL_U,
+	/*
+		DWORD : ERROR_CODE
+	*/
+	//필드 소개 알림
+	PT_GAME_INTRO_COMPLETE_M,
+	/*
+		DWORD_PTR : SESSION_ID 
+	*/
+	PT_GAME_ALL_INTRO_COMPLETE_M,
+	/*
+	*/
+
+	//실제게임시작
+	PT_GAME_START_M,
+	/*
+	*/
+	//게임종료
+	PT_GAME_END_M,
+	/*
+	*/
+};
