@@ -23,6 +23,65 @@ public:
 	~CVertex( );
 };
 
+// 재질정보
+struct Material
+{
+	XMFLOAT4 Ambient;
+	XMFLOAT4 Diffuse;
+	XMFLOAT4 Specular; // w = SpecPower
+	XMFLOAT4 Reflect;
+};
+
+// m3d 파일 로딩에 사용할 재질 정보
+struct M3dMaterial
+{
+	Material Mat;
+
+	bool AlphaClip;
+	std::string EffectTypeName;
+	std::wstring DiffuseMapName;
+	std::wstring NormalMapName;
+};
+
+// m3d 파일 로딩에서 부분집합 부분, 난 사용하지 않을 예정
+struct Subset
+{
+	Subset() : Id( -1 ),	VertexStart( 0 ), VertexCount( 0 ), FaceStart( 0 ), FaceCount( 0 ){}
+
+	UINT Id;
+	UINT VertexStart;
+	UINT VertexCount;
+	UINT FaceStart;
+	UINT FaceCount;
+};
+
+// m3d 파일 로딩에 사용할 정점
+struct M3dVertex
+{
+	XMFLOAT3 pos;
+	XMFLOAT4 TangentU;
+	XMFLOAT3 Normal;
+	XMFLOAT2 Tex;
+
+	XMFLOAT3 weights;		// 가중치
+	BYTE boneIndices[4];		// 이 정점에 영향을 주는 뼈대
+};
+
+struct CM3dMesh
+{
+public:
+	std::vector<M3dMaterial> m_mats;
+	std::vector<Subset> m_subsets;
+	std::vector<M3dVertex> m_pVertexes;
+	std::vector<USHORT> m_pvIndices;
+	SkinnedData m_skinnedData;
+
+	int m_nIndexCount;
+	int m_nVertexCount;
+	int m_iLayer;
+	int m_iType;
+};
+
 // 애니메이션 정보를 가지는 프레임, 특정 시간에서의 변환 정보를 가짐
 // 시간에 따른 값들을 저장함
 struct Keyframe
@@ -66,6 +125,7 @@ struct AnimationClip
 // 스키닝 애니메이션 자료를 담을 클래스
 class SkinnedData
 {
+public:
 	UINT BoneCount( ) const;
 	float GetClipStartTime( const std::string& clipName ) const;
 	float GetClipEndTime( const std::string& clipName ) const;
@@ -83,7 +143,7 @@ private:
 	// i번 뼈대의 부모의 색인을 담는다, i번 뼈대는 애니메이션 클립의 i번째 BoneAnimaion인스턴스에 대응된다.
 	std::vector<int> mBoneHierarchy;
 
-	// i번 뼈대의 오프셋 변환
+	// i번 뼈대의 오프셋 변환, 부모로 가는 오프셋 변환
 	std::vector<XMFLOAT4X4> mBoneOffsets;
 
 	// 애니메이션 정보를 클립별로 저장
@@ -94,7 +154,6 @@ struct CFbxVertex
 {
 	XMFLOAT3 m_position;
 	XMFLOAT2 m_textureUV;
-	XMFLOAT4 m_tangentU;
 	XMFLOAT3 m_weights;		// 가중치
 	BYTE m_boneIndices[4];	// 이 정점에 영향을 주는 뼈대
 };
@@ -104,6 +163,7 @@ struct CFbxMesh
 public:
 	std::vector<CFbxVertex> m_pVertexes;
 	std::vector<UINT> m_pvIndices;
+	SkinnedData m_skinnedData;
 
 	int m_nIndexCount;
 	int m_nVertexCount;
@@ -270,3 +330,92 @@ public:
 	void ChangeRasterizerState( ID3D11Device* pd3dDevice, bool ClockWise, D3D11_CULL_MODE CullMode, D3D11_FILL_MODE FillMode );
 	void FindMinMax( );
 };
+
+
+
+
+
+//void LoadFBX::BuildMeshSkinning( FbxMesh* mesh, vector<vector<pair<int, float>>>& boneIndices,
+//	map<int, vector<int>> mVertexByIndex, VERTEX* _vertex, Model* _model ){
+//	//cout << "BuildMeshSkinning..." << endl;
+//	//Get the mesh Skinning
+//	int numSkins = mesh->GetDeformerCount( FbxDeformer::eSkin );
+//
+//	if (numSkins > 0){      // 1
+//		int numControlPoints = mesh->GetControlPointsCount( );      // 683
+//		//cout << "numcontrolpoint : " << numControlPoints << endl;
+//		//boneIndices.resize(numControlPoints, -1);
+//	}
+//
+//	for (int iSkin = 0; iSkin < numSkins; ++iSkin){
+//		FbxSkin* skin = (FbxSkin*)mesh->GetDeformer( iSkin, FbxDeformer::eSkin );
+//		int clusterCount = skin->GetClusterCount( );
+//
+//		if (clusterCount == 0)
+//			continue;
+//		for (int iCluster = 0; iCluster < clusterCount; ++iCluster){      //21
+//			FbxCluster* cluster = skin->GetCluster( iCluster );
+//			FbxNode* bone = cluster->GetLink( );
+//
+//			string BoneName = string( bone->GetName( ) );
+//
+//			FbxAMatrix LinkBoneMatrix;
+//			FbxAMatrix TransBoneMatrix;
+//			FbxAMatrix ResultMatrix;
+//
+//			cluster->GetTransformLinkMatrix( LinkBoneMatrix );
+//			cluster->GetTransformMatrix( TransBoneMatrix );
+//			ResultMatrix = LinkBoneMatrix.Inverse( )*TransBoneMatrix;      // 지역행렬?
+//
+//			Bone* bones;
+//
+//			bones = _model->fineBone( BoneName );
+//			//cout << BoneName << endl;
+//			if (!bones){
+//				cout << "not find bone name!!!!" << endl;
+//			}
+//			else{
+//				//   cout << bones->index << ", " << bones->name << endl;
+//				bones->boneMatrix._11 = ResultMatrix.mData[0].mData[0]; bones->boneMatrix._12 = ResultMatrix.mData[0].mData[1];
+//				bones->boneMatrix._13 = ResultMatrix.mData[0].mData[2]; bones->boneMatrix._14 = ResultMatrix.mData[0].mData[3];
+//				bones->boneMatrix._21 = ResultMatrix.mData[1].mData[0]; bones->boneMatrix._22 = ResultMatrix.mData[1].mData[1];
+//				bones->boneMatrix._23 = ResultMatrix.mData[1].mData[2]; bones->boneMatrix._24 = ResultMatrix.mData[1].mData[3];
+//				bones->boneMatrix._31 = ResultMatrix.mData[2].mData[0]; bones->boneMatrix._32 = ResultMatrix.mData[2].mData[1];
+//				bones->boneMatrix._33 = ResultMatrix.mData[2].mData[2]; bones->boneMatrix._34 = ResultMatrix.mData[2].mData[3];
+//				bones->boneMatrix._41 = ResultMatrix.mData[3].mData[0]; bones->boneMatrix._42 = ResultMatrix.mData[3].mData[1];
+//				bones->boneMatrix._43 = ResultMatrix.mData[3].mData[2]; bones->boneMatrix._44 = ResultMatrix.mData[3].mData[3];
+//				_model->SetBoneMatrix( bones->index, bones->boneMatrix );
+//
+//				if (!bone){
+//					cout << "cluster " << iCluster << "has no link" << endl;
+//					continue;
+//				}
+//
+//				int numInfluencedVertices = cluster->GetControlPointIndicesCount( );
+//				int* pIndexArray = cluster->GetControlPointIndices( );
+//				double* pWeightArray = cluster->GetControlPointWeights( );
+//
+//
+//				//cout << "Cluster : " << iCluster << " : " << bone->GetName()<<", influences : "<<numInfluencedVertices<< endl;
+//				//   getchar();
+//				// bone 정보에 따라서 가중치 부여
+//				for (int iControlPoint = 0; iControlPoint < numInfluencedVertices; ++iControlPoint){
+//
+//					float weight = (float)pWeightArray[iControlPoint];
+//
+//					//cout << "weight : " << weight << endl;
+//					if (weight){
+//
+//						int iControlPointIndex = pIndexArray[iControlPoint];      //BoneIndex
+//
+//						boneIndices[iControlPointIndex].push_back( pair<int, float>( bones->index, weight ) );
+//					}
+//				}
+//			}
+//		}
+//	}
+//	for (int j = 0; j < boneIndices.size( ); j++){
+//		sort( boneIndices[j].begin( ), boneIndices[j].end( ) );
+//	}
+//	return;
+//}

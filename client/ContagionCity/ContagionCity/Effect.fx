@@ -13,6 +13,12 @@ cbuffer cbWorldMatrix : register(b1)
 	matrix gmtxWorld : packoffset(c0);
 };
 
+cbuffer cbSkinned
+{
+	// 한 케릭터의 최대 뼈의 개수 96개
+	float4x4 gBoneTransforms[96];
+};
+
 //t는 텍스쳐
 //s는 샘플러
 Texture2D gtxtTexture : register(t0);
@@ -97,6 +103,9 @@ struct VS_TEXTURED_LIGHTING_COLOR_INPUT
 	float3 position : POSITION;
 	float3 normal : NORMAL;
 	float2 texCoord : TEXCOORD0;
+	//float4 tangent : TANGENT;
+	//float3 weights : WEIGHTS;
+	//uint4 boneIndices; BONEINDICES;
 };
 
 //텍스쳐와 조명을 같이 사용하는 경우 정점 쉐이더의 출력을 위한 구조체이다.
@@ -151,6 +160,28 @@ float4 PSTexturedColor(VS_TEXTURED_COLOR_OUTPUT input) : SV_Target
 VS_TEXTURED_LIGHTING_COLOR_OUTPUT VSTexturedLightingColor(VS_TEXTURED_LIGHTING_COLOR_INPUT input)
 {
 	VS_TEXTURED_LIGHTING_COLOR_OUTPUT output = (VS_TEXTURED_LIGHTING_COLOR_OUTPUT)0;
+
+	//input.normal = gtxtNormalTexture.Sample( gSamplerState, input.texCoord );
+
+	//float weights[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	//weights[0] = vin.weights.x;
+	//weights[1] = vin.weights.y;
+	//weights[2] = vin.weights.z;
+	//weights[3] = 1.0f - weights[0] - weights[1] - weights[2];
+
+	//// 저점 혼합 수행
+	//float3 posL = float3( 0.0f, 0.0f, 0.0f );
+	//	float3 normalL = float3 ( 0.0f, 0.0f, 0.0f );
+	//	float3 tangentL = float3 ( 0.0f, 0.0f, 0.0f );
+
+	//	for (int i = 0; i < 4; i++)
+	//	{
+	//		// 법선 변환 시 변환 행렬에 비균등 비례가 없다고 가정
+	//		posL += weights[i] * mul( float4( vin.position, 1.0f ), gBoneTransforms[vin.boneIndices[i] ).xyz);
+	//		normalL += weights[i] * mul( float4( vin.normal, 1.0f ), (float3x3)gBoneTransforms[vin.boneIndices[i] ));
+	//		tangentL += weights[i] * mul( float4( vin.tangent.xyz, 1.0f ), ( float3x3 )gBoneTransforms[vin.boneIndices[i] ));
+	//	}
+
 	output.normalW = mul(input.normal, (float3x3)gmtxWorld);
 	output.positionW = mul(float4(input.position, 1.0f), gmtxWorld).xyz;
 	output.position = mul(mul(float4(output.positionW, 1.0f), gmtxView), gmtxProjection);
@@ -161,7 +192,6 @@ VS_TEXTURED_LIGHTING_COLOR_OUTPUT VSTexturedLightingColor(VS_TEXTURED_LIGHTING_C
 
 float4 PSTexturedLightingColor(VS_TEXTURED_LIGHTING_COLOR_OUTPUT input) : SV_Target
 {
-	input.normalW = normalize(input.normalW);
 	input.normalW = gtxtNormalTexture.Sample( gSamplerState, input.texCoord );
 
 	float4 cIllumination = Lighting(input.positionW, input.normalW);
