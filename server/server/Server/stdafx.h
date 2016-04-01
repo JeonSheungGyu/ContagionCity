@@ -44,6 +44,7 @@ DWORD DEFAULT_GAME_TIME = 0;
 #include "ConnectedUser.h"
 #include "ConnectedUserManager.h"
 #include "Room.h"
+#include "RoomManager.h"
 #include "ServerIocp.h"
 
 
