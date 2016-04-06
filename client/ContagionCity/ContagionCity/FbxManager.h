@@ -24,17 +24,22 @@ public:
 	// fbx용
 	bool LoadFBX( const char* pstrFileName, int Layer, int Type );
 	void ClearMeshes( ){ m_pMeshes.clear( ); }
+
 	// m3d용
 	bool LoadM3D( const std::string& fileName, int layer, int type, CM3dMesh& pOutMesh );
 
 private:
 	// fbx용
+	void LoadFBXMeshData( FbxMesh* pMesh, int Layer, int Type );
 	void LoadUVInformation( FbxMesh* pMesh, std::vector<XMFLOAT2> *pVector );
 	void LoadVertexAndIndexInfomation( FbxMesh* pMesh, std::vector<XMFLOAT3> *pVertex, std::vector<UINT> *pIndex );
-	void LoadNormalInfoamtion( FbxMesh *pMesh, std::vector<XMFLOAT3> *pOut );
+	void LoadNormallnfomation( FbxMesh *pMesh, std::vector<XMFLOAT3> *pNormals );
+	void LoadTangentInfomation( FbxMesh *pMesh, std::vector<XMFLOAT4> *pTangents );
+	void LoadBinormalInfomation( FbxMesh *pMesh, std::vector<XMFLOAT3> *pBinormals );
+	void SaveData( std::vector<XMFLOAT3> pVertex, std::vector<UINT> pIndex, std::vector<XMFLOAT2> UVVector, std::vector<CFbxVertex>weights, int iLayer, int iType );
+
 	std::map<std::string, AnimationClip> LoadBoneInfomation( FbxNode* pNode );
-	void LoadBoneHierarachy( FbxMesh *pMesh );
-	void SaveData( std::vector<XMFLOAT3> pVertex, std::vector<UINT> pIndex, std::vector<XMFLOAT2> UVVector, int iLayer, int iType );
+	void LoadBoneHierarachy( FbxMesh *pMesh, std::vector<CFbxVertex> *pVertices );
 
 	// m3d용
 	void ReadAnimationClips( std::ifstream& fin, UINT nBones, UINT nAnimationClips, std::map<std::string, AnimationClip>& animationClips );

@@ -74,7 +74,7 @@ public:
 	std::vector<Subset> m_subsets;
 	std::vector<M3dVertex> m_pVertexes;
 	std::vector<USHORT> m_pvIndices;
-	SkinnedData m_skinnedData;
+//	SkinnedData m_skinnedData;
 
 	int m_nIndexCount;
 	int m_nVertexCount;
@@ -84,7 +84,7 @@ public:
 
 // 애니메이션 정보를 가지는 프레임, 특정 시간에서의 변환 정보를 가짐
 // 시간에 따른 값들을 저장함
-struct Keyframe
+struct Keyframe			// CKeyframe
 {
 	Keyframe( );
 	~Keyframe( );
@@ -96,10 +96,16 @@ struct Keyframe
 };
 
 // 하나의 뼈대, 애니메이션 정보들을 가지고 있음
-struct BoneAnimation
+struct BoneAnimation		// CAnimation
 {
 	// 시간에 따른 변환 값들을 저장, 뼈대가 움직이는 모양
 	std::vector<Keyframe> Keyframes;
+	// 본 이름
+	std::string BoneName;
+	// 부모 이름
+	std::string PerentBoneName;
+	// 본 인덱스
+	int BoneIndex;
 
 	float GetStartTime( ) const;
 	float GetEndTime( ) const;
@@ -108,7 +114,7 @@ struct BoneAnimation
 };
 
 // 애니메이션 클립 만들기, 걷기, 뛰기, 공격 등의 개별적인 애니메이션을 의미함
-struct AnimationClip
+struct AnimationClip		// CAnimationSet
 {
 	// 현재 클립의 모든 뼈대의 시작 시간 중 가장 빠른 것을 반환
 	float GetClipStartTime( ) const;
@@ -118,8 +124,12 @@ struct AnimationClip
 	// 이 클립의 각 BoneAnimation을 훑으면서 애니메이션들을 보간
 	void Interpolate( float t, std::vector<XMFLOAT4X4>& boneTransforms );
 
-	//  뼈대별 애니메이션들
+	// 뼈대별 애니메이션들
 	std::vector<BoneAnimation> BoneAnimations;
+	
+	// 뼈대 찾기
+	BoneAnimation* FindBone( int index );
+	BoneAnimation* FindBone( std::string name );
 };
 
 // 스키닝 애니메이션 자료를 담을 클래스
@@ -154,14 +164,18 @@ struct CFbxVertex
 {
 	XMFLOAT3 m_position;
 	XMFLOAT2 m_textureUV;
-	XMFLOAT3 m_weights;		// 가중치
-	BYTE m_boneIndices[4];	// 이 정점에 영향을 주는 뼈대
+	XMFLOAT3 m_normal;
+	XMFLOAT4 m_tangent;
+	XMFLOAT3 m_binormal;
+
+	XMFLOAT3 m_weights = XMFLOAT3(0.0f , 0.0f, 0.0f);						// 가중치
+	XMFLOAT4 m_boneIndices = XMFLOAT4(-1.0f,-1.0f, -1.0f, -1.0f);		// 이 정점에 영향을 주는 뼈대
 };
 
 struct CFbxMesh
 {
 public:
-	std::vector<CFbxVertex> m_pVertexes;
+	std::vector<CFbxVertex> m_pVertices;
 	std::vector<UINT> m_pvIndices;
 	SkinnedData m_skinnedData;
 
@@ -170,6 +184,7 @@ public:
 	int m_iLayer;
 	int m_iType;
 };
+
 
 class CDiffusedVertex
 {
@@ -264,6 +279,8 @@ protected:
 
 public:
 	AABB GetBoundingCube( ){ return m_bcBoundingCube; }
+	void SetBoundingCube( XMFLOAT3 max, XMFLOAT3 min );
+	void SetBoundingCube( AABB boundingBox );
 
 	// 메시의 정점 버퍼들을 배열로 조립
 	void AssembleToVertexBuffer( int nBuffers = 0, ID3D11Buffer **m_pd3dBuffers = NULL, UINT *pnBufferStrides = NULL, UINT *pnBufferOffset = NULL );
@@ -274,25 +291,37 @@ public:
 	virtual void RenderInstanced( ID3D11DeviceContext *pd3dDeviceContext, int nInstances = 0, int nStartInstance = 0 );
 };
 
+class CTexture;
+
 class CMeshTextured : public CMesh
 {
 public:
 	CMeshTextured( ID3D11Device *pd3dDevice );
 	virtual ~CMeshTextured( );
 
+	void OnChangeTexture( ID3D11Device *pd3dDevice, _TCHAR *texturePath, int index );
+	virtual void CreateRasterizerState( ID3D11Device *pd3dDevice );
+	// Cull Mode는 앞면을 그릴 것인지 뒷면을 그릴것인지
+	// ClockWise는 와인딩오더 설정, TRUE 이면 반시계, FALSE이면 시계
+	// Fill Mode는 솔리드로 할것인지 와이어프레임으로 할것인지
+	virtual void ChangeRasterizerState( ID3D11Device* pd3dDevice, bool ClockWise, D3D11_CULL_MODE CullMode, D3D11_FILL_MODE FillMode );
+	void FindMinMax( );
+	void GetMinMax( XMFLOAT3* min, XMFLOAT3* max  );
+
 protected:
 	// 텍스처 매핑을 하기 위하여 텍스처 좌표가 필요
 	ID3D11Buffer *m_pd3dTexCoordBuffer;
-};
+	CTexture *m_pMeshTexture;
 
-class CTexture;
+	// 정점들의 최대 최소
+	XMFLOAT3 m_min;
+	XMFLOAT3 m_max;
+};
 
 class CSkyBoxMesh : public CMeshTextured
 {
 protected:
 	ID3D11DepthStencilState *m_pd3dDepthStencilState;
-
-	CTexture *m_pSkyboxTexture;
 
 public:
 	CSkyBoxMesh( ID3D11Device *pd3dDevice, float fWidth = 20.0f, float fHeight = 20.0f, float fDepth = 20.0f );
@@ -309,42 +338,42 @@ class CObjectMesh : public CMeshTextured
 protected:
 	ID3D11DepthStencilState *m_pd3dDepthStencilState;
 	ID3D11Buffer *m_pd3dNormalBuffer;
-	CTexture *m_pMeshTexture;
-
-	// 정점들의 최대 최소
-	XMFLOAT3 min;
-	XMFLOAT3 max;
-
+	
 public:
 	CObjectMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, int TextureCount );
 	virtual ~CObjectMesh( );
 
-	void OnChangeTexture( ID3D11Device *pd3dDevice, _TCHAR *texturePath, int index );
+	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext );
+};
+
+class CAnimatedMesh : public CMeshTextured
+{
+protected:
+	ID3D11DepthStencilState *m_pd3dDepthStencilState;
+	ID3D11Buffer *m_pd3dNormalBuffer;
+	ID3D11Buffer *m_pd3dWeightBuffer;
+	ID3D11Buffer *m_pd3dBoneIdxBuffer;
+
+	// 정점 좌표
+	std::vector<CFbxVertex> m_pVertices;
+	SkinnedData m_skindata;
+
+public:
+	CAnimatedMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, int TextureCount );
+	~CAnimatedMesh( );
 
 	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext );
-
-	virtual void CreateRasterizerState( ID3D11Device *pd3dDevice );
-	// Cull Mode는 앞면을 그릴 것인지 뒷면을 그릴것인지
-	// ClockWise는 와인딩오더 설정, TRUE 이면 반시계, FALSE이면 시계
-	// Fill Mode는 솔리드로 할것인지 와이어프레임으로 할것인지
-	void ChangeRasterizerState( ID3D11Device* pd3dDevice, bool ClockWise, D3D11_CULL_MODE CullMode, D3D11_FILL_MODE FillMode );
-	void FindMinMax( );
 };
 
 
 
-
-
-//void LoadFBX::BuildMeshSkinning( FbxMesh* mesh, vector<vector<pair<int, float>>>& boneIndices,
+//void BuildMeshSkinning( FbxMesh* mesh, vector<vector<pair<int, float>>>& boneIndices,
 //	map<int, vector<int>> mVertexByIndex, VERTEX* _vertex, Model* _model ){
-//	//cout << "BuildMeshSkinning..." << endl;
-//	//Get the mesh Skinning
+//
 //	int numSkins = mesh->GetDeformerCount( FbxDeformer::eSkin );
 //
 //	if (numSkins > 0){      // 1
 //		int numControlPoints = mesh->GetControlPointsCount( );      // 683
-//		//cout << "numcontrolpoint : " << numControlPoints << endl;
-//		//boneIndices.resize(numControlPoints, -1);
 //	}
 //
 //	for (int iSkin = 0; iSkin < numSkins; ++iSkin){

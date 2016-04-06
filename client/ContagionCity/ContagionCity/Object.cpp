@@ -373,3 +373,25 @@ void ObjectInfo::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamer
 	if (m_ppMeshes && m_ppMeshes[0])
 		m_ppMeshes[0]->Render( pd3dDeviceContext );
 }
+
+void ObjectInfo::Animate( float fTimeElapsed )
+{
+
+}
+
+AnimatedObjectInfo::AnimatedObjectInfo( ID3D11Device *pd3dDevice, CFbxMesh vertex ) : ObjectInfo( pd3dDevice, vertex )
+{
+	float m_fTimes = 0;
+}
+
+AnimatedObjectInfo::~AnimatedObjectInfo( )
+{
+	
+}
+
+void AnimatedObjectInfo::Animate( float fTimeElapsed )
+{
+	m_fTimes += fTimeElapsed;
+
+	// 애니메이션 하는 코드
+}

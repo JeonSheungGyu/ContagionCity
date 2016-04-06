@@ -188,6 +188,9 @@ protected:
 	float m_fPitch;
 	float m_fYaw;
 	float m_fRoll;
+
+	virtual void Animate( float fTimeElapsed );
+
 public:
 	ObjectInfo( ID3D11Device *pd3dDevice, CFbxMesh vertex );
 	virtual ~ObjectInfo( );
@@ -208,4 +211,15 @@ public:
 	float GetYaw( ) const { return m_fYaw; }
 	float GetPitch( ) const { return m_fPitch; }
 	float GetRoll( ) const { return m_fRoll; }
+};
+
+class AnimatedObjectInfo : public ObjectInfo
+{
+protected:
+	float m_fTimes;
+public:
+	AnimatedObjectInfo( ID3D11Device *pd3dDevice, CFbxMesh vertex );
+	virtual ~AnimatedObjectInfo( );
+
+	virtual void Animate( float fTimeElapsed );
 };

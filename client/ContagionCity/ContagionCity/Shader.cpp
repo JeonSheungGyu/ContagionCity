@@ -180,6 +180,7 @@ void CPlayerShader::BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbxMesh
 	for (int i = 0; i < m_nObjects; i++)
 	{
 		CObjectMesh *pPlayerMesh = new CObjectMesh( pd3dDevice, meshes[i], 1 );
+		pPlayerMesh->FindMinMax( );		// AABB 상자 값 세팅
 		pPlayerMesh->OnChangeTexture( pd3dDevice, _T( "./SkyBox/SkyBox_Top_1.jpg" ), 0 );
 		pPlayer->SetMesh( pPlayerMesh, i );
 	}

@@ -77,6 +77,24 @@ void BoneAnimation::Interpolate( float t, XMFLOAT4X4& M )
 	}
 }
 
+BoneAnimation* AnimationClip::FindBone( int index )
+{
+	for (UINT i = 0; i < BoneAnimations.size( ); i++)
+	{
+		BoneAnimations[i].BoneIndex == index;
+		return &BoneAnimations[i];
+	}
+}
+
+BoneAnimation* AnimationClip::FindBone( std::string name )
+{
+	for (UINT i = 0; i < BoneAnimations.size( ); i++)
+	{
+		BoneAnimations[i].BoneName == name;
+		return &BoneAnimations[i];
+	}
+}
+
 float AnimationClip::GetClipStartTime( )const
 {
 	float t = 100000.f;
@@ -299,6 +317,15 @@ void CMesh::RenderInstanced( ID3D11DeviceContext *pd3dDeviceContext, int nInstan
 	else
 		pd3dDeviceContext->DrawInstanced( m_nVertices, nInstances, m_nStartVertex, nStartInstance );
 }
+void CMesh::SetBoundingCube( XMFLOAT3 max, XMFLOAT3 min )
+{
+	m_bcBoundingCube.m_vMax = max;
+	m_bcBoundingCube.m_vMin = min;
+}
+void CMesh::SetBoundingCube( AABB boundingBox )
+{
+	m_bcBoundingCube = boundingBox;
+}
 
 // AABB
 
@@ -352,6 +379,86 @@ CMeshTextured::CMeshTextured( ID3D11Device *pd3dDevice ) : CMesh( pd3dDevice )
 CMeshTextured::~CMeshTextured( )
 {
 	if (m_pd3dTexCoordBuffer) m_pd3dTexCoordBuffer->Release( );
+}
+
+void CMeshTextured::CreateRasterizerState( ID3D11Device *pd3dDevice )
+{
+	D3D11_RASTERIZER_DESC d3dRastersizerDesc;
+	::ZeroMemory( &d3dRastersizerDesc, sizeof( D3D11_RASTERIZER_DESC ) );
+	d3dRastersizerDesc.CullMode = D3D11_CULL_FRONT;
+	// 솔리드와 와이어 설정할 수 있음
+	d3dRastersizerDesc.FrontCounterClockwise = FALSE;
+	d3dRastersizerDesc.FillMode = D3D11_FILL_SOLID;
+	pd3dDevice->CreateRasterizerState( &d3dRastersizerDesc, &m_pd3dRasterizerState );
+}
+
+void CMeshTextured::ChangeRasterizerState( ID3D11Device* pd3dDevice, bool ClockWise, D3D11_CULL_MODE CullMode, D3D11_FILL_MODE FillMode )
+{
+	if (m_pd3dRasterizerState)
+		m_pd3dRasterizerState->Release( );
+
+	D3D11_RASTERIZER_DESC d3dRastersizerDesc;
+	::ZeroMemory( &d3dRastersizerDesc, sizeof( D3D11_RASTERIZER_DESC ) );
+	d3dRastersizerDesc.CullMode = CullMode;
+	d3dRastersizerDesc.FrontCounterClockwise = ClockWise;
+	d3dRastersizerDesc.FillMode = FillMode;
+	pd3dDevice->CreateRasterizerState( &d3dRastersizerDesc, &m_pd3dRasterizerState );
+}
+
+void CMeshTextured::FindMinMax( )
+{
+	float *arrX = new float[m_nVertices];
+	float *arrY = new float[m_nVertices];
+	float *arrZ = new float[m_nVertices];
+
+	for (int i = 0; i < m_nVertices; i++)
+	{
+		arrX[i] = m_vPositions[i].x;
+		arrY[i] = m_vPositions[i].y;
+		arrZ[i] = m_vPositions[i].z;
+	}
+
+	QuickSort( arrX, 0, m_nVertices - 1 );
+	QuickSort( arrY, 0, m_nVertices - 1 );
+	QuickSort( arrZ, 0, m_nVertices - 1 );
+
+	m_min.x = arrX[0];
+	m_min.y = arrY[0];
+	m_min.z = arrZ[0];
+
+	m_max.x = arrX[m_nVertices - 1];
+	m_max.y = arrY[m_nVertices - 1];
+	m_max.z = arrZ[m_nVertices - 1];
+
+	delete[ ] arrX;
+	delete[ ] arrY;
+	delete[ ] arrZ;
+
+	m_bcBoundingCube.m_vMax = m_max;
+	m_bcBoundingCube.m_vMin = m_min;
+}
+
+void CMeshTextured::GetMinMax( XMFLOAT3* min, XMFLOAT3* max )
+{
+	min->x = m_min.x;
+	min->y = m_min.y;
+	min->z = m_min.z;
+
+	max->x = m_max.x;
+	max->y = m_max.y;
+	max->z = m_max.z;
+}
+
+void CMeshTextured::OnChangeTexture( ID3D11Device *pd3dDevice, _TCHAR *texturePath, int index )
+{
+	_TCHAR pstrTextureName[80];
+	ID3D11ShaderResourceView *pd3dsrvTexture = NULL;
+
+	// 그라운드 텍스처 지정
+	_stprintf_s( pstrTextureName, texturePath, 0, 80 );
+	D3DX11CreateShaderResourceViewFromFile( pd3dDevice, pstrTextureName, NULL, NULL, &pd3dsrvTexture, NULL );
+	m_pMeshTexture->SetTexture( index, pd3dsrvTexture );
+	pd3dsrvTexture->Release( );
 }
 
 CSkyBoxMesh::CSkyBoxMesh( ID3D11Device *pd3dDevice, float fWidth, float fHeight, float fDepth ) : CMeshTextured( pd3dDevice )
@@ -490,10 +597,10 @@ CSkyBoxMesh::CSkyBoxMesh( ID3D11Device *pd3dDevice, float fWidth, float fHeight,
 	d3dSamplerDesc.MaxLOD = 0;
 	pd3dDevice->CreateSamplerState( &d3dSamplerDesc, &pd3dSamplerState );
 
-	m_pSkyboxTexture = new CTexture( 6, 1, 0, 0 );
-	m_pSkyboxTexture->SetSampler( 0, pd3dSamplerState );
+	m_pMeshTexture = new CTexture( 6, 1, 0, 0 );
+	m_pMeshTexture->SetSampler( 0, pd3dSamplerState );
 	pd3dSamplerState->Release( );
-	m_pSkyboxTexture->AddRef( );
+	m_pMeshTexture->AddRef( );
 
 	OnChangeSkyBoxTextures( pd3dDevice, 1 );
 }
@@ -502,8 +609,8 @@ CSkyBoxMesh::~CSkyBoxMesh( )
 {
 	if (m_pd3dDepthStencilState)
 		m_pd3dDepthStencilState->Release( );
-	if (m_pSkyboxTexture)
-		m_pSkyboxTexture->Release( );
+	if (m_pMeshTexture)
+		m_pMeshTexture->Release( );
 }
 
 void CSkyBoxMesh::OnChangeSkyBoxTextures( ID3D11Device *pd3dDevice, int nIndex )
@@ -514,32 +621,32 @@ void CSkyBoxMesh::OnChangeSkyBoxTextures( ID3D11Device *pd3dDevice, int nIndex )
 
 	_stprintf_s( pstrTextureName, _T( "./SkyBox/SkyBox_Front_%d.jpg" ), nIndex, 80 );
 	D3DX11CreateShaderResourceViewFromFile( pd3dDevice, pstrTextureName, NULL, NULL, &pd3dsrvTexture, NULL );
-	m_pSkyboxTexture->SetTexture( 0, pd3dsrvTexture );
+	m_pMeshTexture->SetTexture( 0, pd3dsrvTexture );
 	pd3dsrvTexture->Release( );
 
 	_stprintf_s( pstrTextureName, _T( "./SkyBox/SkyBox_Back_%d.jpg" ), nIndex, 80 );
 	D3DX11CreateShaderResourceViewFromFile( pd3dDevice, pstrTextureName, NULL, NULL, &pd3dsrvTexture, NULL );
-	m_pSkyboxTexture->SetTexture( 1, pd3dsrvTexture );
+	m_pMeshTexture->SetTexture( 1, pd3dsrvTexture );
 	pd3dsrvTexture->Release( );
 
 	_stprintf_s( pstrTextureName, _T( "./SkyBox/SkyBox_Left_%d.jpg" ), nIndex, 80 );
 	D3DX11CreateShaderResourceViewFromFile( pd3dDevice, pstrTextureName, NULL, NULL, &pd3dsrvTexture, NULL );
-	m_pSkyboxTexture->SetTexture( 2, pd3dsrvTexture );
+	m_pMeshTexture->SetTexture( 2, pd3dsrvTexture );
 	pd3dsrvTexture->Release( );
 
 	_stprintf_s( pstrTextureName, _T( "./SkyBox/SkyBox_Right_%d.jpg" ), nIndex, 80 );
 	D3DX11CreateShaderResourceViewFromFile( pd3dDevice, pstrTextureName, NULL, NULL, &pd3dsrvTexture, NULL );
-	m_pSkyboxTexture->SetTexture( 3, pd3dsrvTexture );
+	m_pMeshTexture->SetTexture( 3, pd3dsrvTexture );
 	pd3dsrvTexture->Release( );
 
 	_stprintf_s( pstrTextureName, _T( "./SkyBox/SkyBox_Top_%d.jpg" ), nIndex, 80 );
 	D3DX11CreateShaderResourceViewFromFile( pd3dDevice, pstrTextureName, NULL, NULL, &pd3dsrvTexture, NULL );
-	m_pSkyboxTexture->SetTexture( 4, pd3dsrvTexture );
+	m_pMeshTexture->SetTexture( 4, pd3dsrvTexture );
 	pd3dsrvTexture->Release( );
 
 	_stprintf_s( pstrTextureName, _T( "./SkyBox/SkyBox_Bottom_%d.jpg" ), nIndex, 80 );
 	D3DX11CreateShaderResourceViewFromFile( pd3dDevice, pstrTextureName, NULL, NULL, &pd3dsrvTexture, NULL );
-	m_pSkyboxTexture->SetTexture( 5, pd3dsrvTexture );
+	m_pMeshTexture->SetTexture( 5, pd3dsrvTexture );
 	pd3dsrvTexture->Release( );
 }
 
@@ -550,14 +657,14 @@ void CSkyBoxMesh::Render( ID3D11DeviceContext *pd3dDeviceContext )
 	pd3dDeviceContext->IASetPrimitiveTopology( m_d3dPrimitiveTopology );
 
 	// 스카이 박스를 그리기 위한 샘플러 상태 객체와 깊이 스텐실 상태 객체를 설정
-	m_pSkyboxTexture->UpdateSamplerShaderVariable( pd3dDeviceContext, 0, 0 );
+	m_pMeshTexture->UpdateSamplerShaderVariable( pd3dDeviceContext, 0, 0 );
 	pd3dDeviceContext->OMSetDepthStencilState( m_pd3dDepthStencilState, 1 );
 
 	// 스카이 박스의 6개의 면을 순서대로 그린다.
 	for (int i = 0; i < 6; i++)
 	{
 		// 스카이 박스의 각 면을 그릴 때 사용할 텍스처를 설정
-		m_pSkyboxTexture->UpdateTextureShaderVariable( pd3dDeviceContext, i, 0 );
+		m_pMeshTexture->UpdateTextureShaderVariable( pd3dDeviceContext, i, 0 );
 		pd3dDeviceContext->DrawIndexed( 4, 0, i * 4 );
 	}
 	pd3dDeviceContext->OMSetDepthStencilState( NULL, 1 );
@@ -585,10 +692,10 @@ CObjectMesh::CObjectMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, int Texture
 	vector<XMFLOAT2> pvTexCoords( m_nVertices );
 	vector<XMFLOAT3> pvNormals( m_nVertices );
 
-	for (int i = 0; i < vertex.m_pVertexes.size( ); i++)
+	for (int i = 0; i < vertex.m_pVertices.size( ); i++)
 	{
-		m_vPositions[i] = vertex.m_pVertexes[i].m_position;
-		pvTexCoords[i] = vertex.m_pVertexes[i].m_textureUV;
+		m_vPositions[i] = vertex.m_pVertices[i].m_position;
+		pvTexCoords[i] = vertex.m_pVertices[i].m_textureUV;
 	}
 
 	//pvNormals.resize( 26 );
@@ -681,30 +788,6 @@ CObjectMesh::CObjectMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, int Texture
 	m_pMeshTexture->AddRef( );
 }
 
-void CObjectMesh::CreateRasterizerState( ID3D11Device *pd3dDevice )
-{
-	D3D11_RASTERIZER_DESC d3dRastersizerDesc;
-	::ZeroMemory( &d3dRastersizerDesc, sizeof( D3D11_RASTERIZER_DESC ) );
-	d3dRastersizerDesc.CullMode = D3D11_CULL_FRONT;
-	// 솔리드와 와이어 설정할 수 있음
-	d3dRastersizerDesc.FrontCounterClockwise = FALSE;
-	d3dRastersizerDesc.FillMode = D3D11_FILL_SOLID;
-	pd3dDevice->CreateRasterizerState( &d3dRastersizerDesc, &m_pd3dRasterizerState );
-}
-
-void CObjectMesh::ChangeRasterizerState( ID3D11Device* pd3dDevice, bool ClockWise, D3D11_CULL_MODE CullMode, D3D11_FILL_MODE FillMode )
-{
-	if (m_pd3dRasterizerState)
-		m_pd3dRasterizerState->Release( );
-
-	D3D11_RASTERIZER_DESC d3dRastersizerDesc;
-	::ZeroMemory( &d3dRastersizerDesc, sizeof( D3D11_RASTERIZER_DESC ) );
-	d3dRastersizerDesc.CullMode = CullMode;
-	d3dRastersizerDesc.FrontCounterClockwise = ClockWise;
-	d3dRastersizerDesc.FillMode = FillMode;
-	pd3dDevice->CreateRasterizerState( &d3dRastersizerDesc, &m_pd3dRasterizerState );
-}
-
 CObjectMesh::~CObjectMesh( )
 {
 	if (m_pd3dDepthStencilState)
@@ -713,17 +796,6 @@ CObjectMesh::~CObjectMesh( )
 		m_pMeshTexture->Release( );
 }
 
-void CObjectMesh::OnChangeTexture( ID3D11Device *pd3dDevice, _TCHAR *texturePath, int index )
-{
-	_TCHAR pstrTextureName[80];
-	ID3D11ShaderResourceView *pd3dsrvTexture = NULL;
-
-	// 그라운드 텍스처 지정
-	_stprintf_s( pstrTextureName, texturePath, 0, 80 );
-	D3DX11CreateShaderResourceViewFromFile( pd3dDevice, pstrTextureName, NULL, NULL, &pd3dsrvTexture, NULL );
-	m_pMeshTexture->SetTexture( index, pd3dsrvTexture );
-	pd3dsrvTexture->Release( );
-}
 
 void CObjectMesh::Render( ID3D11DeviceContext *pd3dDeviceContext )
 {
@@ -740,32 +812,17 @@ void CObjectMesh::Render( ID3D11DeviceContext *pd3dDeviceContext )
 	pd3dDeviceContext->OMSetDepthStencilState( NULL, 1 );
 }
 
-void CObjectMesh::FindMinMax( )
+CAnimatedMesh::CAnimatedMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, int TextureCount ) : CMeshTextured( pd3dDevice )
 {
-	float *arrX = new float[m_nVertices];
-	float *arrY = new float[m_nVertices];
-	float *arrZ = new float[m_nVertices];
 
-	for (int i = 0; i < m_nVertices; i++)
-	{
-		arrX[i] = m_vPositions[i].x;
-		arrY[i] = m_vPositions[i].y;
-		arrZ[i] = m_vPositions[i].z;
-	}
+}
 
-	QuickSort( arrX, 0, m_nVertices-1 );
-	QuickSort( arrY, 0, m_nVertices-1 );
-	QuickSort( arrZ, 0, m_nVertices-1 );
+CAnimatedMesh::~CAnimatedMesh( )
+{
 
-	min.x = arrX[0];
-	min.y = arrY[0];
-	min.z = arrZ[0];
-	
-	max.x = arrX[m_nVertices-1];
-	max.y = arrY[m_nVertices-1];
-	max.z = arrZ[m_nVertices-1];
-	
-	delete[ ] arrX;
-	delete[ ] arrY;
-	delete[ ] arrZ;
+}
+
+void CAnimatedMesh::Render( ID3D11DeviceContext *pd3dDeviceContext )
+{
+
 }

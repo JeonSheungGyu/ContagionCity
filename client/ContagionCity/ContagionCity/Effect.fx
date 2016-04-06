@@ -161,27 +161,6 @@ VS_TEXTURED_LIGHTING_COLOR_OUTPUT VSTexturedLightingColor(VS_TEXTURED_LIGHTING_C
 {
 	VS_TEXTURED_LIGHTING_COLOR_OUTPUT output = (VS_TEXTURED_LIGHTING_COLOR_OUTPUT)0;
 
-	//input.normal = gtxtNormalTexture.Sample( gSamplerState, input.texCoord );
-
-	//float weights[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	//weights[0] = vin.weights.x;
-	//weights[1] = vin.weights.y;
-	//weights[2] = vin.weights.z;
-	//weights[3] = 1.0f - weights[0] - weights[1] - weights[2];
-
-	//// 저점 혼합 수행
-	//float3 posL = float3( 0.0f, 0.0f, 0.0f );
-	//	float3 normalL = float3 ( 0.0f, 0.0f, 0.0f );
-	//	float3 tangentL = float3 ( 0.0f, 0.0f, 0.0f );
-
-	//	for (int i = 0; i < 4; i++)
-	//	{
-	//		// 법선 변환 시 변환 행렬에 비균등 비례가 없다고 가정
-	//		posL += weights[i] * mul( float4( vin.position, 1.0f ), gBoneTransforms[vin.boneIndices[i] ).xyz);
-	//		normalL += weights[i] * mul( float4( vin.normal, 1.0f ), (float3x3)gBoneTransforms[vin.boneIndices[i] ));
-	//		tangentL += weights[i] * mul( float4( vin.tangent.xyz, 1.0f ), ( float3x3 )gBoneTransforms[vin.boneIndices[i] ));
-	//	}
-
 	output.normalW = mul(input.normal, (float3x3)gmtxWorld);
 	output.positionW = mul(float4(input.position, 1.0f), gmtxWorld).xyz;
 	output.position = mul(mul(float4(output.positionW, 1.0f), gmtxView), gmtxProjection);
@@ -199,3 +178,64 @@ float4 PSTexturedLightingColor(VS_TEXTURED_LIGHTING_COLOR_OUTPUT input) : SV_Tar
 
 		return(cColor);
 }
+
+
+struct SkinnedVertexIn
+{
+	float3 PosL : POSITION;
+	float3 NormalL : NORMAL;
+	float2 TexCoord : TEXCOORD;
+	float4 TangentL : TANGENT;
+	float3 Weights : WEIGHTS;
+	float4 BoneIndices : BONEINDICES;
+};
+
+struct SkinnedVertexOut
+{
+	float4 PosH       : SV_POSITION;
+	float3 PosW       : POSITION;
+	float3 NormalW    : NORMAL;
+	float4 TangentW   : TANGENT;
+	float2 Tex        : TEXCOORD0;
+};
+
+//SkinnedVertexOut SkinnedVS( SkinnedVertexIn vin )
+//{
+//	SkinnedVertexOut vout;
+//
+//	float weights[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+//	weights[0] = vin.weights.x;
+//	weights[1] = vin.weights.y;
+//	weights[2] = vin.weights.z;
+//	weights[3] = 1.0f - weights[0] - weights[1] - weights[2];
+//
+//	float3 posL = float3( 0.0f, 0.0f, 0.0f );
+//		float3 normalL = float3( 0.0f, 0.0f, 0.0f );
+//		float3 tangentL = float3( 0.0f, 0.0f, 0.0f );
+//		for (int i = 0; i < 4; ++i)
+//		{
+//			posL += weights[i] * mul( float4( vin.posL, 1.0f ), gBoneTransforms[vin.BoneIndices[i]] ).xyz;
+//			normalL += weights[[i] * mul( vin.normalL, ( float3x3 )gBoneTransforms[vin.BoneIndices[i]] );
+//			tangentL += weights[i] * mul( vin.tangentL.xyz, ( float3x3 )gBoneTransforms[vin.BoneIndices[i]] );
+//		}
+//
+//	vout.PosW = mul( float4x4( posL, 1.0f ), gmtxWorld ).xyz;
+//	vout.TangentW = float4( mul( tangentL, ( float3x3 )gmtxWorld ), vin.tangentL.w );
+//	vout.PosH = mul( float4( posL, 1.0f ), gmtxWorld );
+//	vout.PosH = mul( vout.PosH, gmtxView );
+//	vout.PosH = mul( vout.PosH, gmtxProjection );
+//
+//	vout.Tex = vin.Tex;
+//
+//	return vout;
+//}
+//
+//float4 SkinnedPS( SkinnedVertexOut input ) : SV_Target
+//{
+//	input.normalW = gtxtNormalTexture.Sample( gSamplerState, input.Tex );
+//
+//	float4 cIllumination = Lighting( input.PosW, input.NormalW );
+//		float4 cColor = gtxtTexture.Sample( gSamplerState, input.Tex ) * cIllumination;
+//
+//		return( cColor );
+//}
