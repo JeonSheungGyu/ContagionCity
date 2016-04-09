@@ -70,5 +70,8 @@ public:
 	void Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera );
 
 	void SetCamera( CCamera *pCamera ) { m_pCamera = pCamera; }
+
+	int getShaderCount( ){ return m_nShaders; }
+	CShader** getShaders( ){ return m_ppShaders; }
 };
 

@@ -41,6 +41,9 @@ public:
 	virtual void OnPrepareRender( ID3D11DeviceContext *pd3dDeviceContext );
 	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera = NULL );
 
+	int getObjectCount( ){ return m_nObjects; }
+	CGameObject** getObjects( ){ return m_ppObjects; }
+
 protected:
 	ID3D11VertexShader *m_pd3dVertexShader;
 	ID3D11InputLayout *m_pd3dVertexLayout;
@@ -84,6 +87,8 @@ public:
 	virtual void CreateShader( ID3D11Device *pd3dDevice );
 	virtual void BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbxMesh> meshes );
 	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera = NULL );
+
+	bool CollisionCheck( CGameObject* pObject );
 
 	CPlayer* GetPlayer( int nIndex = 0 ){ return (CPlayer*)m_ppObjects[nIndex]; }
 };

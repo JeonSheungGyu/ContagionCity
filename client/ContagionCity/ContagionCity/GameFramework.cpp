@@ -360,3 +360,28 @@ void CGameFramework::FrameAdvance( )
 	m_GameTimer.GetFrameRate( m_pszBuffer + 13, 50 );
 	::SetWindowText( m_hWnd, m_pszBuffer );
 }
+
+void CGameFramework::CollisionCheck( )
+{
+	// 플레이어와 각각의 오브젝트들의 충돌체크를 검사
+	// 각 셰이더에 있는 오브젝트들과 검사하여 충돌되면 위치 이동 불가
+	// 플레이어가 이동할 때 검사해야함
+
+	// 세이더 전체 검색
+	int shaderCount = m_pScene->getShaderCount( );
+	for (int i = 0; i <shaderCount; i++)
+	{
+		// 각 세이더가 가지는 오브젝트 검색
+		int objCount = m_pScene->getShaders( )[i]->getObjectCount( );
+		for (int j = 0; j <objCount; j++)
+		{
+			// 오브젝트와 일일히 검사
+			if (m_pPlayerShader->CollisionCheck( ( m_pScene->getShaders( ) )[i]->getObjects( )[j] ))
+			{
+				// 충돌 되었을 때 이동 불가
+
+			}
+		}
+	}
+		
+}

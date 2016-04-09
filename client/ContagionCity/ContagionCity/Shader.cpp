@@ -191,6 +191,19 @@ void CPlayerShader::BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbxMesh
 	m_ppObjects[0] = pPlayer;
 }
 
+bool CPlayerShader::CollisionCheck( CGameObject* pObject )
+{
+	// 충될되면 true 반환
+	AABB playerBox = m_ppObjects[0]->m_bcMeshBoundingCube;
+	AABB objBox = pObject->m_bcMeshBoundingCube;
+
+	// AABB 출돌 검사 알고리즘 구현
+	//if ()
+	//	return true;
+	
+	return false;
+}
+
 void CPlayerShader::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera )
 {
 	// 3인칭 카메라일 때 플레이어를 렌더링
@@ -233,6 +246,7 @@ void CBackgroundShader::BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbx
 	{
 		ObjectInfo *pGround = new ObjectInfo( pd3dDevice, vertex[i] );
 		CObjectMesh *pGroundMesh = new CObjectMesh( pd3dDevice, vertex[i], 2 );
+		pGroundMesh->FindMinMax( );		// AABB 값 세팅
 		pGroundMesh->OnChangeTexture( pd3dDevice, _T( "./res/city_base_0314_texture.dds" ), 0 );
 		pGroundMesh->OnChangeTexture( pd3dDevice, _T( "./res/city_base_0314_normal.dds" ), 1 );
 		pGround->SetMesh( pGroundMesh, 0 );

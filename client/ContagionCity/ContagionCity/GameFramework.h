@@ -61,6 +61,9 @@ public:
 	void OnProcessingKeyboardMessage( HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam );
 	LRESULT CALLBACK OnProcessingWindowMessage( HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam );
 
+	// 충돌체크
+	void CollisionCheck( );
+
 public:
 	CPlayerShader *m_pPlayerShader;
 };

@@ -103,12 +103,12 @@ void CScene::BuildObjects( ID3D11Device *pd3dDevice )
 			}
 			case ObjectLayer::LAYER_ENEMY:
 			{
-				background.push_back( tempMesh );
+				enemy.push_back( tempMesh );
 				break;
 			}
 			case ObjectLayer::LAYER_NPC:
 			{
-				background.push_back( tempMesh );
+				npc.push_back( tempMesh );
 				break;
 			}
 			default:
@@ -141,7 +141,7 @@ void CScene::LoadFBXs( )
 {
 	// fbx 파일 로딩
 	FBXManager::GetInstance( )->LoadFBX( "res/City_Base_0225.FBX", LAYER_BACKGROUND, BACK_GROUND );
-	FBXManager::GetInstance( )->LoadFBX( "res/City_Wire_Fance_0223.FBX", LAYER_BACKGROUND, BACK_FENCE );
+//	FBXManager::GetInstance( )->LoadFBX( "res/City_Wire_Fance_0223.FBX", LAYER_BACKGROUND, BACK_FENCE );
 
 	m_nFbxCount = FBXManager::GetInstance( )->m_pMeshes.size( );
 }
@@ -199,3 +199,4 @@ void CScene::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera )
 		m_ppShaders[i]->Render( pd3dDeviceContext, pCamera );
 	}
 }
+
