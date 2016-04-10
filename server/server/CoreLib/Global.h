@@ -11,6 +11,7 @@
 #include <time.h>
 #include <DbgHelp.h>
 #include <vector>
+#include <map>
 
 /*
 입출력 타입을 정의
