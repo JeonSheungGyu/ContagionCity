@@ -197,11 +197,16 @@ bool CPlayerShader::CollisionCheck( CGameObject* pObject )
 	AABB playerBox = m_ppObjects[0]->m_bcMeshBoundingCube;
 	AABB objBox = pObject->m_bcMeshBoundingCube;
 
-	// AABB 출돌 검사 알고리즘 구현
-	//if ()
-	//	return true;
-	
-	return false;
+	// AABB 출돌 검사
+	if (playerBox.m_vMax.x < objBox.m_vMin.x) return false;
+	if (playerBox.m_vMax.y < objBox.m_vMin.y) return false;
+	if (playerBox.m_vMax.z < objBox.m_vMin.z) return false;
+	if (playerBox.m_vMin.x > objBox.m_vMax.x) return false;
+	if (playerBox.m_vMin.y > objBox.m_vMax.y) return false;
+	if (playerBox.m_vMin.z > objBox.m_vMax.z) return false;
+
+	// 아무런 체크도 되지 않으면 충돌한 것임
+	return true;
 }
 
 void CPlayerShader::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera )

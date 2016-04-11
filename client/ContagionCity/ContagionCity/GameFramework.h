@@ -62,7 +62,7 @@ public:
 	LRESULT CALLBACK OnProcessingWindowMessage( HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam );
 
 	// 충돌체크
-	void CollisionCheck( );
+	bool CollisionCheck( );
 
 public:
 	CPlayerShader *m_pPlayerShader;

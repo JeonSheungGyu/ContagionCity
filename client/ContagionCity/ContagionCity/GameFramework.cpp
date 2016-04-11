@@ -324,7 +324,12 @@ void CGameFramework::ProcessInput( )
 			이동 거리는 시간에 비례하도록 한다. 플레이어의 이동 속력은 (50/초)로 가정한다.
 			만약 플레이어의 이동 속력이 있다면 그 값을 사용한다.*/
 			if (dwDirection)
-				m_pPlayer->Move( dwDirection, 50.0f * m_GameTimer.GetTimeElapsed( ), false );
+			{
+				// 현재 플레이어의 AABB 박스의 y좌표 최소가 -0.5임. 따라서 0보다 작으므로 바닥과 겹침, 그로 인해 못움직임
+				// 충돌체크 자체는 제대로 되고 있으나 플레이어의 위치가 문제
+				if (!CollisionCheck())
+					m_pPlayer->Move( dwDirection, 50.0f * m_GameTimer.GetTimeElapsed( ), false );
+			}
 		}
 	}
 	m_pPlayer->Update( m_GameTimer.GetTimeElapsed( ) );
@@ -361,7 +366,7 @@ void CGameFramework::FrameAdvance( )
 	::SetWindowText( m_hWnd, m_pszBuffer );
 }
 
-void CGameFramework::CollisionCheck( )
+bool CGameFramework::CollisionCheck( )
 {
 	// 플레이어와 각각의 오브젝트들의 충돌체크를 검사
 	// 각 셰이더에 있는 오브젝트들과 검사하여 충돌되면 위치 이동 불가
@@ -369,7 +374,8 @@ void CGameFramework::CollisionCheck( )
 
 	// 세이더 전체 검색
 	int shaderCount = m_pScene->getShaderCount( );
-	for (int i = 0; i <shaderCount; i++)
+	// 셰이더의 0번째는 항상 스카이박스, 스카이박스와는 충돌체크할 필요가 없음
+	for (int i = 1; i <shaderCount; i++)
 	{
 		// 각 세이더가 가지는 오브젝트 검색
 		int objCount = m_pScene->getShaders( )[i]->getObjectCount( );
@@ -377,11 +383,8 @@ void CGameFramework::CollisionCheck( )
 		{
 			// 오브젝트와 일일히 검사
 			if (m_pPlayerShader->CollisionCheck( ( m_pScene->getShaders( ) )[i]->getObjects( )[j] ))
-			{
-				// 충돌 되었을 때 이동 불가
-
-			}
+				return true;
 		}
 	}
-		
+	return false;
 }
