@@ -33,7 +33,7 @@ VOID CServerIocp::KeepThreadCallback(VOID)
 		if (dwResult == WAIT_OBJECT_0) return;
 
 		// 접속해 있는 모든 Session에 패킷을 전송합니다.
-		m_oConnectedSessionManager.WriteAll(0x3000000, (BYTE*)&dwKeepAlive, sizeof(DWORD));
+		m_oConnectedUserManager.WriteAll(0x3000000, (BYTE*)&dwKeepAlive, sizeof(DWORD));
 	}
 }
 
@@ -43,22 +43,22 @@ VOID CServerIocp::OnIoConnected(VOID *pObject)
 	// 여기 가상함수에서 넘어온 pObject는 접속을 담당한 개체가 넘어오게 됩니다.
 	// 이것을 여기서 클라이언트를 관리할 CConnectedSession으로 형변환을 해 주어 받게 됩니다.
 	// 형변환은 reinterpret_cast를 사용합니다.
-	CConnectedSession *pConnectedSession = reinterpret_cast<CConnectedSession*>(pObject);
+	CConnectedUser *pConnectedUser = reinterpret_cast<CConnectedUser*>(pObject);
 	
 	// 접속한 개체의 IO를 IOCP를 통해서 받기위해서 IOCP에 등록하는 과정을 거치게 됩니다.
 	// 여기서 GetSocket을 이용해서 소켓을 등록하고 해당 키는 개체의 포인터를 이용하게 됩니다.
-	if (!CIocp::RegisterSocketToIocp(pConnectedSession->GetSocket(), reinterpret_cast<ULONG_PTR>(pConnectedSession))) 
+	if (!CIocp::RegisterSocketToIocp(pConnectedUser->GetSocket(), reinterpret_cast<ULONG_PTR>(pConnectedUser)))
 		return;
 
 	// IOCP 초기 받기를 실행해 줍니다.
-	if (!pConnectedSession->InitializeReadForIocp())
+	if (!pConnectedUser->InitializeReadForIocp())
 	{ 
 		// 만일 실패했을 경우 개체를 재시작해 줍니다.
-		pConnectedSession->Restart(m_pListen->GetSocket()); 
+		pConnectedUser->Reload(m_pListen->GetSocket());
 		return; 
 	}
 
-	pConnectedSession->SetConnected(TRUE);
+	pConnectedUser->SetIsConnected(TRUE);
 }
 
 VOID CServerIocp::OnIoDisconnected(VOID *pObject)
@@ -66,12 +66,12 @@ VOID CServerIocp::OnIoDisconnected(VOID *pObject)
 	// 여기 가상함수에서 넘어온 pObject는 OnIoConnected와 마찬가지로 접속을 담당한 개체가 넘어오게 됩니다.
 	// 이것을 여기서 클라이언트를 관리할 CConnectedSession으로 형변환을 해 주어 받게 됩니다.
 	// 형변환은 reinterpret_cast를 사용합니다.
-	CConnectedSession *pConnectedSession = reinterpret_cast<CConnectedSession*>(pObject);
+	CConnectedUser *pConnectedUser = reinterpret_cast<CConnectedUser*>(pObject);
 	
 	// 접속을 종료하였기 때문에 개체를 재시작해 줍니다.
-	pConnectedSession->Restart(m_pListen->GetSocket());
+	pConnectedUser->Reload(m_pListen->GetSocket());
 
-	pConnectedSession->SetConnected(FALSE);
+	pConnectedUser->SetIsConnected(FALSE);
 }
 
 VOID CServerIocp::OnIoRead(VOID *pObject, DWORD dwDataLength)
@@ -79,7 +79,7 @@ VOID CServerIocp::OnIoRead(VOID *pObject, DWORD dwDataLength)
 	// 여기 가상함수에서 넘어온 pObject는 OnIoConnected와 마찬가지로 접속을 담당한 개체가 넘어오게 됩니다.
 	// 이것을 여기서 클라이언트를 관리할 CConnectedSession으로 형변환을 해 주어 받게 됩니다.
 	// 형변환은 reinterpret_cast를 사용합니다.
-	CConnectedSession *pConnectedSession = reinterpret_cast<CConnectedSession*>(pObject);
+	CConnectedUser *pConnectedUser = reinterpret_cast<CConnectedUser*>(pObject);
 
 	// 받은 프로토콜과 패킷 길이를 저장하는 변수
 	DWORD dwProtocol = 0, dwPacketLength = 0;
@@ -87,44 +87,44 @@ VOID CServerIocp::OnIoRead(VOID *pObject, DWORD dwDataLength)
 	BYTE Packet[MAX_BUFFER_LENGTH] = {0,};
 
 	// CNetworkSession에서 CPacketSession으로 데이터를 가져옵니다.
-	if (pConnectedSession->ReadPacketForIocp(dwDataLength))
+	if (pConnectedUser->ReadPacketForIocp(dwDataLength))
 	{
 		// CPacketSession에서 패킷을 뽑아 냅니다.
-		while (pConnectedSession->GetPacket(dwProtocol, Packet, dwPacketLength))
+		while (pConnectedUser->GetPacket(dwProtocol, Packet, dwPacketLength))
 		{
 			// 프로토콜에 따른 switch 문
 			switch (dwProtocol)
 			{
 			// 사용자 등록 프로토콜일 경우
 			case PT_REG_USER:
-				PROC_PT_REG_USER(pConnectedSession, dwProtocol, Packet, dwPacketLength);
+				PROC_PT_REG_USER(pConnectedUser, dwProtocol, Packet, dwPacketLength);
 				break;
 			// 사용자 검색 프로토콜일 경우
 			case PT_QUERY_USER:
-				PROC_PT_QUERY_USER(pConnectedSession, dwProtocol, Packet, dwPacketLength);
+				PROC_PT_QUERY_USER(pConnectedUser, dwProtocol, Packet, dwPacketLength);
 				break;
 			// 컴퓨터 등록 프로토콜일 경우
 			case PT_REG_COMPUTER:
-				PROC_PT_REG_COMPUTER(pConnectedSession, dwProtocol, Packet, dwPacketLength);
+				PROC_PT_REG_COMPUTER(pConnectedUser, dwProtocol, Packet, dwPacketLength);
 				break;
 			// 컴퓨터 검색 프로토콜일 경우
 			case PT_QUERY_COMPUTER:
-				PROC_PT_QUERY_COMPUTER(pConnectedSession, dwProtocol, Packet, dwPacketLength);
+				PROC_PT_QUERY_COMPUTER(pConnectedUser, dwProtocol, Packet, dwPacketLength);
 				break;
 			// 프로그램 등록 프로토콜일 경우
 			case PT_REG_PROGRAM:
-				PROC_PT_REG_PROGRAM(pConnectedSession, dwProtocol, Packet, dwPacketLength);
+				PROC_PT_REG_PROGRAM(pConnectedUser, dwProtocol, Packet, dwPacketLength);
 				break;
 			// 프로그램 검색 프로토콜일 경우
 			case PT_QUERY_PROGRAM:
-				PROC_PT_QUERY_PROGRAM(pConnectedSession, dwProtocol, Packet, dwPacketLength);
+				PROC_PT_QUERY_PROGRAM(pConnectedUser, dwProtocol, Packet, dwPacketLength);
 				break;
 			}
 		}
 	}
 
-	if (!pConnectedSession->InitializeReadForIocp())
-		pConnectedSession->Restart(m_pListen->GetSocket());
+	if (!pConnectedUser->InitializeReadForIocp())
+		pConnectedUser->Reload(m_pListen->GetSocket());
 }
 
 VOID CServerIocp::OnIoWrote(VOID *pObject, DWORD dwDataLength)
@@ -178,7 +178,7 @@ BOOL CServerIocp::Begin(VOID)
 
 	// CConnectedSessionManager를 시작합니다.
 	// 시작 함수내에는 CConnectedSession을 생성하고 Accept상태로 만드는 코드가 추가되어 있습니다.
-	if (!m_oConnectedSessionManager.Begin(m_pListen->GetSocket()))
+	if (!m_oConnectedUserManager.Begin(MAX_USER, m_pListen->GetSocket()))
 	{
 		CServerIocp::End();
 
@@ -257,7 +257,7 @@ VOID CServerIocp::End(VOID)
 	CIocp::End();
 
 	// CConnectedSessionManager를 종료합니다.
-	m_oConnectedSessionManager.End();
+	m_oConnectedUserManager.End();
 
 	// 생성했던 Listen용 개체를 종료하고 삭제해 줍니다.
 	if (m_pListen)

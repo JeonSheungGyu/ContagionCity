@@ -7,7 +7,7 @@
 
 #define MAX_USER 100
 #define DEFAULT_PORT 1820
-
+#define MAX_USER 100
 #include "../CoreLib/Global.h"
 
 typedef struct _USER
@@ -35,6 +35,22 @@ typedef struct _PROGRAM
 	WCHAR szComment[32];
 } PROGRAM;
 
+//유저의 접속상태를 나타내기위한 STATUS
+typedef enum USER_STATUS
+{
+	US_NONE = 0,
+	US_CHANNEL_ENTERING,
+	US_CHANNEL_ENTERED,
+	US_ROOM_ENTERING,
+	US_ROOM_ENTERED,
+	US_ROOM_LEAVING,
+	US_GAME_STARTING,
+	US_GAME_STARTED,
+	US_GAME_ENDING
+};
+
+
+
 #include "../CoreLib/CriticalSection.h"
 #include "../CoreLib/MultiThreadSync.h"
 #include "../CoreLib/MemoryPool.h"
@@ -51,6 +67,6 @@ typedef struct _PROGRAM
 #include "../Packet/PT_ReadPacket.h"
 #include "../Packet/PT_WritePacket.h"
 
-#include "ConnectedSession.h"
-#include "ConnectedSessionManager.h"
+#include "ConnectedUser.h"
+#include "ConnectedUserManager.h"
 #include "ServerIocp.h"

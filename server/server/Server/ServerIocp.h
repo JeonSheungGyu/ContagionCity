@@ -26,7 +26,7 @@ protected:
 private:
 	// 서버의 Listen을 담당할 개체
 	CNetworkSession *m_pListen;
-	CConnectedSessionManager m_oConnectedSessionManager;
+	CConnectedUserManager m_oConnectedUserManager;
 
 	// KeepAlive Thread를 관리하는 핸들값
 	HANDLE m_hKeepThread;
@@ -42,10 +42,10 @@ private:
 
 private:
 	// 패킷 처리를 할 함수들
-	VOID PROC_PT_REG_USER(CConnectedSession *pConnectedSession, DWORD dwProtocol, BYTE *pPacket, DWORD dwPacketLength);
-	VOID PROC_PT_QUERY_USER(CConnectedSession *pConnectedSession, DWORD dwProtocol, BYTE *pPacket, DWORD dwPacketLength);
-	VOID PROC_PT_REG_COMPUTER(CConnectedSession *pConnectedSession, DWORD dwProtocol, BYTE *pPacket, DWORD dwPacketLength);
-	VOID PROC_PT_QUERY_COMPUTER(CConnectedSession *pConnectedSession, DWORD dwProtocol, BYTE *pPacket, DWORD dwPacketLength);
-	VOID PROC_PT_REG_PROGRAM(CConnectedSession *pConnectedSession, DWORD dwProtocol, BYTE *pPacket, DWORD dwPacketLength);
-	VOID PROC_PT_QUERY_PROGRAM(CConnectedSession *pConnectedSession, DWORD dwProtocol, BYTE *pPacket, DWORD dwPacketLength);
+	VOID PROC_PT_REG_USER(CConnectedUser *pConnectedSession, DWORD dwProtocol, BYTE *pPacket, DWORD dwPacketLength);
+	VOID PROC_PT_QUERY_USER(CConnectedUser *pConnectedSession, DWORD dwProtocol, BYTE *pPacket, DWORD dwPacketLength);
+	VOID PROC_PT_REG_COMPUTER(CConnectedUser *pConnectedSession, DWORD dwProtocol, BYTE *pPacket, DWORD dwPacketLength);
+	VOID PROC_PT_QUERY_COMPUTER(CConnectedUser *pConnectedSession, DWORD dwProtocol, BYTE *pPacket, DWORD dwPacketLength);
+	VOID PROC_PT_REG_PROGRAM(CConnectedUser *pConnectedSession, DWORD dwProtocol, BYTE *pPacket, DWORD dwPacketLength);
+	VOID PROC_PT_QUERY_PROGRAM(CConnectedUser *pConnectedSession, DWORD dwProtocol, BYTE *pPacket, DWORD dwPacketLength);
 };

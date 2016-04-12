@@ -8,7 +8,7 @@
 	READ_##PROTOCOL(pPacket, Data);
 
 // 사용자 등록 프로토콜 처리
-VOID CServerIocp::PROC_PT_REG_USER(CConnectedSession *pConnectedSession, DWORD dwProtocol, BYTE *pPacket, DWORD dwPacketLength)
+VOID CServerIocp::PROC_PT_REG_USER(CConnectedUser *pConnectedSession, DWORD dwProtocol, BYTE *pPacket, DWORD dwPacketLength)
 {
 	// 전처리 함수로 간략화
 	READ_PACKET(PT_REG_USER);
@@ -37,7 +37,7 @@ VOID CServerIocp::PROC_PT_REG_USER(CConnectedSession *pConnectedSession, DWORD d
 }
 
 // 사용자 검색 프로토콜 처리
-VOID CServerIocp::PROC_PT_QUERY_USER(CConnectedSession *pConnectedSession, DWORD dwProtocol, BYTE *pPacket, DWORD dwPacketLength)
+VOID CServerIocp::PROC_PT_QUERY_USER(CConnectedUser *pConnectedSession, DWORD dwProtocol, BYTE *pPacket, DWORD dwPacketLength)
 {
 	// 전처리 함수로 간략화
 	READ_PACKET(PT_QUERY_USER);
@@ -78,7 +78,7 @@ VOID CServerIocp::PROC_PT_QUERY_USER(CConnectedSession *pConnectedSession, DWORD
 }
 
 // 컴퓨터 등록 프로토콜 처리
-VOID CServerIocp::PROC_PT_REG_COMPUTER(CConnectedSession *pConnectedSession, DWORD dwProtocol, BYTE *pPacket, DWORD dwPacketLength)
+VOID CServerIocp::PROC_PT_REG_COMPUTER(CConnectedUser *pConnectedSession, DWORD dwProtocol, BYTE *pPacket, DWORD dwPacketLength)
 {
 	// 전처리 함수로 간략화
 	READ_PACKET(PT_REG_COMPUTER);
@@ -103,7 +103,7 @@ VOID CServerIocp::PROC_PT_REG_COMPUTER(CConnectedSession *pConnectedSession, DWO
 }
 
 // 컴퓨터 검색 프로토콜 처리
-VOID CServerIocp::PROC_PT_QUERY_COMPUTER(CConnectedSession *pConnectedSession, DWORD dwProtocol, BYTE *pPacket, DWORD dwPacketLength)
+VOID CServerIocp::PROC_PT_QUERY_COMPUTER(CConnectedUser *pConnectedSession, DWORD dwProtocol, BYTE *pPacket, DWORD dwPacketLength)
 {
 	// 전처리 함수로 간략화
 	READ_PACKET(PT_QUERY_COMPUTER);
@@ -144,7 +144,7 @@ VOID CServerIocp::PROC_PT_QUERY_COMPUTER(CConnectedSession *pConnectedSession, D
 }
 
 // 프로그램 등록 프로토콜 처리
-VOID CServerIocp::PROC_PT_REG_PROGRAM(CConnectedSession *pConnectedSession, DWORD dwProtocol, BYTE *pPacket, DWORD dwPacketLength)
+VOID CServerIocp::PROC_PT_REG_PROGRAM(CConnectedUser *pConnectedSession, DWORD dwProtocol, BYTE *pPacket, DWORD dwPacketLength)
 {
 	// 전처리 함수로 간략화
 	READ_PACKET(PT_REG_PROGRAM);
@@ -165,7 +165,7 @@ VOID CServerIocp::PROC_PT_REG_PROGRAM(CConnectedSession *pConnectedSession, DWOR
 }
 
 // 프로그램 검색 프로토콜 처리
-VOID CServerIocp::PROC_PT_QUERY_PROGRAM(CConnectedSession *pConnectedSession, DWORD dwProtocol, BYTE *pPacket, DWORD dwPacketLength)
+VOID CServerIocp::PROC_PT_QUERY_PROGRAM(CConnectedUser *pConnectedSession, DWORD dwProtocol, BYTE *pPacket, DWORD dwPacketLength)
 {
 	// 전처리 함수로 간략화
 	READ_PACKET(PT_QUERY_PROGRAM);

@@ -3,6 +3,16 @@
 
 #include "stdafx.h"
 
+
+DWORD	DEFAULT_MAX_HP = 50;
+DWORD	DEFAULT_MAX_AP = 50;
+
+
+#include "Character.h"
+#include "ConnectedUser.h"
+#include "ConnectedUserManager.h"
+
+
 int _tmain(int argc, _TCHAR* argv[])
 {
 	CoInitialize(NULL);
