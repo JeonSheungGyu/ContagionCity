@@ -48,7 +48,7 @@ typedef enum USER_STATUS
 	US_GAME_STARTED,
 	US_GAME_ENDING
 };
-
+#include <DirectXCollision.h>
 
 
 #include "../CoreLib/CriticalSection.h"

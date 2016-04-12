@@ -1,7 +1,8 @@
 #include "stdafx.h"
+#include "Object.h"
 #include "Character.h"
 
-CCharacter::CCharacter(VOID)
+CCharacter::CCharacter(VOID) : Object()
 {
 	mIndex = 0;
 	mJob = 0;
@@ -10,6 +11,10 @@ CCharacter::CCharacter(VOID)
 	mHP = 0;
 	mAP = 0;
 	mGameMoney = 0;
+	mLevel = 1;
+	mDefense = 20;
+	mAttack = 10;
+	mRequestEXP = 100;
 
 	memset(mEquips, 0, sizeof(mEquips));
 	memset(mName, 0, sizeof(mName));
@@ -28,6 +33,10 @@ VOID CCharacter::Initialize(VOID)
 	mHP = 0;
 	mAP = 0;
 	mGameMoney = 0;
+	mLevel = 1;
+	mDefense = 20;
+	mAttack = 10;
+	mRequestEXP = 100;
 
 	memset(mEquips, 0, sizeof(mEquips));
 	memset(mName, 0, sizeof(mName));
