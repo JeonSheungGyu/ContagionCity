@@ -41,3 +41,4 @@ VOID CCharacter::Initialize(VOID)
 	memset(mEquips, 0, sizeof(mEquips));
 	memset(mName, 0, sizeof(mName));
 }
+

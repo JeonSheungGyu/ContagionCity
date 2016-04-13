@@ -8,8 +8,10 @@
 #define MAX_USER 100
 #define DEFAULT_PORT 1820
 #define MAX_USER 100
-#include "../CoreLib/Global.h"
+#define MAX_ROOM 100
+#define CONFIG_FILENAME								_T("./config.ini")
 
+#include "../CoreLib/Global.h"
 typedef struct _USER
 {
 	WCHAR szUserID[32];
@@ -48,6 +50,9 @@ typedef enum USER_STATUS
 	US_GAME_STARTED,
 	US_GAME_ENDING
 };
+
+
+
 #include <DirectXCollision.h>
 
 
@@ -61,12 +66,16 @@ typedef enum USER_STATUS
 #include "../CoreLib/Stream.h"
 #include "../CoreLib/MiniDump.h"
 #include "../CoreLib/IniFile.h"
+#include "../CoreLib/Log.h"
 
-#include "Protocol.h"
-#include "../Packet/PT_Structure.h"
-#include "../Packet/PT_ReadPacket.h"
-#include "../Packet/PT_WritePacket.h"
+#include "ErrorCode.h"
+#include "TcpProtocol.h"
+#include "../Packet/Tcp_Structure.h"
+#include "../Packet/Tcp_ReadPacket.h"
+#include "../Packet/Tcp_WritePacket.h"
 
 #include "ConnectedUser.h"
 #include "ConnectedUserManager.h"
-#include "ServerIocp.h"
+#include "GameIocp.h"
+
+

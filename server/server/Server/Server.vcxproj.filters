@@ -19,15 +19,12 @@
     <Filter Include="소스 파일\Object">
       <UniqueIdentifier>{53bfe1da-bfb6-45fe-bf67-965d69d10b34}</UniqueIdentifier>
     </Filter>
+    <Filter Include="헤더 파일\Protocol">
+      <UniqueIdentifier>{db7ba2ef-759b-44b6-ac40-3675543ad201}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ProcProtocol.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="Server.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="ServerIocp.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
@@ -45,14 +42,20 @@
     <ClCompile Include="Character.cpp">
       <Filter>소스 파일\Object</Filter>
     </ClCompile>
+    <ClCompile Include="Room.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="RoomManager.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="LobbyProtocolProc.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="GameIocp.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Protocol.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="ServerIocp.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="stdafx.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -67,6 +70,21 @@
     </ClInclude>
     <ClInclude Include="Character.h">
       <Filter>헤더 파일\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Room.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="RoomManager.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="GameIocp.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="ErrorCode.h">
+      <Filter>헤더 파일\Protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="TcpProtocol.h">
+      <Filter>헤더 파일\Protocol</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

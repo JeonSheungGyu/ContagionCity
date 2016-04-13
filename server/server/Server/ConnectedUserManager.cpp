@@ -8,6 +8,7 @@ CConnectedUserManager::CConnectedUserManager(VOID)
 {
 	mMaxUserCount = 0;
 	mCurrentUserCount = 0;
+	mConnectedUserVector.clear();
 }
 
 CConnectedUserManager::~CConnectedUserManager(VOID)

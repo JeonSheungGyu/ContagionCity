@@ -3,7 +3,7 @@
 
 #include "stdafx.h"
 
-
+DWORD	DEFAULT_GAMETIME = 0;
 DWORD	DEFAULT_MAX_HP = 50;
 DWORD	DEFAULT_MAX_AP = 50;
 
@@ -15,6 +15,7 @@ DWORD	DEFAULT_MAX_AP = 50;
 
 int _tmain(int argc, _TCHAR* argv[])
 {
+
 	CoInitialize(NULL);
 
 	// Winsock을 사용하기 위한 DLL 로드
@@ -26,11 +27,11 @@ int _tmain(int argc, _TCHAR* argv[])
 		return 0;
 
 	// 서버를 시작하는곳
-	CServerIocp ServerIocp;
-	if (ServerIocp.Begin())
+	CGameIocp *GameIocp = new CGameIocp();
+	if (GameIocp->Begin())
 	{
 		getchar();
-		ServerIocp.End();
+		GameIocp->End();
 	}
 
 	// 종료시 DLL을 언로드 시킵니다.

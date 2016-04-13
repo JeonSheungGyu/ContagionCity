@@ -19,6 +19,7 @@ CConnectedUser::CConnectedUser(VOID)
 
 	mIsConnected = FALSE;
 
+	mIsReady = FALSE;
 
 	mSelectedCharacterSlot = 0;
 
@@ -49,7 +50,7 @@ BOOL CConnectedUser::Begin(VOID)
 
 	mIsConnected = FALSE;
 	
-
+	mIsReady = FALSE;
 
 	mSelectedCharacterSlot = 0;
 
@@ -78,7 +79,7 @@ BOOL CConnectedUser::End(VOID)
 
 	mIsConnected = FALSE;
 	
-
+	mIsReady = FALSE;
 	
 
 	mSelectedCharacterSlot = 0;

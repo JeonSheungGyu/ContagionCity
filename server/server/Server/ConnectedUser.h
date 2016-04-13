@@ -36,6 +36,12 @@ private:
 
 	//선택한 캐릭터 슬롯
 	USHORT				mSelectedCharacterSlot;
+
+	//게임레디
+	BOOL				mIsReady;
+
+	//로딩완료
+	BOOL				mIsLoadComplete;
 	//////////////////////////////////////////////////////////////////////////
 public:
 	BOOL				Begin(VOID);
@@ -64,9 +70,16 @@ public:
 	
 
 	inline CCharacter*	GetCharacterObject(USHORT slotIndex){ return &mCharacters[slotIndex]; }
-
+	inline CCharacter*	GetSelectedCharacterObject(){ return &mCharacters[mSelectedCharacterSlot]; }
 	inline USHORT		GetSelectedCharacterSlot(VOID){ CThreadSync Sync; return mSelectedCharacterSlot; }
 	inline VOID			SetSelectedCharacterSlot(USHORT slot){ CThreadSync Sync; mSelectedCharacterSlot = slot; }
 
+	//게임레디
+	inline BOOL			GetIsReady() { return mIsReady; }
+	inline VOID			SetIsReady(BOOL ready) { mIsReady = ready; }
+	//로딩여부
+	inline BOOL			GetIsLoadComplete() { return mIsLoadComplete; }
+	inline VOID			SetIsLoadComplete(BOOL load) { mIsLoadComplete = load; }
+	
 	//////////////////////////////////////////////////////////////////////////
 };

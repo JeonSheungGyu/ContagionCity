@@ -57,7 +57,7 @@ private:
 
 public:
 	VOID			Initialize(VOID);
-
+	inline BOOL		InitializeForGameStart(VOID){ mHP = DEFAULT_MAX_HP; mAP = DEFAULT_MAX_AP;  return TRUE; }
 	inline VOID		SetIndex(INT64 index){ mIndex = index; }
 	inline INT64	GetIndex(VOID){ return mIndex; }
 	inline VOID		SetJob(INT job){ mJob = job; }
@@ -73,7 +73,7 @@ public:
 	inline INT64	GetGameMoney(VOID){ return mGameMoney; }
 	inline VOID		SetGameMoney(INT64 gameMoney){ mGameMoney = gameMoney; }
 
-	inline BOOL		InitializeForGameStart(VOID){ mHP = DEFAULT_MAX_HP; mAP = DEFAULT_MAX_AP;  return TRUE; }
+	
 	inline DWORD	GetHP(VOID){return mHP; }
 	inline DWORD	GetAP(VOID){ return mAP; }
 	inline BOOL		SetHP(DWORD hp){ mHP = hp; return TRUE; }
