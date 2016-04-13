@@ -289,6 +289,9 @@ public:
 	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext );
 	// 인스턴싱을 이용하여 렌더링
 	virtual void RenderInstanced( ID3D11DeviceContext *pd3dDeviceContext, int nInstances = 0, int nStartInstance = 0 );
+
+	void FindMinMax( );
+	void GetMinMax( XMFLOAT3* min, XMFLOAT3* max );
 };
 
 class CTexture;
@@ -305,17 +308,13 @@ public:
 	// ClockWise는 와인딩오더 설정, TRUE 이면 반시계, FALSE이면 시계
 	// Fill Mode는 솔리드로 할것인지 와이어프레임으로 할것인지
 	virtual void ChangeRasterizerState( ID3D11Device* pd3dDevice, bool ClockWise, D3D11_CULL_MODE CullMode, D3D11_FILL_MODE FillMode );
-	void FindMinMax( );
-	void GetMinMax( XMFLOAT3* min, XMFLOAT3* max  );
 
 protected:
 	// 텍스처 매핑을 하기 위하여 텍스처 좌표가 필요
 	ID3D11Buffer *m_pd3dTexCoordBuffer;
 	CTexture *m_pMeshTexture;
 
-	// 정점들의 최대 최소
-	XMFLOAT3 m_min;
-	XMFLOAT3 m_max;
+	
 };
 
 class CSkyBoxMesh : public CMeshTextured

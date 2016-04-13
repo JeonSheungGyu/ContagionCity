@@ -203,10 +203,9 @@ public:
 	XMFLOAT3 GetUpVector( )							{ return m_vUp; }
 	XMFLOAT3 GetRightVector( )						{ return m_vRight; }
 
-	void SetPositon( XMFLOAT3& vPosition ) {
-		Move( MathHelper::GetInstance( )->Float3MinusFloat3( vPosition, m_vPosition ), false );
+	void SetPosition( XMFLOAT3& vPosition ) {
+		m_vPosition = vPosition;
 	}
-	void Move( XMFLOAT3& vShift, bool bVelocity = false );
 
 	float GetYaw( ) const { return m_fYaw; }
 	float GetPitch( ) const { return m_fPitch; }

@@ -184,17 +184,22 @@ void CPlayerShader::BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbxMesh
 		pPlayerMesh->OnChangeTexture( pd3dDevice, _T( "./SkyBox/SkyBox_Top_1.jpg" ), 0 );
 		pPlayer->SetMesh( pPlayerMesh, i );
 	}
-	pPlayer->SetPosition( 0.0f, 0.0f, 0.0f );
 	pPlayer->CreateShaderVariables( pd3dDevice );
 	pPlayer->ChangeCamera( pd3dDevice, THIRD_PERSON_CAMERA, 0.0f );
 	pPlayer->GetCamera( )->Rotate( 0.0f, 180.0f, 0.0f );
+	pPlayer->SetPosition( XMFLOAT3( 0.0f, 1.0f, 0.0f ) );
+
+	CMaterial *pPlayerMaterial = new CMaterial;
+	pPlayer->SetMaterial( pPlayerMaterial );
+
 	m_ppObjects[0] = pPlayer;
 }
 
 bool CPlayerShader::CollisionCheck( CGameObject* pObject )
 {
-	// 충될되면 true 반환
+	// 충돌되면 true 반환
 	AABB playerBox = m_ppObjects[0]->m_bcMeshBoundingCube;
+	playerBox.Update( &(m_ppObjects[0]->m_mtxWorld));
 	AABB objBox = pObject->m_bcMeshBoundingCube;
 
 	// AABB 출돌 검사
@@ -249,21 +254,86 @@ void CBackgroundShader::BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbx
 
 	for (int i = 0; i < m_nObjects; i++)
 	{
-		ObjectInfo *pGround = new ObjectInfo( pd3dDevice, vertex[i] );
-		CObjectMesh *pGroundMesh = new CObjectMesh( pd3dDevice, vertex[i], 2 );
-		pGroundMesh->FindMinMax( );		// AABB 값 세팅
-		pGroundMesh->OnChangeTexture( pd3dDevice, _T( "./res/city_base_0314_texture.dds" ), 0 );
-		pGroundMesh->OnChangeTexture( pd3dDevice, _T( "./res/city_base_0314_normal.dds" ), 1 );
-		pGround->SetMesh( pGroundMesh, 0 );
-		m_ppObjects[i] = pGround;
+		switch (vertex[i].m_iType)
+		{
+			case BACK_GROUND:
+			{
+				ObjectInfo *pGround = new ObjectInfo( pd3dDevice, vertex[i] );
+				CObjectMesh *pGroundMesh = new CObjectMesh( pd3dDevice, vertex[i], 2 );		// 노멀매핑을 위해 텍스처 2개 사용
+				pGroundMesh->FindMinMax( );		// AABB 값 세팅
+				pGroundMesh->OnChangeTexture( pd3dDevice, _T( "./res/city_base_0314_texture.dds" ), 0 );
+				pGroundMesh->OnChangeTexture( pd3dDevice, _T( "./res/city_base_0314_normal.dds" ), 1 );
+				pGround->SetMesh( pGroundMesh, 0 );
+//				pGround->SetPosition( 0.0f, 0.0f, 500.0f );
+				m_ppObjects[i] = pGround;
 
-		CMaterial *pTerrainMaterial = new CMaterial;
-		pTerrainMaterial->m_Material.m_cDiffuse = D3DXCOLOR( 1.0f, 1.0f, 1.0f, 1.0f );
-		pTerrainMaterial->m_Material.m_cAmbient = D3DXCOLOR( 1.0f, 1.0f, 1.0f, 1.0f );
-		pTerrainMaterial->m_Material.m_cSpecular = D3DXCOLOR( 1.0f, 1.0f, 1.0f, 10.0f );
-		pTerrainMaterial->m_Material.m_cEmissive = D3DXCOLOR( 0.0f, 0.0f, 0.0f, 1.0f );
+				CMaterial *pGroundMaterial = new CMaterial;
+				m_ppObjects[i]->SetMaterial( pGroundMaterial );
+				break;
+			}
+			case BACK_SHOP:
+			{
+				ObjectInfo *pShop = new ObjectInfo( pd3dDevice, vertex[i] );
+				CObjectMesh *pShopMesh = new CObjectMesh( pd3dDevice, vertex[i], 2 );		// 노멀매핑을 위해 텍스처 2개 사용
+				pShopMesh->FindMinMax( );		// AABB 값 세팅
+				pShopMesh->OnChangeTexture( pd3dDevice, _T( "./res/city_base_0314_texture.dds" ), 0 );
+				pShopMesh->OnChangeTexture( pd3dDevice, _T( "./res/city_base_0314_normal.dds" ), 1 );
+				pShop->SetMesh( pShopMesh, 0 );
+				m_ppObjects[i] = pShop;
 
-		m_ppObjects[i]->SetMaterial( pTerrainMaterial );
+				CMaterial *pFenceMaterial = new CMaterial;
+				m_ppObjects[i]->SetMaterial( pFenceMaterial );
+				break;
+			}
+			case BACK_FENCE:
+			{
+				ObjectInfo *pFence = new ObjectInfo( pd3dDevice, vertex[i] );
+				CObjectMesh *pFenceMesh = new CObjectMesh( pd3dDevice, vertex[i], 2 );		// 노멀매핑을 위해 텍스처 2개 사용
+				pFenceMesh->FindMinMax( );		// AABB 값 세팅
+				pFenceMesh->OnChangeTexture( pd3dDevice, _T( "./res/city_base_0314_texture.dds" ), 0 );
+				pFenceMesh->OnChangeTexture( pd3dDevice, _T( "./res/city_base_0314_normal.dds" ), 1 );
+				pFence->SetMesh( pFenceMesh, 0 );
+				m_ppObjects[i] = pFence;
+
+				CMaterial *pFenceMaterial = new CMaterial;
+				m_ppObjects[i]->SetMaterial( pFenceMaterial );
+				break;
+			}
+			case BACK_SHALTER:
+			{
+				ObjectInfo *pShalter = new ObjectInfo( pd3dDevice, vertex[i] );
+				CObjectMesh *pShelterMesh = new CObjectMesh( pd3dDevice, vertex[i], 2 );		// 노멀매핑을 위해 텍스처 2개 사용
+				pShelterMesh->FindMinMax( );		// AABB 값 세팅
+				pShelterMesh->OnChangeTexture( pd3dDevice, _T( "./res/city_base_0314_texture.dds" ), 0 );
+				pShelterMesh->OnChangeTexture( pd3dDevice, _T( "./res/city_base_0314_normal.dds" ), 1 );
+				pShalter->SetMesh( pShelterMesh, 0 );
+				m_ppObjects[i] = pShalter;
+
+				CMaterial *pFenceMaterial = new CMaterial;
+				m_ppObjects[i]->SetMaterial( pFenceMaterial );
+				break;
+			}
+			case BACK_WALL:
+			{
+				ObjectInfo *pWall = new ObjectInfo( pd3dDevice, vertex[i] );
+				CObjectMesh *pWallMesh = new CObjectMesh( pd3dDevice, vertex[i], 2 );		// 노멀매핑을 위해 텍스처 2개 사용
+				pWallMesh->FindMinMax( );		// AABB 값 세팅
+				pWallMesh->OnChangeTexture( pd3dDevice, _T( "./res/city_base_0314_texture.dds" ), 0 );
+				pWallMesh->OnChangeTexture( pd3dDevice, _T( "./res/city_base_0314_normal.dds" ), 1 );
+				pWall->SetMesh( pWallMesh, 0 );
+				m_ppObjects[i] = pWall;
+
+				CMaterial *pFenceMaterial = new CMaterial;
+				m_ppObjects[i]->SetMaterial( pFenceMaterial );
+				break;
+			}
+			default:
+				// 에러처리
+				break;
+		}
+		
+
+		
 	}
 }
 

@@ -274,7 +274,7 @@ CCamera* CPlayer::OnChangeCamera( ID3D11Device *pd3dDevice, DWORD nNewCameraMode
 // 플레이어 위치 재조정
 void CPlayer::OnPlayerUpdated( float fTimeElapsed )
 {
-	
+
 }
 
 void CPlayer::OnCameraUpdated( float fTimeElapsed )

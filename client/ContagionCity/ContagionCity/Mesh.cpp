@@ -327,6 +327,52 @@ void CMesh::SetBoundingCube( AABB boundingBox )
 	m_bcBoundingCube = boundingBox;
 }
 
+void CMesh::FindMinMax( )
+{
+	float *arrX = new float[m_nVertices];
+	float *arrY = new float[m_nVertices];
+	float *arrZ = new float[m_nVertices];
+
+	XMFLOAT3 min;
+	XMFLOAT3 max;
+
+	for (int i = 0; i < m_nVertices; i++)
+	{
+		arrX[i] = m_vPositions[i].x;
+		arrY[i] = m_vPositions[i].y;
+		arrZ[i] = m_vPositions[i].z;
+	}
+
+	QuickSort( arrX, 0, m_nVertices - 1 );
+	QuickSort( arrY, 0, m_nVertices - 1 );
+	QuickSort( arrZ, 0, m_nVertices - 1 );
+
+	min.x = arrX[0];
+	min.y = arrY[0];
+	min.z = arrZ[0];
+
+	max.x = arrX[m_nVertices - 1];
+	max.y = arrY[m_nVertices - 1];
+	max.z = arrZ[m_nVertices - 1];
+
+	delete[ ] arrX;
+	delete[ ] arrY;
+	delete[ ] arrZ;
+
+	m_bcBoundingCube.m_vMax = max;
+	m_bcBoundingCube.m_vMin = min;
+}
+
+void CMesh::GetMinMax( XMFLOAT3* min, XMFLOAT3* max )
+{
+	min->x = m_bcBoundingCube.m_vMin.x;
+	min->y = m_bcBoundingCube.m_vMin.y;
+	min->z = m_bcBoundingCube.m_vMin.z;
+
+	max->x = m_bcBoundingCube.m_vMax.x;
+	max->y = m_bcBoundingCube.m_vMax.y;
+	max->z = m_bcBoundingCube.m_vMax.z;
+}
 // AABB
 
 void AABB::Union( XMFLOAT3& vMin, XMFLOAT3& vMax )
@@ -403,50 +449,6 @@ void CMeshTextured::ChangeRasterizerState( ID3D11Device* pd3dDevice, bool ClockW
 	d3dRastersizerDesc.FrontCounterClockwise = ClockWise;
 	d3dRastersizerDesc.FillMode = FillMode;
 	pd3dDevice->CreateRasterizerState( &d3dRastersizerDesc, &m_pd3dRasterizerState );
-}
-
-void CMeshTextured::FindMinMax( )
-{
-	float *arrX = new float[m_nVertices];
-	float *arrY = new float[m_nVertices];
-	float *arrZ = new float[m_nVertices];
-
-	for (int i = 0; i < m_nVertices; i++)
-	{
-		arrX[i] = m_vPositions[i].x;
-		arrY[i] = m_vPositions[i].y;
-		arrZ[i] = m_vPositions[i].z;
-	}
-
-	QuickSort( arrX, 0, m_nVertices - 1 );
-	QuickSort( arrY, 0, m_nVertices - 1 );
-	QuickSort( arrZ, 0, m_nVertices - 1 );
-
-	m_min.x = arrX[0];
-	m_min.y = arrY[0];
-	m_min.z = arrZ[0];
-
-	m_max.x = arrX[m_nVertices - 1];
-	m_max.y = arrY[m_nVertices - 1];
-	m_max.z = arrZ[m_nVertices - 1];
-
-	delete[ ] arrX;
-	delete[ ] arrY;
-	delete[ ] arrZ;
-
-	m_bcBoundingCube.m_vMax = m_max;
-	m_bcBoundingCube.m_vMin = m_min;
-}
-
-void CMeshTextured::GetMinMax( XMFLOAT3* min, XMFLOAT3* max )
-{
-	min->x = m_min.x;
-	min->y = m_min.y;
-	min->z = m_min.z;
-
-	max->x = m_max.x;
-	max->y = m_max.y;
-	max->z = m_max.z;
 }
 
 void CMeshTextured::OnChangeTexture( ID3D11Device *pd3dDevice, _TCHAR *texturePath, int index )

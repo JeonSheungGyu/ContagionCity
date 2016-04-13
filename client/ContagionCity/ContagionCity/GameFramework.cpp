@@ -327,7 +327,7 @@ void CGameFramework::ProcessInput( )
 			{
 				// 현재 플레이어의 AABB 박스의 y좌표 최소가 -0.5임. 따라서 0보다 작으므로 바닥과 겹침, 그로 인해 못움직임
 				// 충돌체크 자체는 제대로 되고 있으나 플레이어의 위치가 문제
-				if (!CollisionCheck())
+				if (CollisionCheck())
 					m_pPlayer->Move( dwDirection, 50.0f * m_GameTimer.GetTimeElapsed( ), false );
 			}
 		}
@@ -382,6 +382,7 @@ bool CGameFramework::CollisionCheck( )
 		for (int j = 0; j <objCount; j++)
 		{
 			// 오브젝트와 일일히 검사
+	//		m_pPlayer->m_bcMeshBoundingCube.Update( &(m_pPlayer->m_mtxWorld ));
 			if (m_pPlayerShader->CollisionCheck( ( m_pScene->getShaders( ) )[i]->getObjects( )[j] ))
 				return true;
 		}

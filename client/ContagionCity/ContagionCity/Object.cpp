@@ -5,6 +5,11 @@
 CMaterial::CMaterial( )
 {
 	m_nReferences = 0;
+
+	m_Material.m_cDiffuse = D3DXCOLOR( 1.0f, 1.0f, 1.0f, 1.0f );
+	m_Material.m_cAmbient = D3DXCOLOR( 1.0f, 1.0f, 1.0f, 1.0f );
+	m_Material.m_cSpecular = D3DXCOLOR( 1.0f, 1.0f, 1.0f, 10.0f );
+	m_Material.m_cEmissive = D3DXCOLOR( 0.0f, 0.0f, 0.0f, 1.0f );
 }
 
 CMaterial::~CMaterial( )
@@ -101,6 +106,9 @@ void CGameObject::SetPosition( float x, float y, float z )
 	m_mtxWorld._41 = x;
 	m_mtxWorld._42 = y;
 	m_mtxWorld._43 = z;
+	
+	if (GetMesh( ))
+		GetMesh( )->GetBoundingCube( ).Update( &m_mtxWorld );
 }
 
 void CGameObject::SetPosition( XMFLOAT3 vPosition )
@@ -108,6 +116,9 @@ void CGameObject::SetPosition( XMFLOAT3 vPosition )
 	m_mtxWorld._41 = vPosition.x;
 	m_mtxWorld._42 = vPosition.y;
 	m_mtxWorld._43 = vPosition.z;
+
+	if (GetMesh( ))
+		GetMesh( )->GetBoundingCube( ).Update( &m_mtxWorld );
 }
 
 XMFLOAT3 CGameObject::GetPosition( )
@@ -342,7 +353,7 @@ ObjectInfo::ObjectInfo( ID3D11Device *pd3dDevice, CFbxMesh vertex ) : CGameObjec
 	m_fRoll = 0.0f;
 	m_fYaw = 0.0f;
 
-	SetPosition( 0.f, 0.f, 0.f );
+	SetPosition( XMFLOAT3(0.f, 0.f, 0.f) );
 	Rotate( 0.f, 0.f, 0.f );
 }
 
@@ -363,8 +374,8 @@ void ObjectInfo::OnPrepareRender( )
 
 void ObjectInfo::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera )
 {
-	SetPosition( 0.f, 0.0f, 0.0f );
-	Rotate( 00.0f, 0.0f, 0.0f );
+//	SetPosition( 0.f, 0.0f, 0.0f );
+//	Rotate( 00.0f, 0.0f, 0.0f );
 
 	CShader::UpdateShaderVariable( pd3dDeviceContext, &m_mtxWorld );
 	if (m_pMaterial)

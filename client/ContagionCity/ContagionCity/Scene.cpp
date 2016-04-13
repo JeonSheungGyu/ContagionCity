@@ -141,7 +141,7 @@ void CScene::LoadFBXs( )
 {
 	// fbx 파일 로딩
 	FBXManager::GetInstance( )->LoadFBX( "res/City_Base_0225.FBX", LAYER_BACKGROUND, BACK_GROUND );
-//	FBXManager::GetInstance( )->LoadFBX( "res/City_Wire_Fance_0223.FBX", LAYER_BACKGROUND, BACK_FENCE );
+	FBXManager::GetInstance( )->LoadFBX( "res/city_wall_0411.FBX", LAYER_BACKGROUND, BACK_FENCE );
 
 	m_nFbxCount = FBXManager::GetInstance( )->m_pMeshes.size( );
 }

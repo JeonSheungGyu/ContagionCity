@@ -61,7 +61,8 @@ public:
 	/*플레이어의 위치를 d3dxvPosition 위치로 설정한다.
 	d3dxvPosition 벡터에서 현재 플레이어의 위치 벡터를 빼면 현재 플레이어의 위치에서 d3dxvPosition 방향으로의 방향 벡터가 된다.
 	현재 플레이어의 위치에서 이 방향 벡터 만큼 이동한다.*/
-	void SetPositon( XMFLOAT3& vPosition ) {
+	void SetPosition( XMFLOAT3 vPosition ) {
+		//m_vPosition = vPosition;
 		Move( MathHelper::GetInstance( )->Float3MinusFloat3( vPosition, m_vPosition ), false );
 	}
 
@@ -71,7 +72,7 @@ public:
 	float GetRoll( ) const { return m_fRoll; }
 
 	// 플레이어를 이동하는 함수
-	void Move( ULONG nDirection, float fDistance, bool bVelocitu = false );
+	void Move( DWORD dwDirection, float fDistance, bool bUpdateVelocity );
 	void Move( XMFLOAT3& vShift, bool bVelocity = false );
 	void Move( float fxOffset = 0.0f, float fyOffset = 0.0f, float fzOffset = 0.0f );
 	// 플레이어를 회전하는 함수
