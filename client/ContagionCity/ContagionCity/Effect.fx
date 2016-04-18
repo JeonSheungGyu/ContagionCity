@@ -16,7 +16,7 @@ cbuffer cbWorldMatrix : register(b1)
 cbuffer cbSkinned
 {
 	// 한 케릭터의 최대 뼈의 개수 96개
-	float4x4 gBoneTransforms[96];
+	matrix gBoneTransforms[96];
 };
 
 //t는 텍스쳐
@@ -103,7 +103,7 @@ struct VS_TEXTURED_LIGHTING_COLOR_INPUT
 	float3 position : POSITION;
 	float3 normal : NORMAL;
 	float2 texCoord : TEXCOORD0;
-	//float4 tangent : TANGENT;
+	float4 tangent : TANGENT;
 	//float3 weights : WEIGHTS;
 	//uint4 boneIndices; BONEINDICES;
 };
@@ -115,6 +115,26 @@ struct VS_TEXTURED_LIGHTING_COLOR_OUTPUT
 	float3 positionW : POSITION;
 	float3 normalW : NORMAL;
 	float2 texCoord : TEXCOORD0;
+	float3 tangentW : TANGENT;
+};
+
+struct SkinnedVertexIn
+{
+	float3 positionL : POSITION;
+	float3 normalL : NORMAL;
+	float2 texCoord : TEXCOORD0;
+	float4 tangentL : TANGENT;
+	float3 weights : WEIGHTS;
+	float4 boneIndices : BONEINDICES;
+};
+
+struct SkinnedVertexOut
+{
+	float4 positionH  : SV_POSITION;
+	float3 positionW : POSITION;
+	float3 normalW : NORMAL;
+	float2 texCoord : TEXCOORD0;
+	float3 tangentW : TANGENT;
 };
 
 //조명의 영향을 계산하기 위한 정점의 법선 벡터와 정점의 위치를 계산하는 정점 쉐이더 함수이다.
@@ -162,80 +182,75 @@ VS_TEXTURED_LIGHTING_COLOR_OUTPUT VSTexturedLightingColor(VS_TEXTURED_LIGHTING_C
 	VS_TEXTURED_LIGHTING_COLOR_OUTPUT output = (VS_TEXTURED_LIGHTING_COLOR_OUTPUT)0;
 
 	output.normalW = mul(input.normal, (float3x3)gmtxWorld);
+	output.tangentW = mul( input.tangent, ( float3x3 )gmtxWorld );
 	output.positionW = mul(float4(input.position, 1.0f), gmtxWorld).xyz;
 	output.position = mul(mul(float4(output.positionW, 1.0f), gmtxView), gmtxProjection);
 	output.texCoord = input.texCoord;
 
-	return(output);
+	return( output );
 }
 
-float4 PSTexturedLightingColor(VS_TEXTURED_LIGHTING_COLOR_OUTPUT input) : SV_Target
+float4 PSTexturedLightingColor( VS_TEXTURED_LIGHTING_COLOR_OUTPUT input ) : SV_Target
 {
-	input.normalW = gtxtNormalTexture.Sample( gSamplerState, input.texCoord );
+	float3 N = normalize( input.normalW );
+	float3 T = normalize( input.tangentW - dot( input.tangentW, N ) * N );
+	float3 B = cross( N, T );
+	float3x3 TBN = float3x3( T, B, N );
 
-	float4 cIllumination = Lighting(input.positionW, input.normalW);
-		float4 cColor = gtxtTexture.Sample(gSamplerState, input.texCoord) * cIllumination;
+	float3 normal = gtxtNormalTexture.Sample( gSamplerState, input.texCoord ).rgb;
+	normal = 2.0f * normal - 1.0f;
+	float3 normalW = mul( normal, TBN );
 
-		return(cColor);
+		float4 cIllumination = Lighting( input.positionW, normalW );
+		float4 cColor = gtxtTexture.Sample( gSamplerState, input.texCoord ) * cIllumination;
+
+		return( cColor );
 }
 
-
-struct SkinnedVertexIn
+SkinnedVertexOut SkinnedVS( SkinnedVertexIn vin )
 {
-	float3 PosL : POSITION;
-	float3 NormalL : NORMAL;
-	float2 TexCoord : TEXCOORD;
-	float4 TangentL : TANGENT;
-	float3 Weights : WEIGHTS;
-	float4 BoneIndices : BONEINDICES;
-};
+	SkinnedVertexOut vout;
 
-struct SkinnedVertexOut
+	float weights[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	weights[0] = vin.weights.x;
+	weights[1] = vin.weights.y;
+	weights[2] = vin.weights.z;
+	weights[3] = 1.0f - weights[0] - weights[1] - weights[2];
+
+	float3 posL = float3( 0.0f, 0.0f, 0.0f );
+		float3 normalL = float3( 0.0f, 0.0f, 0.0f );
+		float3 tangentL = float3( 0.0f, 0.0f, 0.0f );
+		for (int i = 0; i < 4; ++i)
+		{
+			posL += weights[i] * mul( float4( vin.positionL, 1.0f ), gBoneTransforms[vin.boneIndices[i]] ).xyz;
+			normalL += weights[i] * mul( vin.normalL, ( float3x3 )gBoneTransforms[vin.boneIndices[i]] );
+			tangentL += weights[i] * mul( vin.tangentL.xyz, ( float3x3 )gBoneTransforms[vin.boneIndices[i]] );
+		}
+
+	vout.positionW = mul( float4( posL, 1.0f ), gmtxWorld ).xyz;
+	vout.tangentW = float4( mul( tangentL, ( float3x3 )gmtxWorld ), vin.tangentL.w ); 
+	vout.positionH = mul( float4( posL, 1.0f ), gmtxWorld );
+	vout.positionH = mul( vout.positionH, gmtxView );
+	vout.positionH = mul( vout.positionH, gmtxProjection );
+
+	vout.texCoord = vin.texCoord;
+
+	return vout;
+}
+
+float4 SkinnedPS( SkinnedVertexOut input ) : SV_Target
 {
-	float4 PosH       : SV_POSITION;
-	float3 PosW       : POSITION;
-	float3 NormalW    : NORMAL;
-	float4 TangentW   : TANGENT;
-	float2 Tex        : TEXCOORD0;
-};
+	float3 N = normalize( input.normalW );
+	float3 T = normalize( input.tangentW - dot( input.tangentW, N ) * N );
+	float3 B = cross( N, T );
+	float3x3 TBN = float3x3( T, B, N );
 
-//SkinnedVertexOut SkinnedVS( SkinnedVertexIn vin )
-//{
-//	SkinnedVertexOut vout;
-//
-//	float weights[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-//	weights[0] = vin.weights.x;
-//	weights[1] = vin.weights.y;
-//	weights[2] = vin.weights.z;
-//	weights[3] = 1.0f - weights[0] - weights[1] - weights[2];
-//
-//	float3 posL = float3( 0.0f, 0.0f, 0.0f );
-//		float3 normalL = float3( 0.0f, 0.0f, 0.0f );
-//		float3 tangentL = float3( 0.0f, 0.0f, 0.0f );
-//		for (int i = 0; i < 4; ++i)
-//		{
-//			posL += weights[i] * mul( float4( vin.posL, 1.0f ), gBoneTransforms[vin.BoneIndices[i]] ).xyz;
-//			normalL += weights[[i] * mul( vin.normalL, ( float3x3 )gBoneTransforms[vin.BoneIndices[i]] );
-//			tangentL += weights[i] * mul( vin.tangentL.xyz, ( float3x3 )gBoneTransforms[vin.BoneIndices[i]] );
-//		}
-//
-//	vout.PosW = mul( float4x4( posL, 1.0f ), gmtxWorld ).xyz;
-//	vout.TangentW = float4( mul( tangentL, ( float3x3 )gmtxWorld ), vin.tangentL.w );
-//	vout.PosH = mul( float4( posL, 1.0f ), gmtxWorld );
-//	vout.PosH = mul( vout.PosH, gmtxView );
-//	vout.PosH = mul( vout.PosH, gmtxProjection );
-//
-//	vout.Tex = vin.Tex;
-//
-//	return vout;
-//}
-//
-//float4 SkinnedPS( SkinnedVertexOut input ) : SV_Target
-//{
-//	input.normalW = gtxtNormalTexture.Sample( gSamplerState, input.Tex );
-//
-//	float4 cIllumination = Lighting( input.PosW, input.NormalW );
-//		float4 cColor = gtxtTexture.Sample( gSamplerState, input.Tex ) * cIllumination;
-//
-//		return( cColor );
-//}
+	float3 normal = gtxtNormalTexture.Sample( gSamplerState, input.texCoord ).rgb;
+	normal = 2.0f * normal - 1.0f;
+	float3 normalW = mul( normal, TBN );
+
+		float4 cIllumination = Lighting( input.positionW, normalW );
+		float4 cColor = gtxtTexture.Sample( gSamplerState, input.texCoord ) * cIllumination;
+
+		return( cColor );
+}

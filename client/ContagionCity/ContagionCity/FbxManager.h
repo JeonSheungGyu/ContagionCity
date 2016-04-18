@@ -39,7 +39,7 @@ private:
 	void SaveData( std::vector<XMFLOAT3> pVertex, std::vector<UINT> pIndex, std::vector<XMFLOAT2> UVVector, std::vector<CFbxVertex>weights, int iLayer, int iType );
 
 	std::map<std::string, AnimationClip> LoadBoneInfomation( FbxNode* pNode );
-	void LoadBoneHierarachy( FbxMesh *pMesh, std::vector<CFbxVertex> *pVertices );
+	void LoadBoneHierarachy( FbxMesh *pMesh, std::vector<CFbxVertex> *pVertices, std::vector<int> *pBoneHierachy, std::vector<XMFLOAT4X4> *pBoneOffsets );
 
 	// m3d¿ë
 	void ReadAnimationClips( std::ifstream& fin, UINT nBones, UINT nAnimationClips, std::map<std::string, AnimationClip>& animationClips );

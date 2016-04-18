@@ -693,17 +693,14 @@ CObjectMesh::CObjectMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, int Texture
 	m_vPositions.resize( m_nVertices );
 	vector<XMFLOAT2> pvTexCoords( m_nVertices );
 	vector<XMFLOAT3> pvNormals( m_nVertices );
+	vector<XMFLOAT3> pvTangents( m_nVertices );
 
 	for (int i = 0; i < vertex.m_pVertices.size( ); i++)
 	{
 		m_vPositions[i] = vertex.m_pVertices[i].m_position;
 		pvTexCoords[i] = vertex.m_pVertices[i].m_textureUV;
-	}
-
-	//pvNormals.resize( 26 );
-	for (int i = 0; i < pvNormals.size( ); i++)
-	{
-		pvNormals[i] = XMFLOAT3( 0.6f, 0.3f, 0.f );
+		pvNormals[i] = XMFLOAT3( 0.0f, 0.0f, 1.0f );
+		pvTangents[i] = XMFLOAT3( 1.0f, 0.0f, 0.0f );
 	}
 
 	// 정점 버퍼 생성
@@ -728,10 +725,15 @@ CObjectMesh::CObjectMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, int Texture
 	d3dBufferData.pSysMem = &pvNormals[0];
 	pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dNormalBuffer );
 
-	ID3D11Buffer *pd3dBuffers[3] = { m_pd3dPositionBuffer, m_pd3dNormalBuffer, m_pd3dTexCoordBuffer };
-	UINT pnBufferStrides[3] = { sizeof( XMFLOAT3 ), sizeof( XMFLOAT3 ), sizeof( XMFLOAT2 ) };
-	UINT pnBufferOffsets[3] = { 0, 0, 0 };
-	AssembleToVertexBuffer( 3, pd3dBuffers, pnBufferStrides, pnBufferOffsets );
+	// tangent
+	d3dBufferDesc.ByteWidth = sizeof( XMFLOAT3 ) * pvTangents.size( );
+	d3dBufferData.pSysMem = &pvTangents[0];
+	pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dTangentBuffer );
+
+	ID3D11Buffer *pd3dBuffers[4] = { m_pd3dPositionBuffer, m_pd3dNormalBuffer, m_pd3dTexCoordBuffer, m_pd3dTangentBuffer };
+	UINT pnBufferStrides[4] = { sizeof( XMFLOAT3 ), sizeof( XMFLOAT3 ), sizeof( XMFLOAT2 ), sizeof(XMFLOAT3) };
+	UINT pnBufferOffsets[4] = { 0, 0, 0, 0 };
+	AssembleToVertexBuffer( 4, pd3dBuffers, pnBufferStrides, pnBufferOffsets );
 
 	// 인덱스 버퍼 생성
 	// n개의 정점으로 만들 수 있는 삼각형의 개수는 n-2 개
@@ -816,7 +818,123 @@ void CObjectMesh::Render( ID3D11DeviceContext *pd3dDeviceContext )
 
 CAnimatedMesh::CAnimatedMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, int TextureCount ) : CMeshTextured( pd3dDevice )
 {
+	m_nVertices = vertex.m_nVertexCount;
+	m_d3dPrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
+	m_vPositions.resize( m_nVertices );
+	vector<XMFLOAT2> pvTexCoords( m_nVertices );
+	vector<XMFLOAT3> pvNormals( m_nVertices );
+	vector<XMFLOAT3> pvTangents( m_nVertices );
+	vector<XMFLOAT3> pvWeights( m_nVertices );
+	vector<XMFLOAT4> pvBoneIndices( m_nVertices );
+
+	for (int i = 0; i < m_nVertices; i++)
+	{
+		m_vPositions[i] = vertex.m_pVertices[i].m_position;
+		pvTexCoords[i] = vertex.m_pVertices[i].m_textureUV;
+		pvNormals[i] = XMFLOAT3( 0.0f, 0.3f, 1.f );
+		pvTangents[i] = XMFLOAT3( 1.0f, 0.0f, 0.0f );
+		pvWeights[i] = vertex.m_pVertices[i].m_weights;
+		pvBoneIndices[i] = vertex.m_pVertices[i].m_boneIndices;
+	}
+
+	// 정점 버퍼 생성
+	D3D11_BUFFER_DESC d3dBufferDesc;
+	::ZeroMemory( &d3dBufferDesc, sizeof( D3D11_BUFFER_DESC ) );
+	d3dBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	d3dBufferDesc.ByteWidth = sizeof( XMFLOAT3 ) * m_nVertices;
+	d3dBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	d3dBufferDesc.CPUAccessFlags = 0;
+	D3D11_SUBRESOURCE_DATA d3dBufferData;
+	::ZeroMemory( &d3dBufferData, sizeof( D3D11_SUBRESOURCE_DATA ) );
+	d3dBufferData.pSysMem = &m_vPositions[0];
+	pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dPositionBuffer );
+
+	// UV 좌표
+	d3dBufferDesc.ByteWidth = sizeof( XMFLOAT2 ) * pvTexCoords.size( );
+	d3dBufferData.pSysMem = &pvTexCoords[0];
+	pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dTexCoordBuffer );
+
+	// normal 좌표
+	d3dBufferDesc.ByteWidth = sizeof( XMFLOAT3 ) * pvNormals.size( );
+	d3dBufferData.pSysMem = &pvNormals[0];
+	pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dNormalBuffer );
+
+	// tangent 좌표
+	d3dBufferDesc.ByteWidth = sizeof( XMFLOAT3 ) * pvTangents.size( );
+	d3dBufferData.pSysMem = &pvTangents[0];
+	pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dTangentBuffer );
+
+	// weights
+	d3dBufferDesc.ByteWidth = sizeof( XMFLOAT3 ) * pvWeights.size( );
+	d3dBufferData.pSysMem = &pvWeights[0];
+	pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dWeightBuffer );
+
+	// boneIndices
+	d3dBufferDesc.ByteWidth = sizeof( XMFLOAT4 ) * pvBoneIndices.size( );
+	d3dBufferData.pSysMem = &pvBoneIndices[0];
+	pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dBoneIdxBuffer );
+
+	ID3D11Buffer *pd3dBuffers[6] = { m_pd3dPositionBuffer, m_pd3dNormalBuffer, m_pd3dTexCoordBuffer, m_pd3dTangentBuffer, m_pd3dWeightBuffer, m_pd3dBoneIdxBuffer };
+	UINT pnBufferStrides[6] = { sizeof( XMFLOAT3 ), sizeof( XMFLOAT3 ), sizeof( XMFLOAT2 ), sizeof(XMFLOAT3), sizeof(XMFLOAT3), sizeof(XMFLOAT4) };
+	UINT pnBufferOffsets[6] = { 0, 0, 0, 0, 0, 0 };
+	AssembleToVertexBuffer( 6, pd3dBuffers, pnBufferStrides, pnBufferOffsets );
+
+	// 인덱스 버퍼 생성
+	// n개의 정점으로 만들 수 있는 삼각형의 개수는 n-2 개
+	// 삼각형 1개당 인덱스가 3개 필요하기 때문에 인덱스의 개수는 3(n-2)개가 필요
+	m_nIndices = vertex.m_nIndexCount;
+
+	m_vnIndices = vertex.m_pvIndices;
+
+	::ZeroMemory( &d3dBufferDesc, sizeof( D3D11_BUFFER_DESC ) );
+	d3dBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	d3dBufferDesc.ByteWidth = sizeof( UINT ) * m_nIndices;
+	d3dBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	d3dBufferDesc.CPUAccessFlags = 0;
+	::ZeroMemory( &d3dBufferData, sizeof( D3D11_SUBRESOURCE_DATA ) );
+	d3dBufferData.pSysMem = &m_vnIndices[0];
+	pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dIndexBuffer );
+
+	CreateRasterizerState( pd3dDevice );
+
+	D3D11_DEPTH_STENCIL_DESC d3dDepthStencilDesc;
+	::ZeroMemory( &d3dDepthStencilDesc, sizeof( D3D11_DEPTH_STENCIL_DESC ) );
+	d3dDepthStencilDesc.DepthEnable = false;
+	d3dDepthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+	d3dDepthStencilDesc.DepthFunc = D3D11_COMPARISON_NEVER;
+	d3dDepthStencilDesc.StencilEnable = false;
+	d3dDepthStencilDesc.StencilReadMask = 0xFF;
+	d3dDepthStencilDesc.StencilWriteMask = 0xFF;
+	d3dDepthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	d3dDepthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+	d3dDepthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	d3dDepthStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+	d3dDepthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	d3dDepthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+	d3dDepthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	d3dDepthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+	pd3dDevice->CreateDepthStencilState( &d3dDepthStencilDesc, &m_pd3dDepthStencilState );
+
+	ID3D11SamplerState *pd3dSamplerState = NULL;
+	D3D11_SAMPLER_DESC d3dSamplerDesc;
+	::ZeroMemory( &d3dSamplerDesc, sizeof( D3D11_SAMPLER_DESC ) );
+	d3dSamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+	d3dSamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+	d3dSamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	d3dSamplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	d3dSamplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	d3dSamplerDesc.MinLOD = 0;
+	d3dSamplerDesc.MaxLOD = 0;
+	pd3dDevice->CreateSamplerState( &d3dSamplerDesc, &pd3dSamplerState );
+
+	m_pMeshTexture = new CTexture( TextureCount, TextureCount, 0, 0 );
+
+	for (int i = 0; i < TextureCount; i++)
+		m_pMeshTexture->SetSampler( i, pd3dSamplerState );
+
+	pd3dSamplerState->Release( );
+	m_pMeshTexture->AddRef( );
 }
 
 CAnimatedMesh::~CAnimatedMesh( )
@@ -826,5 +944,15 @@ CAnimatedMesh::~CAnimatedMesh( )
 
 void CAnimatedMesh::Render( ID3D11DeviceContext *pd3dDeviceContext )
 {
+	pd3dDeviceContext->IASetVertexBuffers( m_nSlot, m_nBuffers, m_ppd3dVertexBuffers, m_pnVertexStrides, m_pnVertexOffsets );
+	pd3dDeviceContext->IASetIndexBuffer( m_pd3dIndexBuffer, m_dxgiIndexFormat, m_nIndexOffset );
+	pd3dDeviceContext->IASetPrimitiveTopology( m_d3dPrimitiveTopology );
+	pd3dDeviceContext->RSSetState( m_pd3dRasterizerState );
 
+	m_pMeshTexture->UpdateSamplerShaderVariable( pd3dDeviceContext, 0, 0 );
+	pd3dDeviceContext->OMSetDepthStencilState( m_pd3dDepthStencilState, 1 );
+
+	m_pMeshTexture->UpdateTextureShaderVariable( pd3dDeviceContext, 0, 0 );
+	pd3dDeviceContext->DrawIndexed( m_nIndices, 0, 0 );
+	pd3dDeviceContext->OMSetDepthStencilState( NULL, 1 );
 }

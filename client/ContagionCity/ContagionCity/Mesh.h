@@ -337,7 +337,8 @@ class CObjectMesh : public CMeshTextured
 protected:
 	ID3D11DepthStencilState *m_pd3dDepthStencilState;
 	ID3D11Buffer *m_pd3dNormalBuffer;
-	
+	ID3D11Buffer *m_pd3dTangentBuffer;
+
 public:
 	CObjectMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, int TextureCount );
 	virtual ~CObjectMesh( );
@@ -350,6 +351,7 @@ class CAnimatedMesh : public CMeshTextured
 protected:
 	ID3D11DepthStencilState *m_pd3dDepthStencilState;
 	ID3D11Buffer *m_pd3dNormalBuffer;
+	ID3D11Buffer *m_pd3dTangentBuffer;
 	ID3D11Buffer *m_pd3dWeightBuffer;
 	ID3D11Buffer *m_pd3dBoneIdxBuffer;
 

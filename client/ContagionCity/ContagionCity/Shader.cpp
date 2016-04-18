@@ -167,7 +167,19 @@ CPlayerShader::~CPlayerShader( )
 
 void CPlayerShader::CreateShader( ID3D11Device *pd3dDevice )
 {
-	CShader::CreateShader( pd3dDevice );
+	D3D11_INPUT_ELEMENT_DESC d3dInputElements[ ] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },		// 범프매핑 하면 이거 필요없음
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 2, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 3, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "WEIGHTS", 0, DXGI_FORMAT_R32G32B32_FLOAT, 4, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "BONEINDICES", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 5, 0, D3D11_INPUT_PER_VERTEX_DATA,0 }
+	};
+	UINT nElements = ARRAYSIZE( d3dInputElements );
+	CreateVertexShaderFromFile( pd3dDevice, L"Effect.fx", "SkinnedVS", "vs_5_0", &m_pd3dVertexShader, d3dInputElements, nElements, &m_pd3dVertexLayout );
+	CreatePixelShaderFromFile( pd3dDevice, L"Effect.fx", "SkinnedPS", "ps_5_0", &m_pd3dPixelShader );
+//	CShader::CreateShader( pd3dDevice );
 }
 
 void CPlayerShader::BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbxMesh> meshes )
@@ -179,7 +191,7 @@ void CPlayerShader::BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbxMesh
 
 	for (int i = 0; i < m_nObjects; i++)
 	{
-		CObjectMesh *pPlayerMesh = new CObjectMesh( pd3dDevice, meshes[i], 1 );
+		CAnimatedMesh *pPlayerMesh = new CAnimatedMesh( pd3dDevice, meshes[i], 1 );
 		pPlayerMesh->FindMinMax( );		// AABB 상자 값 세팅
 		pPlayerMesh->OnChangeTexture( pd3dDevice, _T( "./SkyBox/SkyBox_Top_1.jpg" ), 0 );
 		pPlayer->SetMesh( pPlayerMesh, i );
@@ -206,15 +218,15 @@ bool CPlayerShader::CollisionCheck( CGameObject* pObject )
 	objBox.Update( &(pObject->m_mtxWorld) );
 
 	// AABB 출돌 검사
-	if (playerBox.m_vMax.x < objBox.m_vMin.x) return false;
-	if (playerBox.m_vMax.y < objBox.m_vMin.y) return false;
-	if (playerBox.m_vMax.z < objBox.m_vMin.z) return false;
-	if (playerBox.m_vMin.x > objBox.m_vMax.x) return false;
-	if (playerBox.m_vMin.y > objBox.m_vMax.y) return false;
-	if (playerBox.m_vMin.z > objBox.m_vMax.z) return false;
+	if (playerBox.m_vMax.x < objBox.m_vMin.x) return true;
+	if (playerBox.m_vMax.y < objBox.m_vMin.y) return true;
+	if (playerBox.m_vMax.z < objBox.m_vMin.z) return true;
+	if (playerBox.m_vMin.x > objBox.m_vMax.x) return true;
+	if (playerBox.m_vMin.y > objBox.m_vMax.y) return true;
+	if (playerBox.m_vMin.z > objBox.m_vMax.z) return true;
 
-	// 아무런 체크도 되지 않으면 충돌한 것임
-	return true;
+	// 아무런 체크도 되지 않으면 충돌하지 않은 것
+	return false;
 }
 
 void CPlayerShader::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera )
@@ -243,7 +255,8 @@ void CBackgroundShader::CreateShader( ID3D11Device *pd3dDevice )
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },		// 범프매핑 하면 이거 필요없음
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 2, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 2, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 3, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 	UINT nElements = ARRAYSIZE( d3dInputElements );
 	CreateVertexShaderFromFile( pd3dDevice, L"Effect.fx", "VSTexturedLightingColor", "vs_5_0", &m_pd3dVertexShader, d3dInputElements, nElements, &m_pd3dVertexLayout );

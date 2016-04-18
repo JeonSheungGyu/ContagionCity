@@ -38,9 +38,9 @@ bool FBXManager::LoadFBX( const char* pstrFileName, int Layer, int Type )
 
 	if (pfbxRootNode)
 	{
-		int count = m_pfbxScene->GetRootNode( )->GetChildCount( );
+		int ChildCount = m_pfbxScene->GetRootNode( )->GetChildCount( );
 
-		for (int i = 0; i < m_pfbxScene->GetRootNode( )->GetChildCount( ); i++)
+		for (int i = 0; i < ChildCount; i++)
 		{
 			FbxNode* pfbxChildNode = pfbxRootNode->GetChild( i );
 			FbxNodeAttribute *nodeAttribute = pfbxChildNode->GetNodeAttributeByIndex( 0 );
@@ -56,18 +56,21 @@ bool FBXManager::LoadFBX( const char* pstrFileName, int Layer, int Type )
 					// 메시데이터 로딩
 					LoadFBXMeshData( pMesh, Layer, Type );
 		//			tempSkinnedData.Set( tempBoneHierarachy, tempBoneOffsets, tempAnimations );
-					std::map<std::string, AnimationClip> tempAnimations;
-					tempAnimations = LoadBoneInfomation( pfbxChildNode );
+		//			std::map<std::string, AnimationClip> tempAnimations;
+		//			tempAnimations = LoadBoneInfomation( pfbxChildNode );
 					break;
 				}
-				case FbxNodeAttribute::eSkeleton:
+			/*	case FbxNodeAttribute::eSkeleton:
 				{
 					std::map<std::string, AnimationClip> tempAnimations;
 					tempAnimations = LoadBoneInfomation( pfbxChildNode );
 					break;
-				}
+				}*/
 			}
 		}
+
+		std::map<std::string, AnimationClip> tempAnimations;
+		tempAnimations = LoadBoneInfomation( m_pfbxScene->GetRootNode() );
 		// 버텍스 정보들을 옮긴 뒤 노드들 제거
 		for (int i = 0; i < m_pfbxScene->GetNodeCount( ); i++)
 		{
@@ -78,12 +81,9 @@ bool FBXManager::LoadFBX( const char* pstrFileName, int Layer, int Type )
 	}
 }
 
-void FBXManager::LoadBoneHierarachy( FbxMesh *pMesh, std::vector<CFbxVertex> *pVertices )
+void FBXManager::LoadBoneHierarachy( FbxMesh *pMesh, std::vector<CFbxVertex> *pVertices, std::vector<int> *pBoneHierachy, std::vector<XMFLOAT4X4> *pBoneOffsets )
 {
 	// 본 계층구조, 오프셋변환, 가중치, 영향받는 정점 을 구해야함
-	std::vector<XMFLOAT4X4> tempBoneOffsets;		// i번 뼈대가 부모로 가는 오프셋변환
-	std::vector<int> tempBoneHierarachy;			// 뼈대의 전체 계층구조
-
 	int numDeformers = pMesh->GetDeformerCount( FbxDeformer::eSkin);
 
 	for (int i = 0; i < numDeformers; i++)
@@ -119,7 +119,8 @@ void FBXManager::LoadBoneHierarachy( FbxMesh *pMesh, std::vector<CFbxVertex> *pV
 			tempOffsetMatl._41 = ResultMatrix.mData[3].mData[0]; tempOffsetMatl._42 = ResultMatrix.mData[3].mData[1];
 			tempOffsetMatl._43 = ResultMatrix.mData[3].mData[2]; tempOffsetMatl._44 = ResultMatrix.mData[3].mData[3];
 
-			tempBoneOffsets.push_back( tempOffsetMatl );
+			pBoneOffsets->push_back( tempOffsetMatl );
+			pBoneHierachy->push_back( i );
 
 			int *boneVertexIndices = cluster->GetControlPointIndices( );			// 해당 본에 영향을 받는 정점들
 			double *boneVertexWeights = cluster->GetControlPointWeights( );		// 해당 본에 의한 정점의 가중치
@@ -167,17 +168,17 @@ std::map<std::string, AnimationClip> FBXManager::LoadBoneInfomation( FbxNode* pN
 	std::string animName;
 
 	// 애니메이션클립을 찾는 행위
-	int numAnimations = m_pfbxScene->GetSrcObjectCount( FbxAnimStack::ClassId );
+	int numAnimations = m_pfbxScene->GetSrcObjectCount<FbxAnimStack>();
 	for (int animIndex = 0; animIndex < numAnimations; animIndex++)
 	{
-		FbxAnimStack *animStack = ( FbxAnimStack* )this->m_pfbxScene->GetSrcObject( FbxAnimStack::ClassId, animIndex );
+		FbxAnimStack *animStack = ( FbxAnimStack* )this->m_pfbxScene->GetSrcObject<FbxAnimStack>(animIndex);
 		animName = animStack->GetName( );	// 이름
 
 		// 본애니메이션을 찾는 행위
-		int numLayers = animStack->GetMemberCount( );
+		int numLayers = animStack->GetMemberCount<FbxAnimLayer>( );
 		for (int layerIndex = 0; layerIndex < numLayers; layerIndex++)
 		{
-			FbxAnimLayer *animLayer = (FbxAnimLayer*)animStack->GetMember( layerIndex );
+			FbxAnimLayer *animLayer = (FbxAnimLayer*)animStack->GetMember<FbxAnimLayer>( layerIndex );
 			BoneAnimation tempBone;
 			tempBone.BoneName = animLayer->GetName( );
 			tempBone.BoneIndex = layerIndex;
@@ -242,9 +243,11 @@ std::map<std::string, AnimationClip> FBXManager::LoadBoneInfomation( FbxNode* pN
 					tempBone.Keyframes[keyIndex].TimePos = (float)frameTime.GetSecondDouble( );
 				}
 			}	// end of translation if
-			animation.BoneAnimations.push_back( tempBone );
+			if (tempBone.Keyframes.size() != 0)
+				animation.BoneAnimations.push_back( tempBone );
 		}	// end of layer for
-		tempAnimations.insert( { animName, animation } );
+		if (animation.BoneAnimations.size() != 0)
+			tempAnimations.insert( { animName, animation } );
 	}	// end of animation for
 	return tempAnimations;
 }
@@ -280,15 +283,46 @@ void FBXManager::LoadFBXMeshData( FbxMesh* pMesh, int Layer, int Type )
 	//			}
 
 	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ  가중치와 뼈대 정보가져오기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-	SkinnedData tempSkinnedData;
 	std::vector<int> tempBoneHierarachy;
 	std::vector<XMFLOAT4X4> tempBoneOffsets;
 	std::vector<CFbxVertex> tempVertices( tempVertex.size( ) );
 
-	LoadBoneHierarachy( pMesh, &tempVertices );
+	LoadBoneHierarachy( pMesh, &tempVertices, &tempBoneHierarachy, &tempBoneOffsets );
 
 	//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 자료들 저장하기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 	SaveData( tempVertex, tempIndex, tempUVVector, tempVertices, Layer, Type );
+}
+
+void FBXManager::SaveData( std::vector<XMFLOAT3> Vertex, std::vector<UINT> Index, std::vector<XMFLOAT2> UVVector, std::vector<CFbxVertex> weights, int iLayer, int iType )
+{
+	CFbxMesh tempMesh;
+
+	tempMesh.m_pVertices.resize( Vertex.size( ) );
+
+	for (int i = 0; i < Vertex.size( ); i++)
+	{
+		// 정점 저장
+		tempMesh.m_pVertices[i].m_position = Vertex[i];
+		// UV좌표 저장
+		tempMesh.m_pVertices[i].m_textureUV = UVVector[i];
+		// 가중치 저장
+		tempMesh.m_pVertices[i].m_weights = weights[i].m_weights;
+		// 영향주는 뼈대 저장
+		tempMesh.m_pVertices[i].m_boneIndices = weights[i].m_boneIndices;
+	}
+
+	// vertex 개수
+	tempMesh.m_nVertexCount = Vertex.size( );
+	// 인덱스들의 모임
+	tempMesh.m_pvIndices = Index;
+	// index 개수
+	tempMesh.m_nIndexCount = Index.size( );
+	// 레이어
+	tempMesh.m_iLayer = iLayer;
+	// 타입
+	tempMesh.m_iType = iType;
+
+	m_pMeshes.push_back( tempMesh );
 }
 
 void FBXManager::LoadVertexAndIndexInfomation( FbxMesh* pMesh, std::vector<XMFLOAT3> *pVertex, std::vector<UINT> *pIndex )
@@ -332,6 +366,7 @@ void FBXManager::LoadVertexAndIndexInfomation( FbxMesh* pMesh, std::vector<XMFLO
 		}
 	}
 }
+
 void FBXManager::LoadTangentInfomation( FbxMesh *pMesh, std::vector<XMFLOAT4> *pTangents )
 {
 	int polygonVertexCount = pMesh->GetPolygonVertexCount( );
@@ -606,38 +641,6 @@ void FBXManager::LoadUVInformation( FbxMesh* pMesh, std::vector<XMFLOAT2> *pVect
 	}
 }
 
-void FBXManager::SaveData( std::vector<XMFLOAT3> Vertex, std::vector<UINT> Index, std::vector<XMFLOAT2> UVVector, std::vector<CFbxVertex> weights, int iLayer, int iType )
-{
-	CFbxMesh tempMesh;
-
-	tempMesh.m_pVertices.resize( Vertex.size( ) );
-
-	for (int i = 0; i < Vertex.size( ); i++)
-	{
-		// 정점 저장
-		tempMesh.m_pVertices[i].m_position = Vertex[i];
-		// UV좌표 저장
-		tempMesh.m_pVertices[i].m_textureUV = UVVector[i];
-		// 가중치 저장
-		tempMesh.m_pVertices[i].m_weights = weights[i].m_weights;
-		// 영향주는 뼈대 저장
-		tempMesh.m_pVertices[i].m_boneIndices = weights[i].m_boneIndices;
-	}
-
-	// vertex 개수
-	tempMesh.m_nVertexCount = Vertex.size( );
-	// 인덱스들의 모임
-	tempMesh.m_pvIndices = Index;
-	// index 개수
-	tempMesh.m_nIndexCount = Index.size( );
-	// 레이어
-	tempMesh.m_iLayer = iLayer;
-	// 타입
-	tempMesh.m_iType = iType;
-
-
-	m_pMeshes.push_back( tempMesh );
-}
 
 bool FBXManager::LoadM3D( const std::string& fileName, int layer, int type, CM3dMesh& pOutMesh)
 {
@@ -721,7 +724,6 @@ void FBXManager::ReadAnimationClips( std::ifstream& fin, UINT nBones, UINT nAnim
 		animations[clipName] = clip;
 	}
 }
-
 void FBXManager::ReadBoneKeyFrames( std::ifstream& fin, UINT nBones, BoneAnimation& boneAnimation )
 {
 	std::string ignore;
@@ -749,7 +751,6 @@ void FBXManager::ReadBoneKeyFrames( std::ifstream& fin, UINT nBones, BoneAnimati
 	}
 	fin >> ignore;
 }
-
 void FBXManager::ReadBoneOffsets( std::ifstream& fin, UINT nBones, std::vector<XMFLOAT4X4>& boneOffsets )
 {
 	std::string ignore;
@@ -767,7 +768,6 @@ void FBXManager::ReadBoneOffsets( std::ifstream& fin, UINT nBones, std::vector<X
 			boneOffsets[i]( 3, 2 ) >> boneOffsets[i]( 3, 3 );
 	}
 }
-
 void FBXManager::ReadSkinnedVertices( std::ifstream& fin, UINT nVertices, std::vector<M3dVertex>& vertices )
 {
 	std::string ignore;
@@ -795,7 +795,6 @@ void FBXManager::ReadSkinnedVertices( std::ifstream& fin, UINT nVertices, std::v
 		vertices[i].boneIndices[3] = (BYTE)boneIndices[3];
 	}
 }
-
 void FBXManager::ReadMaterial( std::ifstream& fin, UINT nMaterials, std::vector<M3dMaterial>& mats )
 {
 	std::string ignore;
@@ -825,7 +824,6 @@ void FBXManager::ReadMaterial( std::ifstream& fin, UINT nMaterials, std::vector<
 		std::copy( normalMapName.begin( ), normalMapName.end( ), mats[i].NormalMapName.begin( ) );
 	}
 }
-
 void FBXManager::ReadSubsetTable( std::ifstream& fin, UINT nSubsets, std::vector<Subset>& subsets )
 {
 	std::string ignore;
@@ -841,7 +839,6 @@ void FBXManager::ReadSubsetTable( std::ifstream& fin, UINT nSubsets, std::vector
 		fin >> ignore >> subsets[i].FaceCount;
 	}
 }
-
 void FBXManager::ReadTriangles( std::ifstream& fin, UINT nTriangles, std::vector<USHORT>& indices )
 {
 	std::string ignore;
@@ -853,7 +850,6 @@ void FBXManager::ReadTriangles( std::ifstream& fin, UINT nTriangles, std::vector
 		fin >> indices[i * 3 + 0] >> indices[i * 3 + 1] >> indices[i * 3 + 2];
 	}
 }
-
 void FBXManager::ReadBoneHierarchy( std::ifstream& fin, UINT nBones, std::vector<int>& boneIndexToParentIndex )
 {
 	std::string ignore;
