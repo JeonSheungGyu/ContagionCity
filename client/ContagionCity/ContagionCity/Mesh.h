@@ -23,6 +23,14 @@ public:
 	~CVertex( );
 };
 
+class Bone
+{
+public:
+	std::string boneName;
+	int parentIdx;
+	std::string parentBoneName;
+};
+
 // 재질정보
 struct Material
 {
@@ -30,56 +38,6 @@ struct Material
 	XMFLOAT4 Diffuse;
 	XMFLOAT4 Specular; // w = SpecPower
 	XMFLOAT4 Reflect;
-};
-
-// m3d 파일 로딩에 사용할 재질 정보
-struct M3dMaterial
-{
-	Material Mat;
-
-	bool AlphaClip;
-	std::string EffectTypeName;
-	std::wstring DiffuseMapName;
-	std::wstring NormalMapName;
-};
-
-// m3d 파일 로딩에서 부분집합 부분, 난 사용하지 않을 예정
-struct Subset
-{
-	Subset() : Id( -1 ),	VertexStart( 0 ), VertexCount( 0 ), FaceStart( 0 ), FaceCount( 0 ){}
-
-	UINT Id;
-	UINT VertexStart;
-	UINT VertexCount;
-	UINT FaceStart;
-	UINT FaceCount;
-};
-
-// m3d 파일 로딩에 사용할 정점
-struct M3dVertex
-{
-	XMFLOAT3 pos;
-	XMFLOAT4 TangentU;
-	XMFLOAT3 Normal;
-	XMFLOAT2 Tex;
-
-	XMFLOAT3 weights;		// 가중치
-	BYTE boneIndices[4];		// 이 정점에 영향을 주는 뼈대
-};
-
-struct CM3dMesh
-{
-public:
-	std::vector<M3dMaterial> m_mats;
-	std::vector<Subset> m_subsets;
-	std::vector<M3dVertex> m_pVertexes;
-	std::vector<USHORT> m_pvIndices;
-//	SkinnedData m_skinnedData;
-
-	int m_nIndexCount;
-	int m_nVertexCount;
-	int m_iLayer;
-	int m_iType;
 };
 
 // 애니메이션 정보를 가지는 프레임, 특정 시간에서의 변환 정보를 가짐
@@ -93,6 +51,8 @@ struct Keyframe			// CKeyframe
 	XMFLOAT3 Translation;
 	XMFLOAT3 Scale;
 	XMFLOAT4 RotationQuat;
+
+	XMFLOAT4X4 mtxMatrix;
 };
 
 // 하나의 뼈대, 애니메이션 정보들을 가지고 있음
@@ -137,27 +97,27 @@ class SkinnedData
 {
 public:
 	UINT BoneCount( ) const;
-	float GetClipStartTime( const std::string& clipName ) const;
-	float GetClipEndTime( const std::string& clipName ) const;
+	float GetClipStartTime( const int& clipName ) const;
+	float GetClipEndTime( const int& clipName ) const;
 
 	void Set(
-		std::vector<int>& boneHierarchy,
+		std::vector<Bone>& boneHierarchy,
 		std::vector<XMFLOAT4X4>& boneOffsets,
-		std::map<std::string, AnimationClip>& animations );
+		std::map<int, AnimationClip>& animations );
 
 	// 최종변환을 구하는 함수, 오프셋 변환까지 마친 변환 매트릭스이다.
-	void GetFinalTransforms( const std::string& clipName, float timePos,
+	void GetFinalTransforms( const int& clipName, float timePos,
 		std::vector<XMFLOAT4X4>& finalTransforms );
 
 private:
-	// i번 뼈대의 부모의 색인을 담는다, i번 뼈대는 애니메이션 클립의 i번째 BoneAnimaion인스턴스에 대응된다.
-	std::vector<int> mBoneHierarchy;
+	// i번 뼈대의 부모의 이름을 담는다, i번 뼈대는 애니메이션 클립의 i번째 BoneAnimaion인스턴스에 대응된다.
+	std::vector<Bone> mBoneHierarchy;
 
 	// i번 뼈대의 오프셋 변환, 부모로 가는 오프셋 변환
 	std::vector<XMFLOAT4X4> mBoneOffsets;
 
 	// 애니메이션 정보를 클립별로 저장
-	std::map<std::string, AnimationClip> mAnimations;
+	std::map<int, AnimationClip> mAnimations;
 };
 
 struct CFbxVertex
@@ -448,4 +408,40 @@ public:
 //		sort( boneIndices[j].begin( ), boneIndices[j].end( ) );
 //	}
 //	return;
+//}
+
+//
+//void DisplayAnimationRecursive( FbxAnimStack* pAnimStack, FbxNode* pNode, D3DXMATRIX* _mtx, Model* _model ){
+//	int nbAnimLayers = pAnimStack->GetMemberCount<FbxAnimLayer>( );
+//	FbxTime maxTime = pAnimStack->GetLocalTimeSpan( ).GetDuration( );      // 최대 길이
+//	FbxMatrix aniMatrix;
+//	long long mtxSize = maxTime.GetMilliSeconds( ) / 10;
+//
+//	_mtx = new D3DXMATRIX[mtxSize];
+//	//10milisecond
+//	for (long long i = 0; i < mtxSize; i++){
+//		FbxTime ntime;
+//		ntime.SetMilliSeconds( i * 10 );
+//
+//		if (!pNode){
+//			cout << "pNode ==0" << endl;
+//			//getchar();
+//		}
+//		else{
+//			//cout << "node name : " << pNode->GetName() << endl;
+//			aniMatrix = pNode->EvaluateGlobalTransform( ntime );       // 시간대별로 노드 매트릭스 정보
+//
+//			_mtx[i]._11 = aniMatrix.mData[0].mData[0]; _mtx[i]._12 = aniMatrix.mData[0].mData[1]; _mtx[i]._13 = aniMatrix.mData[0].mData[2]; _mtx[i]._14 = aniMatrix.mData[0].mData[3];
+//			_mtx[i]._21 = aniMatrix.mData[1].mData[0]; _mtx[i]._22 = aniMatrix.mData[1].mData[1]; _mtx[i]._23 = aniMatrix.mData[1].mData[2]; _mtx[i]._24 = aniMatrix.mData[1].mData[3];
+//			_mtx[i]._31 = aniMatrix.mData[2].mData[0]; _mtx[i]._32 = aniMatrix.mData[2].mData[1]; _mtx[i]._33 = aniMatrix.mData[2].mData[2]; _mtx[i]._34 = aniMatrix.mData[2].mData[3];
+//			_mtx[i]._41 = aniMatrix.mData[3].mData[0]; _mtx[i]._42 = aniMatrix.mData[3].mData[1]; _mtx[i]._43 = aniMatrix.mData[3].mData[2]; _mtx[i]._44 = aniMatrix.mData[3].mData[3];
+//
+//		}
+//	}
+//	_model->MaxAnimSize = mtxSize;
+//	_model->SetAnimationMatrix( mtxSize, _mtx );
+//
+//	for (int i = 0; i < pNode->GetChildCount( ); i++){
+//		DisplayAnimationRecursive( pAnimStack, pNode->GetChild( i ), _mtx, _model );
+//	}
 //}

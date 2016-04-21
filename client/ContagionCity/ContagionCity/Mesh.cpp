@@ -125,13 +125,13 @@ void AnimationClip::Interpolate( float t, std::vector<XMFLOAT4X4>& boneTransform
 	}
 }
 
-float SkinnedData::GetClipStartTime( const std::string& clipName )const
+float SkinnedData::GetClipStartTime( const int& clipName )const
 {
 	auto clip = mAnimations.find( clipName );
 	return clip->second.GetClipStartTime( );
 }
 
-float SkinnedData::GetClipEndTime( const std::string& clipName )const
+float SkinnedData::GetClipEndTime( const int& clipName )const
 {
 	auto clip = mAnimations.find( clipName );
 	return clip->second.GetClipEndTime( );
@@ -142,16 +142,16 @@ UINT SkinnedData::BoneCount( )const
 	return mBoneHierarchy.size( );
 }
 
-void SkinnedData::Set( std::vector<int>& boneHierarchy,
+void SkinnedData::Set( std::vector<Bone>& boneHierarchy,
 	std::vector<XMFLOAT4X4>& boneOffsets,
-	std::map<std::string, AnimationClip>& animations )
+	std::map<int, AnimationClip>& animations )
 {
 	mBoneHierarchy = boneHierarchy;
 	mBoneOffsets = boneOffsets;
 	mAnimations = animations;
 }
 
-void SkinnedData::GetFinalTransforms( const std::string& clipName, float timePos, std::vector<XMFLOAT4X4>& finalTransforms )
+void SkinnedData::GetFinalTransforms( const int& clipName, float timePos, std::vector<XMFLOAT4X4>& finalTransforms )
 {
 	UINT numBones = mBoneOffsets.size( );
 
@@ -172,9 +172,10 @@ void SkinnedData::GetFinalTransforms( const std::string& clipName, float timePos
 	{
 		XMMATRIX toParent = XMLoadFloat4x4( &toParentTransforms[i] );
 
-		int parentIndex = mBoneHierarchy[i];
+		// 하이라키가 제대로 완성되면 수정 필요, 부모로 가는 인덱스가 필요
+		int parentIndex = mBoneHierarchy[i].parentIdx;
 		XMMATRIX parentToRoot = XMLoadFloat4x4( &toRootTransforms[parentIndex] );
-
+	
 		XMMATRIX toRoot = XMMatrixMultiply( toParent, parentToRoot );
 
 		XMStoreFloat4x4( &toRootTransforms[i], toRoot );

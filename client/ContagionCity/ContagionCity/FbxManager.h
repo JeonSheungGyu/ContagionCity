@@ -25,30 +25,18 @@ public:
 	bool LoadFBX( const char* pstrFileName, int Layer, int Type );
 	void ClearMeshes( ){ m_pMeshes.clear( ); }
 
-	// m3d¿ë
-	bool LoadM3D( const std::string& fileName, int layer, int type, CM3dMesh& pOutMesh );
-
 private:
 	// fbx¿ë
-	void LoadFBXMeshData( FbxMesh* pMesh, int Layer, int Type );
-	void LoadUVInformation( FbxMesh* pMesh, std::vector<XMFLOAT2> *pVector );
-	void LoadVertexAndIndexInfomation( FbxMesh* pMesh, std::vector<XMFLOAT3> *pVertex, std::vector<UINT> *pIndex );
-	void LoadNormallnfomation( FbxMesh *pMesh, std::vector<XMFLOAT3> *pNormals );
-	void LoadTangentInfomation( FbxMesh *pMesh, std::vector<XMFLOAT4> *pTangents );
-	void LoadBinormalInfomation( FbxMesh *pMesh, std::vector<XMFLOAT3> *pBinormals );
-	void SaveData( std::vector<XMFLOAT3> pVertex, std::vector<UINT> pIndex, std::vector<XMFLOAT2> UVVector, std::vector<CFbxVertex>weights, int iLayer, int iType );
-
-	std::map<std::string, AnimationClip> LoadBoneInfomation( FbxNode* pNode );
-	void LoadBoneHierarachy( FbxMesh *pMesh, std::vector<CFbxVertex> *pVertices, std::vector<int> *pBoneHierachy, std::vector<XMFLOAT4X4> *pBoneOffsets );
-
-	// m3d¿ë
-	void ReadAnimationClips( std::ifstream& fin, UINT nBones, UINT nAnimationClips, std::map<std::string, AnimationClip>& animationClips );
-	void ReadBoneKeyFrames( std::ifstream& fin, UINT nBones, BoneAnimation& boneAnimation );
-	void ReadBoneOffsets( std::ifstream& fin, UINT nBones, std::vector<XMFLOAT4X4>& boneOffsets );
-	void ReadSkinnedVertices( std::ifstream& fin, UINT nVertices, std::vector<M3dVertex>& vertices );
-	void ReadMaterial( std::ifstream& fin, UINT nMaterials, std::vector<M3dMaterial>& mats );
-	void ReadSubsetTable( std::ifstream& fin, UINT nSubsets, std::vector<Subset>& subsets );
-	void ReadTriangles( std::ifstream& fin, UINT nTriangles, std::vector<USHORT>& indices );
-	void ReadBoneHierarchy( std::ifstream& fin, UINT nBones, std::vector<int>& boneIndexToParentIndex );
-
+	void SaveData( std::vector<CFbxVertex> Vertex, std::vector<UINT> Index, std::vector<XMFLOAT2> UVVector,
+		std::vector<Bone> BoneHierarchy, std::vector<XMFLOAT4X4> BoneOffsets, std::map<int, AnimationClip>Animations, int iLayer, int iType );
+	void LoadFBXMeshData( FbxMesh* pMesh, std::vector<CFbxVertex> *pVertices, std::vector<UINT> *pIndices, std::vector<XMFLOAT2> *pUVs,  std::vector<Bone> *pBoneHierarchy, std::vector<XMFLOAT4X4> *pBoneOffsets );
+	void LoadUVInformation( FbxMesh* pMesh, std::vector<XMFLOAT2> *pVertices );
+	void LoadVertexAndIndexInfomation( FbxMesh* pMesh, std::vector<CFbxVertex> *pVertices, std::vector<UINT> *pIndex );
+	void LoadNormallnfomation( FbxMesh *pMesh, std::vector<CFbxVertex> *pVertices );
+	void LoadTangentInfomation( FbxMesh *pMesh, std::vector<CFbxVertex> *pVertices );
+	void LoadBinormalInfomation( FbxMesh *pMesh, std::vector<CFbxVertex> *pVertices );
+	std::map<int, AnimationClip> LoadBoneInfomation( FbxNode* pNode, std::vector<Bone> pBoneHierarchy );
+	void LoadInfluenceWeight( FbxMesh *pMesh, std::vector<CFbxVertex> *pVertices, std::vector<XMFLOAT4X4> *pBoneOffsets, std::vector<Bone> *BoneHierarchy );
+	void LoadBoneHierarachy( FbxNode *pNode, std::vector<Bone> *pBoneHierarchy );
+	void LoadKeyframesByTime( FbxAnimStack *pAnimStack, FbxNode *pNode, std::vector<BoneAnimation>* pvAnimations, std::vector<Bone> BoneHierarchy );
 };
