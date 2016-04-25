@@ -23,6 +23,8 @@ CPlayer::CPlayer( int nMeshes ) : CGameObject( nMeshes )
 
 	m_pPlayerUpdatedContext = NULL;
 	m_pCameraUpdatedContext = NULL;
+
+	m_fTimePos = 0.0f;
 }
 
 
@@ -34,6 +36,7 @@ CPlayer::~CPlayer( )
 
 void CPlayer::CreateShaderVariables( ID3D11Device *pd3dDevice )
 {
+	m_pmtxFinalTransforms = ( (CAnimatedMesh*)GetMesh( ) )->GetSkinnedData( ).mBoneOffsets;
 }
 
 void CPlayer::UpdateShaderVariables( ID3D11DeviceContext *pd3dDeviceContext )
@@ -347,3 +350,11 @@ void CPlayer::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera )
 	CGameObject::Render( pd3dDeviceContext, pCamera );
 }
 
+void CPlayer::Animate( float fTimeElapsed )
+{
+	m_fTimePos += fTimeElapsed;
+	( (CAnimatedMesh *)GetMesh( ) )->GetSkinnedData( ).GetFinalTransforms( 0, m_fTimePos, m_pmtxFinalTransforms );
+
+	if (m_fTimePos > ( (CAnimatedMesh *)GetMesh( ) )->GetSkinnedData( ).GetClipEndTime( 0 ))
+		m_fTimePos = 0.0f;
+}

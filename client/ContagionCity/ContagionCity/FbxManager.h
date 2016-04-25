@@ -26,17 +26,19 @@ public:
 	void ClearMeshes( ){ m_pMeshes.clear( ); }
 
 private:
+	bool FindStringInString( std::string dstString, std::string Findword );
 	// fbx¿ë
 	void SaveData( std::vector<CFbxVertex> Vertex, std::vector<UINT> Index, std::vector<XMFLOAT2> UVVector,
 		std::vector<Bone> BoneHierarchy, std::vector<XMFLOAT4X4> BoneOffsets, std::map<int, AnimationClip>Animations, int iLayer, int iType );
-	void LoadFBXMeshData( FbxMesh* pMesh, std::vector<CFbxVertex> *pVertices, std::vector<UINT> *pIndices, std::vector<XMFLOAT2> *pUVs,  std::vector<Bone> *pBoneHierarchy, std::vector<XMFLOAT4X4> *pBoneOffsets );
+	void LoadFBXMeshData( FbxMesh* pMesh, std::vector<CFbxVertex> *pVertices, std::vector<UINT> *pIndices, std::vector<XMFLOAT2> *pUVs,
+		std::vector<XMFLOAT4X4> *pBoneOffsets, std::vector<Bone> BoneHierarchy );
 	void LoadUVInformation( FbxMesh* pMesh, std::vector<XMFLOAT2> *pVertices );
 	void LoadVertexAndIndexInfomation( FbxMesh* pMesh, std::vector<CFbxVertex> *pVertices, std::vector<UINT> *pIndex );
 	void LoadNormallnfomation( FbxMesh *pMesh, std::vector<CFbxVertex> *pVertices );
 	void LoadTangentInfomation( FbxMesh *pMesh, std::vector<CFbxVertex> *pVertices );
 	void LoadBinormalInfomation( FbxMesh *pMesh, std::vector<CFbxVertex> *pVertices );
 	std::map<int, AnimationClip> LoadBoneInfomation( FbxNode* pNode, std::vector<Bone> pBoneHierarchy );
-	void LoadInfluenceWeight( FbxMesh *pMesh, std::vector<CFbxVertex> *pVertices, std::vector<XMFLOAT4X4> *pBoneOffsets, std::vector<Bone> *BoneHierarchy );
+	void LoadInfluenceWeight( FbxMesh *pMesh, std::vector<CFbxVertex> *pVertices, std::vector<XMFLOAT4X4> *pBoneOffsets, std::vector<Bone> BoneHierarchy );
 	void LoadBoneHierarachy( FbxNode *pNode, std::vector<Bone> *pBoneHierarchy );
 	void LoadKeyframesByTime( FbxAnimStack *pAnimStack, FbxNode *pNode, std::vector<BoneAnimation>* pvAnimations, std::vector<Bone> BoneHierarchy );
 };

@@ -290,7 +290,7 @@ void CGameFramework::ProcessInput( )
 		DWORD dwDirection = 0;
 		if (GetKeyboardState( pKeyBuffer ))
 		{
-			if (pKeyBuffer['W'] & 0xF0) 	dwDirection |= DIR_FORWARD;
+			if (pKeyBuffer['W'] & 0xF0) dwDirection |= DIR_FORWARD;
 			if (pKeyBuffer['S'] & 0xF0) dwDirection |= DIR_BACKWARD;
 			if (pKeyBuffer['A'] & 0xF0) dwDirection |= DIR_LEFT;
 			if (pKeyBuffer['D'] & 0xF0) dwDirection |= DIR_RIGHT;
@@ -339,6 +339,8 @@ void CGameFramework::AnimateObjects( )
 {
 	if (m_pScene)
 		m_pScene->AnimateObjects( m_GameTimer.GetTimeElapsed( ) );
+	if (m_pPlayer)
+		m_pPlayer->Animate( m_GameTimer.GetTimeElapsed( ) );
 }
 
 void CGameFramework::FrameAdvance( )

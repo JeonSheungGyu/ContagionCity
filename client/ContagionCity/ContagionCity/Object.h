@@ -101,6 +101,10 @@ public:
 	XMFLOAT3 m_vMin, m_vMax;
 	XMFLOAT3 m_vVertices[8];
 
+	// 애니메이션을 위한 시간저장 변수
+	float m_fTimePos;
+	// 애니메이션을 위한 매트릭스들
+	std::vector<XMFLOAT4X4> m_pmtxFinalTransforms;
 	virtual void Animate( float fTimeElapsed );
 
 	XMFLOAT3 m_vMovingDirection;

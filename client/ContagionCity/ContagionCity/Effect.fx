@@ -13,7 +13,7 @@ cbuffer cbWorldMatrix : register(b1)
 	matrix gmtxWorld : packoffset(c0);
 };
 
-cbuffer cbSkinned
+cbuffer cbSkinned : register( b3 )
 {
 	// 한 케릭터의 최대 뼈의 개수 96개
 	matrix gBoneTransforms[96];
@@ -226,6 +226,10 @@ SkinnedVertexOut SkinnedVS( SkinnedVertexIn vin )
 			normalL += weights[i] * mul( vin.normalL, ( float3x3 )gBoneTransforms[vin.boneIndices[i]] );
 			tangentL += weights[i] * mul( vin.tangentL.xyz, ( float3x3 )gBoneTransforms[vin.boneIndices[i]] );
 		}
+
+	//		posL = vin.positionL;
+	//normalL = vin.normalL;
+	//tangentL = vin.tangentL.xyz;
 
 	vout.positionW = mul( float4( posL, 1.0f ), gmtxWorld ).xyz;
 	vout.tangentW = float4( mul( tangentL, ( float3x3 )gmtxWorld ), vin.tangentL.w ); 

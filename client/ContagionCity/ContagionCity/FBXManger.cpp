@@ -46,8 +46,10 @@ bool FBXManager::LoadFBX( const char* pstrFileName, int Layer, int Type )
 		std::vector<CFbxVertex> tempVertices;
 		std::map<int, AnimationClip> tempAnimations;
 		
-		for (int i = 0; i < ChildCount; i++)
+		// i를 0부터 시작하면 반드시 mesh가 먼저 시작되지만 i를 ChildCount 부터 감소시키면서 오면 반드시 skeleton이 먼저 시작된다
+		for (int i = ChildCount - 1; i >= 0; i--)
 		{
+			// 스키닝 데이터 로딩
 			FbxNode* pfbxChildNode = pfbxRootNode->GetChild( i );
 			FbxNodeAttribute *nodeAttribute = pfbxChildNode->GetNodeAttributeByIndex( 0 );
 			if (nodeAttribute == NULL)
@@ -61,13 +63,13 @@ bool FBXManager::LoadFBX( const char* pstrFileName, int Layer, int Type )
 				case FbxNodeAttribute::eMesh:
 				{
 					// 메시데이터 로딩
-					LoadFBXMeshData( pMesh, &tempVertices, &tempIndex, &tempUV, &tempBoneHierarachy, &tempBoneOffsets );
+					// 매개변수로 std;;Vector<Bone> 넘기고 그 본과 현재 찾는 본 검색해서 인덱스 수정할것
+					LoadFBXMeshData( pMesh, &tempVertices, &tempIndex, &tempUV, &tempBoneOffsets, tempBoneHierarachy );
 					break;
 				}
 				case FbxNodeAttribute::eSkeleton:
 				{
-					// 스키닝 데이터 로딩
-	//				LoadBoneHierarachy( pfbxRootNode, &tempBoneHierarachy );
+					LoadBoneHierarachy( pfbxChildNode, &tempBoneHierarachy );
 					tempAnimations = LoadBoneInfomation( pfbxChildNode, tempBoneHierarachy );
 					break;
 				}
@@ -86,13 +88,31 @@ bool FBXManager::LoadFBX( const char* pstrFileName, int Layer, int Type )
 	}
 }
 
-void FBXManager::LoadBoneHierarachy( FbxNode *pNode, std::vector<Bone> *pBoneHierarchy )
+bool FBXManager::FindStringInString( std::string dstString, std::string Findword )
 {
+	if (dstString.find( Findword ) == std::string::npos)
+		return false;
+	else
+		return true;
+}
+
+void FBXManager::LoadBoneHierarachy( FbxNode *pNode, std::vector<Bone> *pBoneHierarchy )
+{ 
+	Bone tempBone;
+
+	int parentIdx = 0;
+
+	if (pBoneHierarchy->size( ) == 0)
+	{
+		tempBone.boneName = pNode->GetName( );
+		tempBone.parentBoneName = pNode->GetParent()->GetName( );
+		tempBone.parentIdx = parentIdx;
+		pBoneHierarchy->push_back( tempBone );
+	}
+
 	for (int i = 0; i < pNode->GetChildCount( ); i++)
 	{
-		Bone tempBone;
-	
-		int parentIdx = 0;
+		
 		for (int j = 0; j < pBoneHierarchy->size( ); j++)
 		{
 			if (( *pBoneHierarchy )[j].boneName == pNode->GetName( ))
@@ -101,15 +121,19 @@ void FBXManager::LoadBoneHierarachy( FbxNode *pNode, std::vector<Bone> *pBoneHie
 				break;
 			}
 		}
-		tempBone.boneName = pNode->GetChild(i)->GetName( );
-		tempBone.parentBoneName = pNode->GetName( );
-		tempBone.parentIdx = parentIdx;
-		pBoneHierarchy->push_back( tempBone );
+		
+		if (!FindStringInString( pNode->GetChild(i)->GetName(), "Nub" ))
+		{
+			tempBone.boneName = pNode->GetChild( i )->GetName( );
+			tempBone.parentBoneName = pNode->GetName( );
+			tempBone.parentIdx = parentIdx;
+			pBoneHierarchy->push_back( tempBone );
+		}
 		LoadBoneHierarachy( pNode->GetChild( i ), pBoneHierarchy );
 	}
 }
 
-void FBXManager::LoadInfluenceWeight( FbxMesh *pMesh, std::vector<CFbxVertex> *pVertices, std::vector<XMFLOAT4X4> *pBoneOffsets, std::vector<Bone> *pBoneHierarchy )
+void FBXManager::LoadInfluenceWeight( FbxMesh *pMesh, std::vector<CFbxVertex> *pVertices, std::vector<XMFLOAT4X4> *pBoneOffsets, std::vector<Bone> BoneHierarchy )
 {
 	// 본 계층구조, 오프셋변환, 가중치, 영향받는 정점 을 구해야함
 	int numDeformers = pMesh->GetDeformerCount( FbxDeformer::eSkin);
@@ -120,17 +144,24 @@ void FBXManager::LoadInfluenceWeight( FbxMesh *pMesh, std::vector<CFbxVertex> *p
 		if (!skin)
 			continue;
 
+		pBoneOffsets->resize( BoneHierarchy.size( ) );
 		// 본의 정보를 얻어오는 행위
 		int boneCount = skin->GetClusterCount( );		// 본의 개수		 54
-		pBoneHierarchy->resize( boneCount );
 		for (int boneIndex = 0; boneIndex < boneCount; boneIndex++)
 		{
 			// cluster == bone
 			FbxCluster *cluster = skin->GetCluster( boneIndex );
 			FbxNode *bone = cluster->GetLink( );		// 본과 연결되어있는 노드, 부모노드가 아님
-			( *pBoneHierarchy)[boneIndex].boneName = bone->GetName( );
-			( *pBoneHierarchy )[boneIndex].parentBoneName = bone->GetParent( )->GetName( );		// 부모노드의 이름
-			
+			int boneHierIdx = 0;
+
+			for (int boneHier = 0; boneHier < BoneHierarchy.size( ); boneHier++)
+			{
+				if (bone->GetName( ) == BoneHierarchy[boneHier].boneName)
+				{
+					boneHierIdx = boneHier;
+					break;
+				}
+			}
 
 			FbxAMatrix LinkBoneMatrix;
 			FbxAMatrix TransboneMatrix;
@@ -150,7 +181,7 @@ void FBXManager::LoadInfluenceWeight( FbxMesh *pMesh, std::vector<CFbxVertex> *p
 			tempOffsetMatl._41 = ResultMatrix.mData[3].mData[0]; tempOffsetMatl._42 = ResultMatrix.mData[3].mData[1];
 			tempOffsetMatl._43 = ResultMatrix.mData[3].mData[2]; tempOffsetMatl._44 = ResultMatrix.mData[3].mData[3];
 
-			pBoneOffsets->push_back( tempOffsetMatl );
+			(*pBoneOffsets)[boneHierIdx] = tempOffsetMatl;
 
 			int *boneVertexIndices = cluster->GetControlPointIndices( );			// 해당 본에 영향을 받는 정점들
 			double *boneVertexWeights = cluster->GetControlPointWeights( );		// 해당 본에 의한 정점의 가중치
@@ -166,40 +197,27 @@ void FBXManager::LoadInfluenceWeight( FbxMesh *pMesh, std::vector<CFbxVertex> *p
 				if (( *pVertices )[tempBoneVertexIndex].m_weights.x == 0)		
 				{
 					( *pVertices )[tempBoneVertexIndex].m_weights.x = tempBoneWeight;				
-					( *pVertices )[tempBoneVertexIndex].m_boneIndices.x = boneIndex;
+					( *pVertices )[tempBoneVertexIndex].m_boneIndices.x = boneHierIdx;
 				}
 				// 가중치 중 x가 0이 아니고 y가 0이면 두번째 인덱스
 				else if (( *pVertices )[tempBoneVertexIndex].m_weights.x != 0 && ( *pVertices )[tempBoneVertexIndex].m_weights.y == 0)
 				{
 					( *pVertices )[tempBoneVertexIndex].m_weights.y = tempBoneWeight;				
-					( *pVertices )[tempBoneVertexIndex].m_boneIndices.y = boneIndex;
+					( *pVertices )[tempBoneVertexIndex].m_boneIndices.y = boneHierIdx;
 				}
 				// 가중치 중 x가 0이 아니고 y가 0이 아니고 z가 0이면 세번째 인덱스
 				else if (( *pVertices )[tempBoneVertexIndex].m_weights.x != 0 && ( *pVertices )[tempBoneVertexIndex].m_weights.y != 0 && ( *pVertices )[tempBoneVertexIndex].m_weights.z == 0)
 				{
 					( *pVertices )[tempBoneVertexIndex].m_weights.z = tempBoneWeight;				
-					( *pVertices )[tempBoneVertexIndex].m_boneIndices.z = boneIndex;
+					( *pVertices )[tempBoneVertexIndex].m_boneIndices.z = boneHierIdx;
 				}
 				// 모두 0이 아니면 4번째 인덱스, 가중치는 1에서 xyz 빼면 나머지 구할 수 있음
 				else if (( *pVertices )[tempBoneVertexIndex].m_weights.x != 0 && ( *pVertices )[tempBoneVertexIndex].m_weights.y != 0 && ( *pVertices )[tempBoneVertexIndex].m_weights.z != 0)
 				{
-					( *pVertices )[tempBoneVertexIndex].m_boneIndices.w = boneIndex;
+					( *pVertices )[tempBoneVertexIndex].m_boneIndices.w = boneHierIdx;
 				}
 			}	
 		}	// end of bonecount for
-
-		for (int boneCount = 0; boneCount < pBoneHierarchy->size( ); boneCount++)
-		{
-			( *pBoneHierarchy )[boneCount].parentIdx = -1;
-			for (int parentCount = 0; parentCount < pBoneHierarchy->size( ); parentCount++)
-			{
-				if (( *pBoneHierarchy )[boneCount].parentBoneName == ( *pBoneHierarchy )[parentCount].boneName)
-				{
-					( *pBoneHierarchy )[boneCount].parentIdx = parentCount;
-					break;
-				}
-			}
-		}
 	}	// end of deformer for
 }
 
@@ -247,25 +265,9 @@ void FBXManager::LoadKeyframesByTime( FbxAnimStack *pAnimStack, FbxNode *pNode, 
 		return;
 
 	FbxAnimLayer *pAnimLayer = (FbxAnimLayer*)pAnimStack->GetMember( );
-	FbxAnimCurve *pTranslationCurve = pNode->LclTranslation.GetCurve( pAnimLayer );
-	FbxAnimCurve *pRotationCurve = pNode->LclRotation.GetCurve( pAnimLayer );
-	FbxAnimCurve *pScalingcurve = pNode->LclScaling.GetCurve( pAnimLayer );
-	FbxAnimCurve *pNotNullCurve;
+	FbxAnimCurve *pfbxAnimCurve = pNode->LclRotation.GetCurve( pAnimLayer, "X" );
 
-	long long mtxSize = 0;
-
-	if (pTranslationCurve){
-		mtxSize = pTranslationCurve->KeyGetCount( ); 
-		pNotNullCurve = pTranslationCurve;
-	}
-	else if (pRotationCurve){
-		mtxSize = pRotationCurve->KeyGetCount( );
-		pNotNullCurve = pRotationCurve;
-	}
-	else if (pScalingcurve){
-		mtxSize = pScalingcurve->KeyGetCount( );
-		pNotNullCurve = pScalingcurve;
-	}
+	long long mtxSize = pfbxAnimCurve->KeyGetCount( );
 
 	if (mtxSize != 0)
 	{
@@ -274,57 +276,21 @@ void FBXManager::LoadKeyframesByTime( FbxAnimStack *pAnimStack, FbxNode *pNode, 
 
 		for (long long i = 0; i < mtxSize; i++)
 		{
-			FbxTime nTime = pNotNullCurve->KeyGetTime( i );
+			FbxTime nTime = pfbxAnimCurve->KeyGetTime( i );
 
 			if (pNode)
-			{
+			{	
+				// 해당 본의 월드좌표계에서의 행렬
 				_mtx[i].TimePos = (float)nTime.GetSecondDouble( );		// 시간저장
 
-				// 해당 시간의 변환 매트릭스 저장
-				if (pScalingcurve)
-				{
-					FbxDouble3 scalingVector = pNode->EvaluateLocalScaling( nTime );
-					_mtx[i].Scale.x = (float)scalingVector[0];
-					_mtx[i].Scale.y = (float)scalingVector[2];
-					_mtx[i].Scale.z = (float)scalingVector[1];
-				}
-				else
-				{
-					FbxDouble3 scalingVector = pNode->LclScaling.Get( );
-					_mtx[i].Scale.x = (float)scalingVector[0];
-					_mtx[i].Scale.y = (float)scalingVector[2];
-					_mtx[i].Scale.z = (float)scalingVector[1];
-				}
+				FbxAMatrix aniMatrix = pNode->EvaluateLocalTransform( nTime );
+				FbxQuaternion Q = aniMatrix.GetQ( );
+				FbxVector4 S = aniMatrix.GetS( );
+				FbxVector4 T = aniMatrix.GetT( );
 
-				if (pTranslationCurve)
-				{
-					FbxDouble3 translationVector = pNode->EvaluateLocalTranslation( nTime );
-					_mtx[i].Translation.x = (float)translationVector[0];
-					_mtx[i].Translation.y = (float)translationVector[2];
-					_mtx[i].Translation.z = (float)translationVector[1];
-				}
-				else
-				{
-					FbxDouble3 translationVector = pNode->LclTranslation.Get( );
-					_mtx[i].Translation.x = (float)translationVector[0];
-					_mtx[i].Translation.y = (float)translationVector[2];
-					_mtx[i].Translation.z = (float)translationVector[1];
-				}
-
-				if (pRotationCurve)
-				{
-					FbxDouble3 rotationVector = pNode->EvaluateLocalRotation( nTime );
-					_mtx[i].RotationQuat.x = (float)rotationVector[0];
-					_mtx[i].RotationQuat.y = (float)rotationVector[2];
-					_mtx[i].RotationQuat.z = (float)rotationVector[1];
-				}
-				else
-				{
-					FbxDouble3 rotationVector = pNode->LclRotation.Get( );
-					_mtx[i].RotationQuat.x = (float)rotationVector[0];
-					_mtx[i].RotationQuat.y = (float)rotationVector[2];
-					_mtx[i].RotationQuat.z = (float)rotationVector[1];
-				}
+				_mtx[i].RotationQuat.x = Q[0]; _mtx[i].RotationQuat.y = Q[2]; _mtx[i].RotationQuat.z = Q[1]; _mtx[i].RotationQuat.w = Q[3];
+				_mtx[i].Scale.x = S[0]; _mtx[i].Scale.y = S[2]; _mtx[i].Scale.z = S[1];
+				_mtx[i].Translation.x = T[0]; _mtx[i].Translation.y = T[2]; _mtx[i].Translation.z = T[1];
 			}
 		}
 
@@ -343,7 +309,8 @@ void FBXManager::LoadKeyframesByTime( FbxAnimStack *pAnimStack, FbxNode *pNode, 
 	}
 }
 
-void FBXManager::LoadFBXMeshData( FbxMesh* pMesh, std::vector<CFbxVertex> *pVertices, std::vector<UINT> *pIndices, std::vector<XMFLOAT2> *pUVs, std::vector<Bone> *pBoneHierarchy, std::vector<XMFLOAT4X4> *pBoneOffsets )
+void FBXManager::LoadFBXMeshData( FbxMesh* pMesh, std::vector<CFbxVertex> *pVertices, std::vector<UINT> *pIndices,
+	std::vector<XMFLOAT2> *pUVs, std::vector<XMFLOAT4X4> *pBoneOffsets, std::vector<Bone> BoneHierarchy )
 {
 	//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 정점 좌표, 인덱스 정보 가져오기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 	LoadVertexAndIndexInfomation( pMesh, pVertices, pIndices );
@@ -368,7 +335,7 @@ void FBXManager::LoadFBXMeshData( FbxMesh* pMesh, std::vector<CFbxVertex> *pVert
 	//			}
 
 	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ  가중치와 뼈대 정보가져오기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-	LoadInfluenceWeight( pMesh, pVertices, pBoneOffsets, pBoneHierarchy );
+	LoadInfluenceWeight( pMesh, pVertices, pBoneOffsets, BoneHierarchy );
 }
 
 void FBXManager::SaveData( std::vector<CFbxVertex> Vertex, std::vector<UINT> Index, std::vector<XMFLOAT2> UVVector, 
@@ -424,8 +391,8 @@ void FBXManager::LoadVertexAndIndexInfomation( FbxMesh* pMesh, std::vector<CFbxV
 		int iNumVertices = pMesh->GetPolygonSize( j );	// 폴리곤을 구성하는 정점의 개수
 		if (iNumVertices != 3)
 		{
-			pMesh->Destroy( );
-			return;
+		//	pMesh->Destroy( );
+		//	return;
 		}
 
 		for (int k = 0; k < iNumVertices; k++)

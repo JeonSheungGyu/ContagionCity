@@ -151,6 +151,13 @@ void SkinnedData::Set( std::vector<Bone>& boneHierarchy,
 	mAnimations = animations;
 }
 
+void SkinnedData::GetMatrixByTime( const int& clipName, float timePos, std::vector<XMFLOAT4X4>& finalTransforms )
+{
+	// 이 클립의 모든 뼈대를 주어진 시간에 맞게 보간
+	auto clip = mAnimations.find( clipName );
+	clip->second.Interpolate( timePos, finalTransforms );
+}
+
 void SkinnedData::GetFinalTransforms( const int& clipName, float timePos, std::vector<XMFLOAT4X4>& finalTransforms )
 {
 	UINT numBones = mBoneOffsets.size( );
@@ -164,18 +171,18 @@ void SkinnedData::GetFinalTransforms( const int& clipName, float timePos, std::v
 	// 뼈대 계층구조를 훑으면서 모든 뼈대를 뿌리공간으로 변환
 	std::vector<XMFLOAT4X4> toRootTransforms( numBones );
 
-	// 뿌리 뼈대의 인덱스는 0, 뿌리뼈대는 부모가 없으므로 그냥 그대로 둔다.
 	toRootTransforms[0] = toParentTransforms[0];
 
 	// 자식 뼈대들의 뿌리변환을 구함
 	for (UINT i = 1; i < numBones; ++i)
 	{
+		// 루트노드인 경우
 		XMMATRIX toParent = XMLoadFloat4x4( &toParentTransforms[i] );
 
 		// 하이라키가 제대로 완성되면 수정 필요, 부모로 가는 인덱스가 필요
 		int parentIndex = mBoneHierarchy[i].parentIdx;
 		XMMATRIX parentToRoot = XMLoadFloat4x4( &toRootTransforms[parentIndex] );
-	
+
 		XMMATRIX toRoot = XMMatrixMultiply( toParent, parentToRoot );
 
 		XMStoreFloat4x4( &toRootTransforms[i], toRoot );
@@ -828,6 +835,7 @@ CAnimatedMesh::CAnimatedMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, int Tex
 	vector<XMFLOAT3> pvTangents( m_nVertices );
 	vector<XMFLOAT3> pvWeights( m_nVertices );
 	vector<XMFLOAT4> pvBoneIndices( m_nVertices );
+	m_skindata = vertex.m_skinnedData;
 
 	for (int i = 0; i < m_nVertices; i++)
 	{

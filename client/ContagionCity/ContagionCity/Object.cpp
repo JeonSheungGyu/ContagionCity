@@ -35,6 +35,8 @@ CGameObject::CGameObject( int nMeshes )
 
 	m_fRotationSpeed = 0.0f;
 	m_fMovingSpeed = 0.0f;
+
+	m_fTimePos = 0.0f;
 }
 
 CGameObject::~CGameObject( )

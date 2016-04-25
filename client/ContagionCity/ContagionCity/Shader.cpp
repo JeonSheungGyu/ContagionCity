@@ -5,6 +5,7 @@
 // 스테틱 멤버 변수는 무조건 이렇게 선언한다.
 ID3D11Buffer *CShader::m_pd3dcbWorldMatrix = NULL;
 ID3D11Buffer *CIlluminatedShader::m_pd3dcbMaterial = NULL;
+ID3D11Buffer *CPlayerShader::m_pd3dcbOffsetMatrix = NULL;
 
 CShader::CShader( )
 {
@@ -164,6 +165,32 @@ CPlayerShader::CPlayerShader( )
 CPlayerShader::~CPlayerShader( )
 {
 }
+void CPlayerShader::CreateShaderVariables( ID3D11Device *pd3dDevice )
+{
+	// 애니메이션 변환 행렬을 위한 상수 버퍼를 생성
+	D3D11_BUFFER_DESC bd;
+	::ZeroMemory( &bd, sizeof( bd ) );
+	bd.Usage = D3D11_USAGE_DYNAMIC;
+	bd.ByteWidth = sizeof( VS_CB_OFFSET_MATRIX );
+	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	pd3dDevice->CreateBuffer( &bd, NULL, &m_pd3dcbOffsetMatrix );
+}
+
+void CPlayerShader::UpdateShaderVariable( ID3D11DeviceContext *pd3dDeviceContext, std::vector<XMFLOAT4X4> pmtxWorld )
+{
+	// 월드 변환 행렬을 상수 버퍼에 복사
+	D3D11_MAPPED_SUBRESOURCE d3dMappedResource;
+	pd3dDeviceContext->Map( m_pd3dcbOffsetMatrix, 0, D3D11_MAP_WRITE_DISCARD, 0, &d3dMappedResource );
+	VS_CB_OFFSET_MATRIX *pcbOffsetMatrix = (VS_CB_OFFSET_MATRIX*)d3dMappedResource.pData;
+	for (int i = 0; i < pmtxWorld.size( ); i++){
+		pcbOffsetMatrix->m_mtxOffsets[i] = MathHelper::GetInstance( )->TransposeFloat4x4( pmtxWorld[i] );
+	}
+	pd3dDeviceContext->Unmap( m_pd3dcbOffsetMatrix, 0 );
+
+	// 상수 버퍼를 디바이스의 슬롯에 연결
+	pd3dDeviceContext->VSSetConstantBuffers( VS_SLOT_OFFSET_MATRIX, 1, &m_pd3dcbOffsetMatrix );
+}
 
 void CPlayerShader::CreateShader( ID3D11Device *pd3dDevice )
 {
@@ -179,6 +206,8 @@ void CPlayerShader::CreateShader( ID3D11Device *pd3dDevice )
 	UINT nElements = ARRAYSIZE( d3dInputElements );
 	CreateVertexShaderFromFile( pd3dDevice, L"Effect.fx", "SkinnedVS", "vs_5_0", &m_pd3dVertexShader, d3dInputElements, nElements, &m_pd3dVertexLayout );
 	CreatePixelShaderFromFile( pd3dDevice, L"Effect.fx", "SkinnedPS", "ps_5_0", &m_pd3dPixelShader );
+
+	CreateShaderVariables( pd3dDevice );
 //	CShader::CreateShader( pd3dDevice );
 }
 
@@ -231,11 +260,13 @@ bool CPlayerShader::CollisionCheck( CGameObject* pObject )
 
 void CPlayerShader::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera )
 {
+	
 	// 3인칭 카메라일 때 플레이어를 렌더링
 	DWORD nCameraMode = ( pCamera ) ? pCamera->GetMode( ) : 0x00;
 
 	if (nCameraMode == THIRD_PERSON_CAMERA)
 	{
+		UpdateShaderVariable( pd3dDeviceContext, m_ppObjects[0]->m_pmtxFinalTransforms);
 		CShader::Render( pd3dDeviceContext, pCamera );
 	}
 }
@@ -280,7 +311,6 @@ void CBackgroundShader::BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbx
 				pGroundMesh->OnChangeTexture( pd3dDevice, _T( "./res/city_base_0314_texture.dds" ), 0 );
 				pGroundMesh->OnChangeTexture( pd3dDevice, _T( "./res/city_base_0314_normal.dds" ), 1 );
 				pGround->SetMesh( pGroundMesh, 0 );
-//				pGround->SetPosition( 0.0f, 0.0f, 500.0f );
 				m_ppObjects[i] = pGround;
 
 				CMaterial *pGroundMaterial = new CMaterial;

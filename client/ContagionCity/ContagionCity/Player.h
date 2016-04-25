@@ -80,6 +80,9 @@ public:
 
 	// 플레이어의 위치와 회전 정보를 경과 시간에 따라 갱신하는 함수
 	void Update( float fTimeElapsed );
+	
+	// 플레이어의 애니메이션
+	virtual void Animate( float fTimeElapsed );
 
 	// 플레이어의 위치가 바뀔 때마다 호출되는 함수와 그 함수에서 사용하는 정보를 설정하는 함수
 	virtual void OnPlayerUpdated( float fTimeElapsed );

@@ -16,6 +16,11 @@ struct VS_VB_INSTANCE
 	XMFLOAT4X4 m_mtxTransform;
 };
 
+struct VS_CB_OFFSET_MATRIX
+{
+	XMFLOAT4X4 m_mtxOffsets[96];
+};
+
 class CShader
 {
 public:
@@ -85,12 +90,16 @@ public:
 	virtual ~CPlayerShader( );
 
 	virtual void CreateShader( ID3D11Device *pd3dDevice );
+	virtual void CreateShaderVariables( ID3D11Device *pd3dDevice );
+	virtual void UpdateShaderVariable( ID3D11DeviceContext *pd3dDeviceContext, std::vector<XMFLOAT4X4> pmtxWorld );
 	virtual void BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbxMesh> meshes );
 	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera = NULL );
 
 	bool CollisionCheck( CGameObject* pObject );
 
 	CPlayer* GetPlayer( int nIndex = 0 ){ return (CPlayer*)m_ppObjects[nIndex]; }
+
+	static ID3D11Buffer *m_pd3dcbOffsetMatrix;
 };
 
 // ∂•πŸ¥⁄¿ª ∑ª¥ı∏µ«œ±‚ ¿ß«— ºŒ¿Ã¥ı ≈¨∑°Ω∫

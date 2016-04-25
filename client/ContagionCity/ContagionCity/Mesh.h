@@ -108,8 +108,9 @@ public:
 	// 최종변환을 구하는 함수, 오프셋 변환까지 마친 변환 매트릭스이다.
 	void GetFinalTransforms( const int& clipName, float timePos,
 		std::vector<XMFLOAT4X4>& finalTransforms );
+	void SkinnedData::GetMatrixByTime( const int& clipName, float timePos, std::vector<XMFLOAT4X4>& finalTransforms );
 
-private:
+public:
 	// i번 뼈대의 부모의 이름을 담는다, i번 뼈대는 애니메이션 클립의 i번째 BoneAnimaion인스턴스에 대응된다.
 	std::vector<Bone> mBoneHierarchy;
 
@@ -129,7 +130,7 @@ struct CFbxVertex
 	XMFLOAT3 m_binormal;
 
 	XMFLOAT3 m_weights = XMFLOAT3(0.0f , 0.0f, 0.0f);						// 가중치
-	XMFLOAT4 m_boneIndices = XMFLOAT4(-1.0f,-1.0f, -1.0f, -1.0f);		// 이 정점에 영향을 주는 뼈대
+	XMFLOAT4 m_boneIndices = XMFLOAT4(0.0f,0.0f, 0.0f, 0.0f);		// 이 정점에 영향을 주는 뼈대
 };
 
 struct CFbxMesh
@@ -324,8 +325,33 @@ public:
 	~CAnimatedMesh( );
 
 	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext );
+	SkinnedData GetSkinnedData( ){ return m_skindata; }
 };
 
+class CMeshDiffused : public CMesh
+{
+public:
+	CMeshDiffused( ID3D11Device *pd3dDevice );
+	virtual ~CMeshDiffused( );
+
+protected:
+	ID3D11Buffer *m_pd3dColorBuffer;
+};
+
+
+
+class CCubeMeshDiffused : public CMeshDiffused
+{
+
+public:
+
+	//직육면체의 가로, 세로, 높이의 크기를 지정하여 직육면체 메쉬를 생성한다.
+	CCubeMeshDiffused( ID3D11Device *pd3dDevice, float fWidth, float fHeight, float fDepth, D3DXCOLOR d3dxColor );
+	virtual ~CCubeMeshDiffused( );
+
+	virtual void CreateRasterizerState( ID3D11Device *pd3dDevice );
+	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext );
+};
 
 
 //void BuildMeshSkinning( FbxMesh* mesh, vector<vector<pair<int, float>>>& boneIndices,

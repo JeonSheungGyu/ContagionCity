@@ -34,6 +34,7 @@
 #define VS_SLOT_CAMERA	0x00
 #define VS_SLOT_WORLD_MATRIX 0x01
 #define VS_SLOT_COLOR	0x02
+#define VS_SLOT_OFFSET_MATRIX 0x03
 
 //조명과 재질을 설정하기 위한 상수 버퍼의 슬롯 번호를 정의한다. 
 #define PS_SLOT_LIGHT			0x00
