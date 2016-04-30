@@ -12,6 +12,11 @@ FBXManager::FBXManager( )
 
 	m_pfbxImporter = FbxImporter::Create( m_pfbxManager, "" );
 	m_pfbxScene = FbxScene::Create( m_pfbxManager, "" );
+
+	FbxAxisSystem fbxSceneAxisSystem = m_pfbxScene->GetGlobalSettings( ).GetAxisSystem( );
+	FbxAxisSystem fbxDirectXAxisSystem( FbxAxisSystem::eDirectX );
+	if (fbxSceneAxisSystem != fbxDirectXAxisSystem)
+		fbxDirectXAxisSystem.ConvertScene( m_pfbxScene );
 }
 
 FBXManager::~FBXManager( )
@@ -20,8 +25,8 @@ FBXManager::~FBXManager( )
 	m_pfbxManager->Destroy( );
 }
 
-// FBX 파일을 Scene의 노드에 추가하는 함수
-bool FBXManager::LoadFBX( const char* pstrFileName, int Layer, int Type )
+// FBX 파일을 Scene의 노드에 추가하는 함수, 텍스처는 가변인자로 받음
+bool FBXManager::LoadFBX( const char* pstrFileName, int Layer, int Type, int textureCount, ...)
 {
 	// 파일 이름을 로딩
 	bool bResult = m_pfbxImporter->Initialize( pstrFileName, -1, m_pfbxManager->GetIOSettings( ) );
@@ -45,9 +50,20 @@ bool FBXManager::LoadFBX( const char* pstrFileName, int Layer, int Type )
 		std::vector<XMFLOAT4X4> tempBoneOffsets;
 		std::vector<CFbxVertex> tempVertices;
 		std::map<int, AnimationClip> tempAnimations;
-		
+		std::vector<TCHAR*> tempTextures;
+
+		// 텍스처 이름 저장
+		va_list ap;
+		va_start( ap, textureCount );
+		for (int i = 0; i < textureCount; i++)
+		{
+			tempTextures.push_back( va_arg( ap, TCHAR* ) );
+		}
+		va_end( ap);
+
 		// i를 0부터 시작하면 반드시 mesh가 먼저 시작되지만 i를 ChildCount 부터 감소시키면서 오면 반드시 skeleton이 먼저 시작된다
 		for (int i = ChildCount - 1; i >= 0; i--)
+	//	for (int i = 0; i < ChildCount; i++)
 		{
 			// 스키닝 데이터 로딩
 			FbxNode* pfbxChildNode = pfbxRootNode->GetChild( i );
@@ -76,7 +92,7 @@ bool FBXManager::LoadFBX( const char* pstrFileName, int Layer, int Type )
 			}
 		}
 		//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 자료들 저장하기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-		SaveData( tempVertices, tempIndex, tempUV, tempBoneHierarachy, tempBoneOffsets, tempAnimations, Layer, Type );
+		SaveData( tempVertices, tempIndex, tempUV, tempBoneHierarachy, tempBoneOffsets, tempAnimations, Layer, Type, tempTextures );
 
 		// 버텍스 정보들을 옮긴 뒤 노드들 제거
 		for (int i = 0; i < m_pfbxScene->GetNodeCount( ); i++)
@@ -170,6 +186,9 @@ void FBXManager::LoadInfluenceWeight( FbxMesh *pMesh, std::vector<CFbxVertex> *p
 			cluster->GetTransformLinkMatrix( LinkBoneMatrix );
 			cluster->GetTransformMatrix( TransboneMatrix );
 			ResultMatrix = LinkBoneMatrix.Inverse( ) * TransboneMatrix;
+	//		ResultMatrix = LinkBoneMatrix;
+	//		ResultMatrix = TransboneMatrix;
+	//		ResultMatrix = LinkBoneMatrix.Inverse() * TransboneMatrix.Inverse();
 
 			XMFLOAT4X4 tempOffsetMatl;
 			tempOffsetMatl._11 = ResultMatrix.mData[0].mData[0]; tempOffsetMatl._12 = ResultMatrix.mData[0].mData[1];
@@ -183,15 +202,28 @@ void FBXManager::LoadInfluenceWeight( FbxMesh *pMesh, std::vector<CFbxVertex> *p
 
 			(*pBoneOffsets)[boneHierIdx] = tempOffsetMatl;
 
-			int *boneVertexIndices = cluster->GetControlPointIndices( );			// 해당 본에 영향을 받는 정점들
+			
+		
 			double *boneVertexWeights = cluster->GetControlPointWeights( );		// 해당 본에 의한 정점의 가중치
-
+			int *boneVertexIndices = cluster->GetControlPointIndices( );					// 해당 본에 영향을 받는 정점들
 			// 해당 본에 영향을 받는 모든 정점을 하나씩 가져옴	
 			int numBoneVertexIndices = cluster->GetControlPointIndicesCount( );		
+
+			std::vector<int> boneIndices;
+			for (int i = 0; i < numBoneVertexIndices; i++)
+			{
+				boneIndices.push_back( boneVertexIndices[i]);
+			}
+
 			for (int boneVertexIndex = 0; boneVertexIndex < numBoneVertexIndices; boneVertexIndex++)
 			{
-				int tempBoneVertexIndex = boneVertexIndices[boneVertexIndex];			// 영향을 받는 정점의 인덱스
 				float tempBoneWeight = (float)boneVertexWeights[boneVertexIndex];	// 영향을 받는 정점의 가중치 정도
+
+				// 가중치가 0이면 다음걸로 넘김
+				if (!tempBoneWeight)
+					continue;
+
+				int tempBoneVertexIndex = boneVertexIndices[boneVertexIndex];			// 영향을 받는 정점의 인덱스
 
 				// 가중치 중 x가 0이면 첫번째 인덱스
 				if (( *pVertices )[tempBoneVertexIndex].m_weights.x == 0)		
@@ -283,14 +315,14 @@ void FBXManager::LoadKeyframesByTime( FbxAnimStack *pAnimStack, FbxNode *pNode, 
 				// 해당 본의 월드좌표계에서의 행렬
 				_mtx[i].TimePos = (float)nTime.GetSecondDouble( );		// 시간저장
 
-				FbxAMatrix aniMatrix = pNode->EvaluateLocalTransform( nTime );
+				FbxAMatrix aniMatrix = pNode->EvaluateGlobalTransform( nTime );
 				FbxQuaternion Q = aniMatrix.GetQ( );
-				FbxVector4 S = aniMatrix.GetS( );
-				FbxVector4 T = aniMatrix.GetT( );
+				FbxVector4 S =  aniMatrix.GetS( );
+				FbxVector4 T =  aniMatrix.GetT( );
 
-				_mtx[i].RotationQuat.x = Q[0]; _mtx[i].RotationQuat.y = Q[2]; _mtx[i].RotationQuat.z = Q[1]; _mtx[i].RotationQuat.w = Q[3];
-				_mtx[i].Scale.x = S[0]; _mtx[i].Scale.y = S[2]; _mtx[i].Scale.z = S[1];
-				_mtx[i].Translation.x = T[0]; _mtx[i].Translation.y = T[2]; _mtx[i].Translation.z = T[1];
+				_mtx[i].RotationQuat.x = Q[0]; _mtx[i].RotationQuat.y = Q[1]; _mtx[i].RotationQuat.z = Q[2]; _mtx[i].RotationQuat.w = Q[3];
+				_mtx[i].Scale.x = S[0]; _mtx[i].Scale.y = S[1]; _mtx[i].Scale.z = S[2];
+				_mtx[i].Translation.x = T[0]; _mtx[i].Translation.y = T[1]; _mtx[i].Translation.z = T[2];
 			}
 		}
 
@@ -339,7 +371,7 @@ void FBXManager::LoadFBXMeshData( FbxMesh* pMesh, std::vector<CFbxVertex> *pVert
 }
 
 void FBXManager::SaveData( std::vector<CFbxVertex> Vertex, std::vector<UINT> Index, std::vector<XMFLOAT2> UVVector, 
-	std::vector<Bone> BoneHierarchy, std::vector<XMFLOAT4X4> BoneOffsets, std::map<int, AnimationClip> Animations, int iLayer, int iType )
+	std::vector<Bone> BoneHierarchy, std::vector<XMFLOAT4X4> BoneOffsets, std::map<int, AnimationClip> Animations, int iLayer, int iType, std::vector<TCHAR*> textures )
 {
 	CFbxMesh tempMesh;
 
@@ -365,6 +397,8 @@ void FBXManager::SaveData( std::vector<CFbxVertex> Vertex, std::vector<UINT> Ind
 
 	// 스키닝 데이터
 	tempMesh.m_skinnedData.Set( BoneHierarchy, BoneOffsets, Animations );
+	// 텍스처이름
+	tempMesh.m_pTextures = textures;
 
 	m_pMeshes.push_back( tempMesh );
 }

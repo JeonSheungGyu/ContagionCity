@@ -22,14 +22,14 @@ public:
 	std::vector<CFbxMesh> m_pMeshes;
 
 	// fbx¿ë
-	bool LoadFBX( const char* pstrFileName, int Layer, int Type );
+	bool LoadFBX( const char* pstrFileName, int Layer, int Type, int textureCount, ... );
 	void ClearMeshes( ){ m_pMeshes.clear( ); }
 
 private:
 	bool FindStringInString( std::string dstString, std::string Findword );
 	// fbx¿ë
 	void SaveData( std::vector<CFbxVertex> Vertex, std::vector<UINT> Index, std::vector<XMFLOAT2> UVVector,
-		std::vector<Bone> BoneHierarchy, std::vector<XMFLOAT4X4> BoneOffsets, std::map<int, AnimationClip>Animations, int iLayer, int iType );
+		std::vector<Bone> BoneHierarchy, std::vector<XMFLOAT4X4> BoneOffsets, std::map<int, AnimationClip>Animations, int iLayer, int iType, std::vector<TCHAR*> textures );
 	void LoadFBXMeshData( FbxMesh* pMesh, std::vector<CFbxVertex> *pVertices, std::vector<UINT> *pIndices, std::vector<XMFLOAT2> *pUVs,
 		std::vector<XMFLOAT4X4> *pBoneOffsets, std::vector<Bone> BoneHierarchy );
 	void LoadUVInformation( FbxMesh* pMesh, std::vector<XMFLOAT2> *pVertices );

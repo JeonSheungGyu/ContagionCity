@@ -258,7 +258,7 @@ void CGameFramework::BuildObjects( )
 
 void CGameFramework::MakePlayer( ID3D11Device* pd3dDevice )
 {
-	FBXManager::GetInstance( )->LoadFBX( "res/girl_npc_animation.FBX", LAYER_PLAYER, PLAYER_MAN );
+	FBXManager::GetInstance( )->LoadFBX( "res/girl_npc_animation.FBX", LAYER_PLAYER, PLAYER_MAN, 1, _T( "./SkyBox/SkyBox_Top_1.jpg") );
 	std::vector<CFbxMesh> tempMesh = FBXManager::GetInstance( )->m_pMeshes;
 	FBXManager::GetInstance( )->ClearMeshes( );
 
@@ -266,6 +266,10 @@ void CGameFramework::MakePlayer( ID3D11Device* pd3dDevice )
 	m_pPlayerShader->CreateShader( m_pd3dDevice );
 	m_pPlayerShader->BuildObjects( m_pd3dDevice, tempMesh );
 	m_pPlayer = m_pPlayerShader->GetPlayer( );
+
+	m_pPlayerBoneShader = new CPlayerBoneShader( );
+	m_pPlayerBoneShader->CreateShader( m_pd3dDevice );
+	m_pPlayerBoneShader->BuildObjects( m_pd3dDevice, tempMesh );
 }
 
 void CGameFramework::ReleaseObjects( )
@@ -278,6 +282,9 @@ void CGameFramework::ReleaseObjects( )
 
 	if (m_pPlayerShader) m_pPlayerShader->ReleaseObject( );
 	if (m_pPlayerShader) delete m_pPlayerShader;
+
+	if (m_pPlayerBoneShader) m_pPlayerBoneShader->ReleaseObject( );
+	if (m_pPlayerBoneShader) delete m_pPlayerBoneShader;
 }
 
 void CGameFramework::ProcessInput( )
@@ -341,6 +348,8 @@ void CGameFramework::AnimateObjects( )
 		m_pScene->AnimateObjects( m_GameTimer.GetTimeElapsed( ) );
 	if (m_pPlayer)
 		m_pPlayer->Animate( m_GameTimer.GetTimeElapsed( ) );
+	if (m_pPlayerBoneShader)
+		m_pPlayerBoneShader->AnimateObjects( m_GameTimer.GetTimeElapsed( ) );
 }
 
 void CGameFramework::FrameAdvance( )
@@ -361,6 +370,7 @@ void CGameFramework::FrameAdvance( )
 	if (m_pScene) m_pScene->Render( m_pd3dDeviceContext, pCamera );
 
 	if (m_pPlayerShader) m_pPlayerShader->Render( m_pd3dDeviceContext, pCamera );
+	if (m_pPlayerBoneShader) m_pPlayerBoneShader->Render( m_pd3dDeviceContext, pCamera );
 
 	m_pDXGISwapChain->Present( 0, 0 );
 

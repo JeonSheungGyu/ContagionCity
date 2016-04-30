@@ -94,12 +94,29 @@ public:
 	virtual void UpdateShaderVariable( ID3D11DeviceContext *pd3dDeviceContext, std::vector<XMFLOAT4X4> pmtxWorld );
 	virtual void BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbxMesh> meshes );
 	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera = NULL );
+	void CPlayerShader::AnimateObjects( float fTimeElapsed );
 
 	bool CollisionCheck( CGameObject* pObject );
 
 	CPlayer* GetPlayer( int nIndex = 0 ){ return (CPlayer*)m_ppObjects[nIndex]; }
 
 	static ID3D11Buffer *m_pd3dcbOffsetMatrix;
+};
+
+// 플레이어의 bone을 렌더링 하기 위한 셰이더클래스
+class CPlayerBoneShader : public CShader
+{
+public:
+	CPlayerBoneShader( );
+	virtual ~CPlayerBoneShader( );
+
+	SkinnedData m_skinnedData;
+	float m_TimePos;
+
+	virtual void CreateShader( ID3D11Device *pd3dDevice );
+	virtual void BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbxMesh> vertex );
+	virtual void AnimateObjects( float fTimeElapsed );
+	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera = NULL );
 };
 
 // 땅바닥을 렌더링하기 위한 셰이더 클래스

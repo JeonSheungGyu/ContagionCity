@@ -109,8 +109,8 @@ void CGameObject::SetPosition( float x, float y, float z )
 	m_mtxWorld._42 = y;
 	m_mtxWorld._43 = z;
 	
-	if (GetMesh( ))
-		GetMesh( )->GetBoundingCube( ).Update( &m_mtxWorld );
+//	if (GetMesh( ))
+//		GetMesh( )->GetBoundingCube( ).Update( &m_mtxWorld );
 }
 
 void CGameObject::SetPosition( XMFLOAT3 vPosition )
@@ -119,8 +119,8 @@ void CGameObject::SetPosition( XMFLOAT3 vPosition )
 	m_mtxWorld._42 = vPosition.y;
 	m_mtxWorld._43 = vPosition.z;
 
-	if (GetMesh( ))
-		GetMesh( )->GetBoundingCube( ).Update( &m_mtxWorld );
+//	if (GetMesh( ))
+//		GetMesh( )->GetBoundingCube( ).Update( &m_mtxWorld );
 }
 
 XMFLOAT3 CGameObject::GetPosition( )

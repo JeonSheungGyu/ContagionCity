@@ -2,4 +2,9 @@
 c:\users\garam\documents\github\contagioncity\contagioncity\client\contagioncity\contagioncity\shader.cpp(186): warning C4018: '<' : signed 또는 unsigned가 일치하지 않습니다.
   GameFramework.cpp
   코드를 생성하고 있습니다...
+  컴파일하고 있습니다...
+  Scene.cpp
+  Object.cpp
+  ContagionCity.cpp
+  코드를 생성하고 있습니다...
   ContagionCity.vcxproj -> C:\Users\Garam\Documents\GitHub\ContagionCity\ContagionCity\client\ContagionCity\Debug\ContagionCity.exe

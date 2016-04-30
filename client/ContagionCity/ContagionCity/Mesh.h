@@ -123,19 +123,22 @@ public:
 
 struct CFbxVertex
 {
+
+	XMFLOAT3 m_weights = XMFLOAT3( 0.0f, 0.0f, 0.0f );						// 가중치
+	XMFLOAT4 m_boneIndices = XMFLOAT4( 0.0f, 0.0f, 0.0f, 0.0f );		// 이 정점에 영향을 주는 뼈대
+
 	XMFLOAT3 m_position;
 	XMFLOAT2 m_textureUV;
 	XMFLOAT3 m_normal;
 	XMFLOAT4 m_tangent;
 	XMFLOAT3 m_binormal;
 
-	XMFLOAT3 m_weights = XMFLOAT3(0.0f , 0.0f, 0.0f);						// 가중치
-	XMFLOAT4 m_boneIndices = XMFLOAT4(0.0f,0.0f, 0.0f, 0.0f);		// 이 정점에 영향을 주는 뼈대
 };
 
 struct CFbxMesh
 {
 public:
+	std::vector<TCHAR*> m_pTextures;
 	std::vector<CFbxVertex> m_pVertices;
 	std::vector<UINT> m_pvIndices;
 	SkinnedData m_skinnedData;
@@ -339,7 +342,6 @@ protected:
 };
 
 
-
 class CCubeMeshDiffused : public CMeshDiffused
 {
 
@@ -451,10 +453,8 @@ public:
 //
 //		if (!pNode){
 //			cout << "pNode ==0" << endl;
-//			//getchar();
 //		}
 //		else{
-//			//cout << "node name : " << pNode->GetName() << endl;
 //			aniMatrix = pNode->EvaluateGlobalTransform( ntime );       // 시간대별로 노드 매트릭스 정보
 //
 //			_mtx[i]._11 = aniMatrix.mData[0].mData[0]; _mtx[i]._12 = aniMatrix.mData[0].mData[1]; _mtx[i]._13 = aniMatrix.mData[0].mData[2]; _mtx[i]._14 = aniMatrix.mData[0].mData[3];

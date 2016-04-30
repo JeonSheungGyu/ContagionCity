@@ -66,4 +66,5 @@ public:
 
 public:
 	CPlayerShader *m_pPlayerShader;
+	CPlayerBoneShader *m_pPlayerBoneShader;
 };
