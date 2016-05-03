@@ -58,8 +58,8 @@ bool FBXManager::LoadFBX( const char* pstrFileName, int Layer, int Type, int tex
 		va_end( ap);
 
 		// i를 0부터 시작하면 반드시 mesh가 먼저 시작되지만 i를 ChildCount 부터 감소시키면서 오면 반드시 skeleton이 먼저 시작된다
-		for (int i = ChildCount - 1; i >= 0; i--)
-	//	for (int i = 0; i < ChildCount; i++)
+	//	for (int i = ChildCount - 1; i >= 0; i--)
+		for (int i = 0; i < ChildCount; i++)
 		{
 			// 스키닝 데이터 로딩
 			FbxNode* pfbxChildNode = pfbxRootNode->GetChild( i );

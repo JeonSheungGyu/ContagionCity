@@ -258,7 +258,7 @@ void CGameFramework::BuildObjects( )
 
 void CGameFramework::MakePlayer( ID3D11Device* pd3dDevice )
 {
-	FBXManager::GetInstance( )->LoadFBX( "res/Girl_Npc_Animation_mod.FBX", LAYER_PLAYER, PLAYER_MAN, 1, _T( "./SkyBox/SkyBox_Top_1.jpg") );
+	FBXManager::GetInstance( )->LoadFBX( "res/animation example.FBX", LAYER_PLAYER, PLAYER_MAN, 1, _T( "./SkyBox/SkyBox_Top_1.jpg") );
 	std::vector<CFbxMesh> tempMesh = FBXManager::GetInstance( )->m_pMeshes;
 	FBXManager::GetInstance( )->ClearMeshes( );
 
