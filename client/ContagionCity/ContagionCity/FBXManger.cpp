@@ -12,11 +12,6 @@ FBXManager::FBXManager( )
 
 	m_pfbxImporter = FbxImporter::Create( m_pfbxManager, "" );
 	m_pfbxScene = FbxScene::Create( m_pfbxManager, "" );
-
-	FbxAxisSystem fbxSceneAxisSystem = m_pfbxScene->GetGlobalSettings( ).GetAxisSystem( );
-	FbxAxisSystem fbxDirectXAxisSystem( FbxAxisSystem::eDirectX );
-	if (fbxSceneAxisSystem != fbxDirectXAxisSystem)
-		fbxDirectXAxisSystem.ConvertScene( m_pfbxScene );
 }
 
 FBXManager::~FBXManager( )
@@ -35,6 +30,7 @@ bool FBXManager::LoadFBX( const char* pstrFileName, int Layer, int Type, int tex
 
 	// Scene에 추가, Scene의 루트노드의 하위로 들어가게됨
 	bResult = m_pfbxImporter->Import( m_pfbxScene );
+
 	if (!bResult)
 		return false;
 
@@ -185,10 +181,7 @@ void FBXManager::LoadInfluenceWeight( FbxMesh *pMesh, std::vector<CFbxVertex> *p
 
 			cluster->GetTransformLinkMatrix( LinkBoneMatrix );
 			cluster->GetTransformMatrix( TransboneMatrix );
-			ResultMatrix = LinkBoneMatrix.Inverse( ) * TransboneMatrix;
-	//		ResultMatrix = LinkBoneMatrix;
-	//		ResultMatrix = TransboneMatrix;
-	//		ResultMatrix = LinkBoneMatrix.Inverse() * TransboneMatrix.Inverse();
+			ResultMatrix = LinkBoneMatrix.Inverse( )  *TransboneMatrix;
 
 			XMFLOAT4X4 tempOffsetMatl;
 			tempOffsetMatl._11 = ResultMatrix.mData[0].mData[0]; tempOffsetMatl._12 = ResultMatrix.mData[0].mData[1];
@@ -199,21 +192,19 @@ void FBXManager::LoadInfluenceWeight( FbxMesh *pMesh, std::vector<CFbxVertex> *p
 			tempOffsetMatl._33 = ResultMatrix.mData[2].mData[2]; tempOffsetMatl._34 = ResultMatrix.mData[2].mData[3];
 			tempOffsetMatl._41 = ResultMatrix.mData[3].mData[0]; tempOffsetMatl._42 = ResultMatrix.mData[3].mData[1];
 			tempOffsetMatl._43 = ResultMatrix.mData[3].mData[2]; tempOffsetMatl._44 = ResultMatrix.mData[3].mData[3];
-
-			(*pBoneOffsets)[boneHierIdx] = tempOffsetMatl;
-
 			
+			(*pBoneOffsets)[boneHierIdx] = tempOffsetMatl;	
 		
 			double *boneVertexWeights = cluster->GetControlPointWeights( );		// 해당 본에 의한 정점의 가중치
 			int *boneVertexIndices = cluster->GetControlPointIndices( );					// 해당 본에 영향을 받는 정점들
 			// 해당 본에 영향을 받는 모든 정점을 하나씩 가져옴	
 			int numBoneVertexIndices = cluster->GetControlPointIndicesCount( );		
 
-			std::vector<int> boneIndices;
-			for (int i = 0; i < numBoneVertexIndices; i++)
-			{
-				boneIndices.push_back( boneVertexIndices[i]);
-			}
+			//std::vector<int> boneIndices;
+			//for (int i = 0; i < numBoneVertexIndices; i++)
+			//{
+			//	boneIndices.push_back( boneVertexIndices[i]);
+			//}
 
 			for (int boneVertexIndex = 0; boneVertexIndex < numBoneVertexIndices; boneVertexIndex++)
 			{
@@ -226,27 +217,27 @@ void FBXManager::LoadInfluenceWeight( FbxMesh *pMesh, std::vector<CFbxVertex> *p
 				int tempBoneVertexIndex = boneVertexIndices[boneVertexIndex];			// 영향을 받는 정점의 인덱스
 
 				// 가중치 중 x가 0이면 첫번째 인덱스
-				if (( *pVertices )[tempBoneVertexIndex].m_weights.x == 0)		
+				if (pVertices->data()[tempBoneVertexIndex].m_weights.x == 0)		
 				{
-					( *pVertices )[tempBoneVertexIndex].m_weights.x = tempBoneWeight;				
-					( *pVertices )[tempBoneVertexIndex].m_boneIndices.x = boneHierIdx;
+					pVertices->data( )[tempBoneVertexIndex].m_weights.x = tempBoneWeight;
+					pVertices->data( )[tempBoneVertexIndex].m_boneIndices.x = boneHierIdx;
 				}
 				// 가중치 중 x가 0이 아니고 y가 0이면 두번째 인덱스
-				else if (( *pVertices )[tempBoneVertexIndex].m_weights.x != 0 && ( *pVertices )[tempBoneVertexIndex].m_weights.y == 0)
+				else if (pVertices->data( )[tempBoneVertexIndex].m_weights.x != 0 && pVertices->data( )[tempBoneVertexIndex].m_weights.y == 0)
 				{
-					( *pVertices )[tempBoneVertexIndex].m_weights.y = tempBoneWeight;				
-					( *pVertices )[tempBoneVertexIndex].m_boneIndices.y = boneHierIdx;
+					pVertices->data( )[tempBoneVertexIndex].m_weights.y = tempBoneWeight;
+					pVertices->data( )[tempBoneVertexIndex].m_boneIndices.y = boneHierIdx;
 				}
 				// 가중치 중 x가 0이 아니고 y가 0이 아니고 z가 0이면 세번째 인덱스
-				else if (( *pVertices )[tempBoneVertexIndex].m_weights.x != 0 && ( *pVertices )[tempBoneVertexIndex].m_weights.y != 0 && ( *pVertices )[tempBoneVertexIndex].m_weights.z == 0)
+				else if (pVertices->data( )[tempBoneVertexIndex].m_weights.x != 0 && pVertices->data( )[tempBoneVertexIndex].m_weights.y != 0 && pVertices->data( )[tempBoneVertexIndex].m_weights.z == 0)
 				{
-					( *pVertices )[tempBoneVertexIndex].m_weights.z = tempBoneWeight;				
-					( *pVertices )[tempBoneVertexIndex].m_boneIndices.z = boneHierIdx;
+					pVertices->data( )[tempBoneVertexIndex].m_weights.z = tempBoneWeight;
+					pVertices->data( )[tempBoneVertexIndex].m_boneIndices.z = boneHierIdx;
 				}
 				// 모두 0이 아니면 4번째 인덱스, 가중치는 1에서 xyz 빼면 나머지 구할 수 있음
-				else if (( *pVertices )[tempBoneVertexIndex].m_weights.x != 0 && ( *pVertices )[tempBoneVertexIndex].m_weights.y != 0 && ( *pVertices )[tempBoneVertexIndex].m_weights.z != 0)
+				else if (pVertices->data( )[tempBoneVertexIndex].m_weights.x != 0 && pVertices->data( )[tempBoneVertexIndex].m_weights.y != 0 && pVertices->data( )[tempBoneVertexIndex].m_weights.z != 0)
 				{
-					( *pVertices )[tempBoneVertexIndex].m_boneIndices.w = boneHierIdx;
+					pVertices->data( )[tempBoneVertexIndex].m_boneIndices.w = boneHierIdx;
 				}
 			}	
 		}	// end of bonecount for
@@ -315,7 +306,7 @@ void FBXManager::LoadKeyframesByTime( FbxAnimStack *pAnimStack, FbxNode *pNode, 
 				// 해당 본의 월드좌표계에서의 행렬
 				_mtx[i].TimePos = (float)nTime.GetSecondDouble( );		// 시간저장
 
-				FbxAMatrix aniMatrix = pNode->EvaluateGlobalTransform( nTime );
+				FbxAMatrix aniMatrix = pNode->EvaluateLocalTransform( nTime );
 				FbxQuaternion Q = aniMatrix.GetQ( );
 				FbxVector4 S =  aniMatrix.GetS( );
 				FbxVector4 T =  aniMatrix.GetT( );
@@ -348,23 +339,25 @@ void FBXManager::LoadFBXMeshData( FbxMesh* pMesh, std::vector<CFbxVertex> *pVert
 	LoadVertexAndIndexInfomation( pMesh, pVertices, pIndices );
 
 	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ normal 정보 가져오기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-	LoadNormallnfomation( pMesh, pVertices );
+//	LoadNormallnfomation( pMesh, pVertices );
 
 	//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ tangent 정보 가져오기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-	LoadTangentInfomation( pMesh, pVertices );
+//	LoadTangentInfomation( pMesh, pVertices );
 
 	//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ binormal 정보 가져오기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-	LoadBinormalInfomation( pMesh, pVertices );
+//	LoadBinormalInfomation( pMesh, pVertices );
 
 	//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ UV 좌표 가져오기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-	LoadUVInformation( pMesh, pUVs );
-	// 정점의 개수를 줄이려 했으나 UV 좌표 에러로 인해 막음
-	// 최적화 단계에서 수정요망
-	//			std::vector<XMFLOAT2> UVVectorByControlPoint( tempVertex.size( ) );
-	//			for (int idx = 0; idx < tempIndex.size( ); idx++)
-	//			{
-	//				UVVectorByControlPoint[tempIndex[idx]] = tempUVVector[idx];
-	//			}
+	std::vector<XMFLOAT2> tempUVs;
+	LoadUVInformation( pMesh, &tempUVs );
+
+	//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 좌표값들 중복들 제거 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+	pUVs->resize( pVertices->size( ) );
+	for (int i = 0; i < pIndices->size( ); i++)
+	{
+		int idx = pIndices->data( )[i];
+		pUVs->data( )[idx] = tempUVs[i];
+	}	
 
 	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ  가중치와 뼈대 정보가져오기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 	LoadInfluenceWeight( pMesh, pVertices, pBoneOffsets, BoneHierarchy );
@@ -409,14 +402,14 @@ void FBXManager::LoadVertexAndIndexInfomation( FbxMesh* pMesh, std::vector<CFbxV
 
 	// 정점 좌표들을 저장할 공간
 	int polygonCount = pMesh->GetPolygonCount( );		// 폴리곤의 개수
-	//	int vertexCount = pMesh->GetControlPointsCount( );
+	int vertexCount = pMesh->GetControlPointsCount( );
 
-	// 정점의 개수를 줄이려 했으나 UV 좌표 에러로 인해 막음
-	// 최적화 단계에서 수정요망
-	//	for (int polyCount = 0; polyCount < vertexCount; polyCount++)
-	//	{
-	//		tempVector.push_back( XMFLOAT3(pVertices[polyCount].mData[0], pVertices[polyCount].mData[2], pVertices[polyCount].mData[1]) );
-	//	}
+		for (int polyCount = 0; polyCount < vertexCount; polyCount++)
+		{
+			CFbxVertex tempVertex;
+			tempVertex.m_position = XMFLOAT3( pVertices[polyCount].mData[0], pVertices[polyCount].mData[1], pVertices[polyCount].mData[2] );
+			pVertex->push_back( tempVertex );
+		}
 
 	int count = 0;
 
@@ -431,16 +424,9 @@ void FBXManager::LoadVertexAndIndexInfomation( FbxMesh* pMesh, std::vector<CFbxV
 
 		for (int k = 0; k < iNumVertices; k++)
 		{
-			CFbxVertex tempVertex;
 			int iControlPointIndex = pMesh->GetPolygonVertex( j, k );
 
-			tempVertex.m_position.x = (float)pVertices[iControlPointIndex].mData[0];
-			tempVertex.m_position.y = (float)pVertices[iControlPointIndex].mData[2];
-			tempVertex.m_position.z = (float)pVertices[iControlPointIndex].mData[1];
-
-			pVertex->push_back( tempVertex );
-			//			tempIndex.push_back( iControlPointIndex );
-			pIndex->push_back( count++ );
+			pIndex->push_back( iControlPointIndex );
 		}
 	}
 }

@@ -75,15 +75,6 @@ void CScene::BuildObjects( ID3D11Device *pd3dDevice )
 	d3dSamplerDesc.MaxLOD = 0;
 	pd3dDevice->CreateSamplerState( &d3dSamplerDesc, &pd3dSamplerState );
 
-	// 텍스처 리소스를 생성
-	/*ID3D11ShaderResourceView *pd3dsrvTexture = NULL;
-	CTexture *pStoneTexture = new CTexture( 1, 1, 0, 0 );
-	D3DX11CreateShaderResourceViewFromFile( pd3dDevice, _T( "Stone01.jpg" ), NULL, NULL, &pd3dsrvTexture, NULL );
-	pStoneTexture->SetTexture( 0, pd3dsrvTexture );
-	pStoneTexture->SetSampler( 0, pd3dSamplerState );
-	pd3dsrvTexture->Release( );
-	pd3dSamplerState->Release( );*/
-
 	// fbx loader를 통한 fbx로딩
 	LoadFBXs( );
 	std::vector<CFbxMesh> background;

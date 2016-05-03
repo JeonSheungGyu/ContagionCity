@@ -194,14 +194,14 @@ void SkinnedData::GetFinalTransforms( const int& clipName, float timePos, std::v
 		XMMATRIX offset = XMLoadFloat4x4( &mBoneOffsets[i] );
 		XMMATRIX toRoot = XMLoadFloat4x4( &toRootTransforms[i] );
 		XMStoreFloat4x4( &finalTransforms[i], XMMatrixMultiply( offset, toRoot ) );
+
+		// 변환행렬이 오른손 좌표계이므로 이를 왼손좌표계로 변경
+		finalTransforms[i] = MathHelper::GetInstance( )->Float4x4MulFloat4x4( finalTransforms[i], XMFLOAT4X4( 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1 ) );
 	}
 }
 
 CMesh::CMesh( )
 {
-	//	m_vPositions = NULL;
-	//	m_vnIndices = NULL;
-
 	m_nBuffers = 0;
 	m_pd3dPositionBuffer = NULL;
 	m_ppd3dVertexBuffers = NULL;

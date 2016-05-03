@@ -258,7 +258,7 @@ void CGameFramework::BuildObjects( )
 
 void CGameFramework::MakePlayer( ID3D11Device* pd3dDevice )
 {
-	FBXManager::GetInstance( )->LoadFBX( "res/girl_npc_animation.FBX", LAYER_PLAYER, PLAYER_MAN, 1, _T( "./SkyBox/SkyBox_Top_1.jpg") );
+	FBXManager::GetInstance( )->LoadFBX( "res/Girl_Npc_Animation_mod.FBX", LAYER_PLAYER, PLAYER_MAN, 1, _T( "./SkyBox/SkyBox_Top_1.jpg") );
 	std::vector<CFbxMesh> tempMesh = FBXManager::GetInstance( )->m_pMeshes;
 	FBXManager::GetInstance( )->ClearMeshes( );
 
@@ -266,10 +266,6 @@ void CGameFramework::MakePlayer( ID3D11Device* pd3dDevice )
 	m_pPlayerShader->CreateShader( m_pd3dDevice );
 	m_pPlayerShader->BuildObjects( m_pd3dDevice, tempMesh );
 	m_pPlayer = m_pPlayerShader->GetPlayer( );
-
-	m_pPlayerBoneShader = new CPlayerBoneShader( );
-	m_pPlayerBoneShader->CreateShader( m_pd3dDevice );
-	m_pPlayerBoneShader->BuildObjects( m_pd3dDevice, tempMesh );
 }
 
 void CGameFramework::ReleaseObjects( )
@@ -282,9 +278,6 @@ void CGameFramework::ReleaseObjects( )
 
 	if (m_pPlayerShader) m_pPlayerShader->ReleaseObject( );
 	if (m_pPlayerShader) delete m_pPlayerShader;
-
-	if (m_pPlayerBoneShader) m_pPlayerBoneShader->ReleaseObject( );
-	if (m_pPlayerBoneShader) delete m_pPlayerBoneShader;
 }
 
 void CGameFramework::ProcessInput( )
@@ -322,10 +315,16 @@ void CGameFramework::ProcessInput( )
 			{
 				/*cxDelta는 y-축의 회전을 나타내고 cyDelta는 x-축의 회전을 나타낸다.
 				오른쪽 마우스 버튼이 눌려진 경우 cxDelta는 z-축의 회전을 나타낸다.*/
+				// 마우스 클릭시 공격 애니메이션이 행해지도록 해야함
 				if (pKeyBuffer[VK_RBUTTON] & 0xF0)
 					m_pPlayer->Rotate( cyDelta, 0.0f, -cxDelta );
 				else
 					m_pPlayer->Rotate( cyDelta, cxDelta, 0.0f );
+
+				if (pKeyBuffer[VK_LBUTTON] & 0xF0)
+				{
+					//m_pPlayer->m_iAnimState = static_cast<int>( AnimationState::ANIM_LATTACK1 );
+				}
 			}
 			/*플레이어를 dwDirection 방향으로 이동한다(실제로는 속도 벡터를 변경한다).
 			이동 거리는 시간에 비례하도록 한다. 플레이어의 이동 속력은 (50/초)로 가정한다.
@@ -348,8 +347,6 @@ void CGameFramework::AnimateObjects( )
 		m_pScene->AnimateObjects( m_GameTimer.GetTimeElapsed( ) );
 	if (m_pPlayer)
 		m_pPlayer->Animate( m_GameTimer.GetTimeElapsed( ) );
-	if (m_pPlayerBoneShader)
-		m_pPlayerBoneShader->AnimateObjects( m_GameTimer.GetTimeElapsed( ) );
 }
 
 void CGameFramework::FrameAdvance( )
@@ -370,7 +367,7 @@ void CGameFramework::FrameAdvance( )
 	if (m_pScene) m_pScene->Render( m_pd3dDeviceContext, pCamera );
 
 	if (m_pPlayerShader) m_pPlayerShader->Render( m_pd3dDeviceContext, pCamera );
-	if (m_pPlayerBoneShader) m_pPlayerBoneShader->Render( m_pd3dDeviceContext, pCamera );
+//	if (m_pPlayerBoneShader) m_pPlayerBoneShader->Render( m_pd3dDeviceContext, pCamera );
 
 	m_pDXGISwapChain->Present( 0, 0 );
 

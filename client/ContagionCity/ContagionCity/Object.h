@@ -87,6 +87,9 @@ public:
 	// 오브젝트의 타입 설정, 무엇인지 알 수 있어야한다.
 	int m_iType;
 	int m_iLayer;
+	// 현재 애니메이션 상태
+	int m_iAnimState;
+
 	// 게임 객체는 하나의 재질을 가질 수 있다.
 	CMaterial *m_pMaterial;
 	void SetMaterial( CMaterial *pMaterial );
@@ -221,6 +224,7 @@ class AnimatedObjectInfo : public ObjectInfo
 protected:
 	float m_fTimes;
 public:
+	virtual void OnPrepareRender( );
 	AnimatedObjectInfo( ID3D11Device *pd3dDevice, CFbxMesh vertex );
 	virtual ~AnimatedObjectInfo( );
 

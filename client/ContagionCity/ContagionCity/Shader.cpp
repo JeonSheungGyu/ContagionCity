@@ -151,7 +151,7 @@ void CShader::UpdateShaderVariable( ID3D11DeviceContext *pd3dDeviceContext, XMFL
 	D3D11_MAPPED_SUBRESOURCE d3dMappedResource;
 	pd3dDeviceContext->Map( m_pd3dcbWorldMatrix, 0, D3D11_MAP_WRITE_DISCARD, 0, &d3dMappedResource );
 	VS_CB_WORLD_MATRIX *pcbWorldMatrix = (VS_CB_WORLD_MATRIX*)d3dMappedResource.pData;
-	pcbWorldMatrix->m_mtxWorld = MathHelper::GetInstance( )->TransposeFloat4x4( *pmtxWorld );
+	pcbWorldMatrix->m_mtxWorld =  MathHelper::GetInstance( )->TransposeFloat4x4( *pmtxWorld );
 	pd3dDeviceContext->Unmap( m_pd3dcbWorldMatrix, 0 );
 	
 	// 상수 버퍼를 디바이스의 슬롯에 연결
@@ -318,7 +318,7 @@ void CPlayerBoneShader::AnimateObjects( float fTimeElapsed )
 	std::vector<XMFLOAT4X4> mtx(m_nObjects);
 	m_TimePos += fTimeElapsed;
 
-	m_skinnedData.GetMatrixByTime( 0, m_TimePos, mtx );
+	m_skinnedData.GetFinalTransforms( 0, m_TimePos, mtx );
 
 	if (m_TimePos > m_skinnedData.GetClipEndTime( 0 ))
 		m_TimePos = 0.0f;

@@ -37,6 +37,7 @@ CGameObject::CGameObject( int nMeshes )
 	m_fMovingSpeed = 0.0f;
 
 	m_fTimePos = 0.0f;
+	m_iAnimState = static_cast<int>(AnimationState::ANIM_IDLE);
 }
 
 CGameObject::~CGameObject( )
@@ -372,12 +373,14 @@ void ObjectInfo::OnPrepareRender( )
 	m_mtxWorld._41 = m_vPosition.x;
 	m_mtxWorld._42 = m_vPosition.y;
 	m_mtxWorld._43 = m_vPosition.z;
+
+	m_mtxWorld = MathHelper::GetInstance( )->Float4x4MulFloat4x4( m_mtxWorld, XMFLOAT4X4( 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1 ) );
 }
 
 void ObjectInfo::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera )
 {
 //	SetPosition( 0.f, 0.0f, 0.0f );
-//	Rotate( 00.0f, 0.0f, 0.0f );
+//	Rotate( 90.0f, 0.0f, 0.0f );
 
 	CShader::UpdateShaderVariable( pd3dDeviceContext, &m_mtxWorld );
 	if (m_pMaterial)
@@ -407,4 +410,16 @@ void AnimatedObjectInfo::Animate( float fTimeElapsed )
 	m_fTimes += fTimeElapsed;
 
 	// 애니메이션 하는 코드
+}
+
+void AnimatedObjectInfo::OnPrepareRender( )
+{
+	m_mtxWorld._11 = m_vRight.x; m_mtxWorld._12 = m_vRight.y; m_mtxWorld._13 = m_vRight.z;
+	m_mtxWorld._21 = m_vUp.x;	 m_mtxWorld._22 = m_vUp.y;	  m_mtxWorld._23 = m_vUp.z;
+	m_mtxWorld._31 = m_vLook.x;  m_mtxWorld._32 = m_vLook.y;  m_mtxWorld._33 = m_vLook.z;
+	m_mtxWorld._41 = m_vPosition.x;
+	m_mtxWorld._42 = m_vPosition.y;
+	m_mtxWorld._43 = m_vPosition.z;
+
+	m_mtxWorld = MathHelper::GetInstance( )->Float4x4MulFloat4x4( m_mtxWorld, XMFLOAT4X4( 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1 ) );
 }

@@ -353,8 +353,8 @@ void CPlayer::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera )
 void CPlayer::Animate( float fTimeElapsed )
 {
 	m_fTimePos += fTimeElapsed;
-	( (CAnimatedMesh *)GetMesh( ) )->GetSkinnedData( ).GetMatrixByTime( 0, m_fTimePos, m_pmtxFinalTransforms );
+	( (CAnimatedMesh *)GetMesh( ) )->GetSkinnedData( ).GetFinalTransforms( m_iAnimState, m_fTimePos, m_pmtxFinalTransforms );
 
-	if (m_fTimePos > ( (CAnimatedMesh *)GetMesh( ) )->GetSkinnedData( ).GetClipEndTime( 0 ))
+	if (m_fTimePos > ( (CAnimatedMesh *)GetMesh( ) )->GetSkinnedData( ).GetClipEndTime( m_iAnimState ))
 		m_fTimePos = 0.0f;
 }
