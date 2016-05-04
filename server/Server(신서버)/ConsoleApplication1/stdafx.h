@@ -15,6 +15,9 @@
 #include <chrono>
 #include <thread>
 #include <exception>
+#include <DirectXCollision.h>
+
+using namespace DirectX;
 
 
 #define BUFSIZE 1024

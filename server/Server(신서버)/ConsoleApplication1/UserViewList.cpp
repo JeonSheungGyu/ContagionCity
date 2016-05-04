@@ -1,18 +1,14 @@
 #include "stdafx.h"
 #include "Protocol.h"
 #include "User.h"
-#include "Monster.h"
-#include "ConnectedUserManager.h"
 #include "UserViewList.h"
-
+#include "PacketMaker.h"
 
 using namespace std;
 
 const int AVAILABLE_NUMBER = 64;
 
 extern User users[MAX_USER];
-extern std::vector<Monster*> monsters;
-void SendPacket(int id, unsigned char *packet);
 
 UserViewList::UserViewList(User *owner)
 {
@@ -132,13 +128,13 @@ void UserViewList::updateViewList(const set<DWORD>& nearList)
 			try {
 				User *player = &users[id];
 
-				if (player->viewList.isInViewList(owner->id)) {  // 내가 상대 viewList에 있는지
+				if (player->getViewList().isInViewList(owner->getID())) {  // 내가 상대 viewList에 있는지
 																 //움직인다고 패킷전송
-					player->viewList.moveObject(owner->id);
+					player->getViewList().moveObject(owner->getID());
 				}
 				else {
 					//상대방에게 추가하라고 패킷전송
-					player->viewList.insertUser(owner->id);
+					player->getViewList().insertUser(owner->getID());
 				}
 			}
 			catch (exception& e) {
@@ -158,8 +154,8 @@ void UserViewList::updateViewList(const set<DWORD>& nearList)
 			removeObject(data.first);
 			try {
 				if (data.first < MAX_USER) {
-					if (users[data.first].isConnected)
-						users[data.first].viewList.eraseUser(owner->id);	// 항상 내 view와 상대방 view 동기화시켜야됨
+					if (users[data.first].isConnected())
+						users[data.first].getViewList().eraseUser(owner->getID());	// 항상 내 view와 상대방 view 동기화시켜야됨
 				}
 			}
 			catch (exception& e) {
@@ -189,65 +185,19 @@ bool UserViewList::isInViewList(const DWORD id)
 
 void UserViewList::putObject(const DWORD id)
 {
-	assert(id >= 0);
-	Object *object;
-	if (id < MAX_USER)
-		object = &users[id];
-	else
-		object = monsters.at(id - MAX_USER);
-
-	sc_packet_put_player put_packet;
-	put_packet.id = object->id;
-	put_packet.size = sizeof(put_packet);
-	put_packet.type = SC_PUT_PLAYER;
-	put_packet.x = object->x;
-	put_packet.y = object->y;
-	
-	SendPacket(owner->id, reinterpret_cast<unsigned char *>(&put_packet));
-	printf("유저 %d :  유저 %d SC_PUT_PLAYER 전송 ( %d, %d ) \n", owner->id, object->id, object->x, object->y );
-	//중복패킷 발생가능함. 한명은 뷰를 보고 한명은 tmp를 보고 있으니까
+	PacketMaker::instance().PutObject(owner, id);
 }
 
 
 void UserViewList::moveObject(const DWORD id)
 {
-	assert(id >= 0);
-	Object *object;
-	if (id < MAX_USER)
-		object = &users[id];
-	else
-		object = monsters.at(id - MAX_USER);
-
-	sc_packet_pos pos_packet;
-	pos_packet.id = object->id;
-	pos_packet.size = sizeof(pos_packet);
-	pos_packet.type = SC_POS;
-	pos_packet.x = object->x;
-	pos_packet.y = object->y;
-
-	SendPacket(owner->id, reinterpret_cast<unsigned char *>(&pos_packet));
-	printf("유저 %d :  유저 %d SC_POS 전송\n", owner->id, object->id);
-	//중복패킷 발생가능함. 한명은 뷰를 보고 한명은 tmp를 보고 있으니까
+	PacketMaker::instance().MoveObject(owner, id);
 }
 
 
 void UserViewList::removeObject(const DWORD id)
 {
-	assert(id >= 0);
-	Object *object;
-	if (id < MAX_USER)
-		object = &users[id];
-	else
-		object = monsters.at(id - MAX_USER);
-
-	sc_packet_remove_player remove_packet;
-	remove_packet.id = object->id;
-	remove_packet.size = sizeof(remove_packet);
-	remove_packet.type = SC_REMOVE_PLAYER;
-	
-	SendPacket(owner->id, reinterpret_cast<unsigned char *>(&remove_packet));
-	printf("유저 %d :  유저 %d SC_REMOVE_PLAYER 전송\n", owner->id, object->id);
-	//중복패킷 발생가능함. 한명은 뷰를 보고 한명은 tmp를 보고 있으니까
+	PacketMaker::instance().RemoveObject(owner, id);
 }
 
 

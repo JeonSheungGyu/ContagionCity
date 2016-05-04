@@ -45,15 +45,15 @@
     <ClCompile Include="Object.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="PacketMaker.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Protocol.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="ConnectedUserManager.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="SyncObject.h">
@@ -68,9 +68,6 @@
     <ClInclude Include="UserViewList.h">
       <Filter>헤더 파일\ViewList</Filter>
     </ClInclude>
-    <ClInclude Include="User.h">
-      <Filter>헤더 파일\Object</Filter>
-    </ClInclude>
     <ClInclude Include="Monster.h">
       <Filter>헤더 파일\Object</Filter>
     </ClInclude>
@@ -79,6 +76,12 @@
     </ClInclude>
     <ClInclude Include="Object.h">
       <Filter>헤더 파일\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="User.h">
+      <Filter>헤더 파일\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketMaker.h">
+      <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

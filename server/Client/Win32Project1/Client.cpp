@@ -13,13 +13,13 @@ typedef struct //소켓정보를구조체화.
 {
 	bool isConnected;
 	DWORD id;
-	DWORD x, y;
+	DWORD x, y, z;
 } CLIENT, *LPCLIENT;
 
 typedef struct //소켓정보를구조체화.
 {
 	DWORD id;
-	DWORD x, y;
+	DWORD x, y, z;
 } MONSTER, *LPMONSTER;
 
 COLORREF color[10] = { RGB(200,100,150),RGB(100,20,50),RGB(150,100,20),(200,120,0),RGB(0,200,200),
@@ -43,7 +43,7 @@ HANDLE hStartupEvent;
 HWND hHwnd, hDlg;
 CLIENT MyData;
 bool isSet = false;
-int xPos = -RECTSIZE * 4, yPos = -RECTSIZE * 4;
+int xPos = -RECTSIZE * 4, zPos = -RECTSIZE * 4;
 char server_ip[100];
 //네트워크 전역변수
 WSABUF wsabuf;
@@ -208,12 +208,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				else
 					(HBRUSH)SelectObject(hdc, wBrush);
 
-				for (int y = 0; y < INTERVAL; y++) {
+				for (int z = 0; z < INTERVAL; z++) {
 					for (int x = 0; x < INTERVAL; x++) {
 						if (clientRect.left < (RECTSIZE*INTERVAL*j + x*RECTSIZE) - xPos && (RECTSIZE*INTERVAL*j + x*RECTSIZE) - xPos < clientRect.right &&
-							clientRect.top < (RECTSIZE * INTERVAL * i + y*RECTSIZE) - yPos && (RECTSIZE * INTERVAL * i + y*RECTSIZE) - yPos < clientRect.bottom) {
-							Rectangle(hdc, (RECTSIZE*INTERVAL*j + x*RECTSIZE) - xPos, (RECTSIZE * INTERVAL * i + y*RECTSIZE) - yPos,
-								(RECTSIZE * INTERVAL * j + x*RECTSIZE) - xPos + RECTSIZE, (RECTSIZE * INTERVAL * i + y*RECTSIZE) - yPos + RECTSIZE);
+							clientRect.top < (RECTSIZE * INTERVAL * i + z*RECTSIZE) - zPos && (RECTSIZE * INTERVAL * i + z*RECTSIZE) - zPos < clientRect.bottom) {
+							Rectangle(hdc, (RECTSIZE*INTERVAL*j + x*RECTSIZE) - xPos, (RECTSIZE * INTERVAL * i + z*RECTSIZE) - zPos,
+								(RECTSIZE * INTERVAL * j + x*RECTSIZE) - xPos + RECTSIZE, (RECTSIZE * INTERVAL * i + z*RECTSIZE) - zPos + RECTSIZE);
 						}
 					
 					}
@@ -234,7 +234,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			oldPen = (HPEN)SelectObject(hdc, myPen);
 			myBrush = CreateSolidBrush(color[MyData.id]);
 			oldBrush = (HBRUSH)SelectObject(hdc, myBrush);
-			Rectangle(hdc, MyData.x - xPos, MyData.y - yPos, MyData.x - xPos + RECTSIZE, MyData.y - yPos + RECTSIZE);
+			Rectangle(hdc, MyData.x - xPos, MyData.z - zPos, MyData.x - xPos + RECTSIZE, MyData.z - zPos + RECTSIZE);
+			wsprintf(str, TEXT("[%d] %d"), MyData.id, MyData.y);
+			TextOut(hdc, MyData.x + 5 - xPos, MyData.z + 10 - zPos, str, lstrlen(str));
 			SelectObject(hdc, oldPen);
 			SelectObject(hdc, oldBrush);
 			DeleteObject(myPen);
@@ -249,7 +251,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				oldPen = (HPEN)SelectObject(hdc, myPen);
 				myBrush = CreateSolidBrush(color[users[i].id]);
 				oldBrush = (HBRUSH)SelectObject(hdc, myBrush);
-				Rectangle(hdc, users[i].x - xPos, users[i].y - yPos, users[i].x - xPos + RECTSIZE, users[i].y - yPos + RECTSIZE);
+				Rectangle(hdc, users[i].x - xPos, users[i].z - zPos, users[i].x - xPos + RECTSIZE, users[i].z - zPos + RECTSIZE);
+				wsprintf(str, TEXT("[%d] %d"), users[i].id, users[i].y);
+				TextOut(hdc, users[i].x + 5 - xPos, users[i].z + 10 - zPos, str, lstrlen(str));
 				SelectObject(hdc, oldPen);
 				SelectObject(hdc, oldBrush);
 				DeleteObject(myPen);
@@ -264,7 +268,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			oldPen = (HPEN)SelectObject(hdc, myPen);
 			myBrush = CreateSolidBrush(COLORREF(RGB(255,0,0)));
 			oldBrush = (HBRUSH)SelectObject(hdc, myBrush);
-			Rectangle(hdc, (*iter)->x - xPos, (*iter)->y - yPos, (*iter)->x - xPos + RECTSIZE, (*iter)->y - yPos + RECTSIZE);
+			Ellipse(hdc, (*iter)->x - xPos, (*iter)->z - zPos, (*iter)->x - xPos + RECTSIZE, (*iter)->z - zPos + RECTSIZE);
+			wsprintf(str, TEXT("[%d] %d"), (*iter)->id, (*iter)->y);
+			TextOut(hdc, (*iter)->x + 5 - xPos, (*iter)->z + 10 - zPos, str, lstrlen(str));
 			SelectObject(hdc, oldPen);
 			SelectObject(hdc, oldBrush);
 			DeleteObject(myPen);
@@ -273,7 +279,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 
 	
-		wsprintf(str, TEXT("좌표 ( %d, %d ) "), MyData.x/80, MyData.y/80);
+		wsprintf(str, TEXT("좌표 ( %d, %d ) "), MyData.x/RECTSIZE, MyData.z/ RECTSIZE);
 		TextOut(hdc, winRect.right - 200, winRect.bottom-100, str, lstrlen(str));
 
 		EndPaint(hwnd, &ps);
@@ -338,13 +344,15 @@ DWORD WINAPI ThFunc(LPVOID lpParam)
 				//기준이 되는곳
 				MyData.x = pos_packet.x;
 				MyData.y = pos_packet.y;
+				MyData.z = pos_packet.z;
 				xPos = MyData.x - RECTSIZE * 10;
-				yPos = MyData.y - RECTSIZE * 10;
+				zPos = MyData.z - RECTSIZE * 10;
 			}
 			else {
 				if (pos_packet.id < MAX_USER) {
 					users[pos_packet.id].x = pos_packet.x;
 					users[pos_packet.id].y = pos_packet.y;
+					users[pos_packet.id].z = pos_packet.z;
 				}
 				else {
 					auto iter = find_if(monsters.begin(), monsters.end(), [=](LPMONSTER m) {
@@ -355,21 +363,23 @@ DWORD WINAPI ThFunc(LPVOID lpParam)
 					});
 					(*iter)->x = pos_packet.x;
 					(*iter)->y = pos_packet.y;
+					(*iter)->z = pos_packet.z;
 				}
 			
 			}
 			
 		}
-		else if (packet[1] == SC_PUT_PLAYER) {
+		else if (packet[1] == SC_PUT_OBJECT) {
 			printf("Recv :SC_PUT_PLAYER \n");
-			sc_packet_put_player put_packet;
+			sc_packet_put_object put_packet;
 			memcpy(&put_packet, packet, packet[0]);
 			if (!isSet) {
 				MyData.id = put_packet.id;
 				MyData.x = put_packet.x;
 				MyData.y = put_packet.y;
+				MyData.z = put_packet.z;
 				xPos = MyData.x - RECTSIZE * 10;
-				yPos = MyData.y - RECTSIZE * 10;
+				zPos = MyData.z - RECTSIZE * 10;
 				isSet = true;
 			}
 			else {
@@ -378,20 +388,22 @@ DWORD WINAPI ThFunc(LPVOID lpParam)
 					users[put_packet.id].id = put_packet.id;
 					users[put_packet.id].x = put_packet.x;
 					users[put_packet.id].y = put_packet.y;
+					users[put_packet.id].z = put_packet.z;
 				}
 				else {
 					lpMonster = new MONSTER();
 					lpMonster->id = put_packet.id;
 					lpMonster->x = put_packet.x;
 					lpMonster->y = put_packet.y;
+					lpMonster->z = put_packet.z;
 					monsters.push_back(lpMonster);
 				}
 			
 			}
 		}
-		else if (packet[1] == SC_REMOVE_PLAYER) {
+		else if (packet[1] == SC_REMOVE_OBJECT) {
 			printf("Recv :SC_REMOVE_PLAYER \n");
-			sc_packet_remove_player remove_packet;
+			sc_packet_remove_object remove_packet;
 			memcpy(&remove_packet, packet, packet[0]);
 			if (remove_packet.id < MAX_USER) {
 				users[remove_packet.id].isConnected = false;

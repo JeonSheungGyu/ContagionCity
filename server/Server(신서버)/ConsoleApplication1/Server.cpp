@@ -1,5 +1,3 @@
-#pragma comment(lib, "ws2_32")
-
 #include "stdafx.h"
 #include "Protocol.h"
 #include "User.h"
@@ -7,7 +5,13 @@
 #include "Sector.h"
 #include "Zone.h"
 #include "UserViewList.h"
-#include "ConnectedUserManager.h"
+#include "PacketMaker.h"
+
+//전역변수
+HANDLE hCompletionPort;
+User users[MAX_USER];
+std::vector<Monster*> monsters;
+Zone zone;
 
 
 typedef struct EVENT {
@@ -19,11 +23,6 @@ typedef struct EVENT {
 	bool operator < (const EVENT& e) const { return  startTime < e.startTime; }
 }EVENT;
 
-//전역변수
-HANDLE hCompletionPort;
-User users[MAX_USER];
-std::vector<Monster*> monsters;
-Zone zone;
 
 void error_display(char *msg, int err_no)
 {
@@ -48,7 +47,7 @@ void SendPacket(int id, unsigned char *packet)
 	over->wsabuf.len = packet[0];
 	memcpy(over->iocp_buffer, packet, packet[0]);
 
-	int ret = WSASend(users[id].hClntSock, &over->wsabuf, 1, NULL, 0,
+	int ret = WSASend(users[id].getSession().hClntSock, &over->wsabuf, 1, NULL, 0,
 		&over->overlapped, NULL);
 	if (0 != ret) {
 		int error_no = WSAGetLastError();
@@ -83,40 +82,30 @@ void updateMonsterView(DWORD id)
 
 void ProcessPacket(User *user, unsigned char buf[]) {
 
-	printf("수신 %d from %d \n", buf[1], user->id);
+	printf("Receive %d from [%d] \n", buf[1], user->getID());
 	
-	int x = user->x;
-	int y =user->y;
+	int x = user->getPos().x;
+	int z = user->getPos().z;
 
 	switch (buf[1])
 	{
-	case CS_UP: y-= RECTSIZE; break;
-	case CS_DOWN: y+= RECTSIZE; break;
+	case CS_UP: z-= RECTSIZE; break;
+	case CS_DOWN: z+= RECTSIZE; break;
 	case CS_LEFT: x-= RECTSIZE; break;
 	case CS_RIGHT: x+= RECTSIZE; break;
 	default: printf( "Unknown type packet received!\n");
 		while (true);
 	}
-	if (y < 0) y = 0;
-	if (y >= WORLDSIZE ) y = WORLDSIZE - RECTSIZE;
+	if (z < 0) z = 0;
+	if (z >= WORLDSIZE ) z = WORLDSIZE - RECTSIZE;
 	if (x < 0) x = 0;
 	if (x >= WORLDSIZE ) x = WORLDSIZE - RECTSIZE;
 
-	user->x = x;
-	user->y = y;
 
-	sc_packet_pos mov_packet;
-	mov_packet.id = user->id;
-	mov_packet.size = sizeof(mov_packet);
-	mov_packet.type = SC_POS;
-	mov_packet.x = x;
-	mov_packet.y = y;
+	user->setPos(XMFLOAT3(x, user->getPos().y, z));
 
-	SendPacket(user->id, reinterpret_cast<unsigned char *>(&mov_packet));
-	printf("유저 [%d] : %d %d SC_POS 전송\n", user->id, user->x, user->y);
-
-	//ViewListUpdate
-	updatePlayerView(user->id);
+	PacketMaker::instance().MoveObject(reinterpret_cast<Object*>(user), user->getID());
+	updatePlayerView(user->getID());
 }
 
 
@@ -150,7 +139,7 @@ void process_event(EVENT k) {
 		Monster *monster = monsters.at(k.id - MAX_USER);
 		ZeroMemory(&monster->overlapped, sizeof(monster->overlapped));
 		monster->overlapped.operation = k.type;
-		PostQueuedCompletionStatus(hCompletionPort, 1, monster->id, (LPOVERLAPPED)&monster->overlapped);
+		PostQueuedCompletionStatus(hCompletionPort, 1, monster->getID(), (LPOVERLAPPED)&monster->overlapped);
 	}
 }
 void TimerThread()
@@ -193,7 +182,7 @@ void MonsterEventThread()
 		std::chrono::milliseconds mill;
 		for (auto& monster : monsters)
 		{
-			add_timer(monster->id, OP_NPC_MOVE, 0);
+			add_timer(monster->getID(), OP_NPC_MOVE, 0);
 		}
 		endTime = std::chrono::system_clock::now();
 		mill = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
@@ -213,36 +202,28 @@ void allocateObject()
 	//// [TEST] 몬스터 랜덤배치, -> 추후에 바꿔야됨
 	std::mt19937 gen(12);
 	std::uniform_real_distribution<float> mx(0.0, WORLDSIZE-1);
-	std::uniform_real_distribution<float> my(0.0, WORLDSIZE-1);
-	DWORD x = 0, y = 0;
+	std::uniform_real_distribution<float> mz(0.0, WORLDSIZE-1);
+	DWORD x = 0, z = 0;
 	int count = 0;
 
 	// monster 할당
-	for (int i = 0; i < MAX_NPC; ++i)
+	for (int i = MAX_USER; i < MAX_USER + MAX_NPC; ++i)
 	{
 		x = ((int)(mx(gen) / RECTSIZE))*RECTSIZE;
-		y = ((int)(my(gen) / RECTSIZE))*RECTSIZE;
-		monsters.push_back(new Monster(x, y));
-	}
-
-	// monster id 할당
-	for (int i = MAX_USER; i < MAX_USER + MAX_NPC; ++i) {
-		monsters.at(i - MAX_USER)->id = i;
-		//뷰리스트 초기화
+		z = ((int)(mz(gen) / RECTSIZE))*RECTSIZE;
+		monsters.push_back(new Monster(i, XMFLOAT3(x,0,z)));
 		updateMonsterView(i);
-		
 	}
 }
+
 void initializeGame() {
 	//큐 크리티컬섹션 초기화
 	InitializeCriticalSection(&qCS);
-
 	//타이머 스레드
 	timer_thread = new std::thread{TimerThread};
 	monster_thread = new std::thread{ MonsterEventThread };
 
 }
-
 void releaseGame() {
 	DeleteCriticalSection(&qCS);
 	timer_thread->join();
@@ -253,7 +234,7 @@ void releaseGame() {
 int main(int argc, char** argv)
 {
 	WSADATA wsaData;
-	
+
 	// 만들어질 CompletionPort가 전달될 Handle
 
 	SYSTEM_INFO SystemInfo;
@@ -304,18 +285,22 @@ int main(int argc, char** argv)
 		int addrLen = sizeof(clntAddr);
 
 		hClntSock = accept(hServSock, (SOCKADDR*)&clntAddr, &addrLen);
+
+		if (hClntSock == -1)
+		{
+			printf("Connection Fail\n");
+			exit(1);
+		}
+
 		id = -1;
 
 		for (int i = 0; i < MAX_USER; i++) {
-			if (!users[i].isConnected) {
-				users[i].isConnected = true;
-				users[i].hClntSock = hClntSock;
-				memcpy(&(users[i].clntAddr), &clntAddr, addrLen);
-				users[i].id = i;
-				users[i].x = 0;
-				users[i].y = 0;
-				users[i].sector = nullptr;
-				users[i].viewList.getView().clear();
+			if (!users[i].isConnected()) {
+				users[i].reset();
+				users[i].setID(i);
+				users[i].setConnected(true);
+				users[i].getSession().hClntSock = hClntSock;
+				memcpy(&(users[i].getSession().clntAddr), &clntAddr, addrLen);
 				id = i;
 				break;
 			}
@@ -324,41 +309,25 @@ int main(int argc, char** argv)
 			closesocket(hClntSock);
 			continue;
 		}
-		/*
-		PerHandleData에 연결된 클라이언트의 정보들을 저장한다.
-		이때 동적 할당으로 정보를 저장 하는데 동적 할당을 모른다면 공부하고 오도록 하자
-		*/
 
-		//ConnectedUserManager에 삽입하여 접속을 관리한다.
-		
-		//3. Overlapped 소켓과 CompletionPort의 연결.
+
+		printf("connect from [%d]\n", users[id].getID());
 		CreateIoCompletionPort((HANDLE)hClntSock, hCompletionPort, (DWORD)&users[id], 0);
 		
-		printf("유저 접속 [%d]\n", users[id].id);
-		sc_packet_pos packet_pos;
-		packet_pos.id = users[id].id;
-		packet_pos.size = sizeof(sc_packet_pos);
-		packet_pos.type = SC_PUT_PLAYER;
-		packet_pos.x = users[id].x;
-		packet_pos.y = users[id].y;
 
-		SendPacket(users[id].id, reinterpret_cast<unsigned char *>( &packet_pos));
-		printf("유저 [%d] : SC_PUT_PLAYER 전송\n", users[id].id);
+		PacketMaker::instance().PutObject(reinterpret_cast<Object*>(&users[id]), users[id].getID());
+		updatePlayerView(users[id].getID());
 
-		//ViewListUpdate
-		updatePlayerView(users[id].id);
-
-		printf("유저 [%d] : 동기화 완료\n", users[id].id);
 
 		Flags = 0;
 
 		//4. 중첩된 데이터입력.
-		WSARecv(users[id].hClntSock, // 데이터 입력소켓.
-			&(users[id].recv_overlap.wsabuf),  // 데이터 입력 버퍼포인터.
+		WSARecv(users[id].getSession().hClntSock, // 데이터 입력소켓.
+			&(users[id].getSession().recv_overlap.wsabuf),  // 데이터 입력 버퍼포인터.
 			1,       // 데이터 입력 버퍼의 수.
 			(LPDWORD)&RecvBytes,
 			(LPDWORD)&Flags,
-			&(users[id].recv_overlap.overlapped), // OVERLAPPED 구조체 포인터.
+			&(users[id].getSession().recv_overlap.overlapped), // OVERLAPPED 구조체 포인터.
 			NULL
 			);
 	}
@@ -390,56 +359,51 @@ unsigned int __stdcall CompletionThread(LPVOID pComPort)
 		if (iosize == 0) //EOF 전송시.
 		{
 			user = reinterpret_cast<User*> (key);
-			sc_packet_remove_player discon;
-			discon.id = user->id;
-			discon.size = sizeof(discon);
-			discon.type = SC_REMOVE_PLAYER;
 			for (auto i = 0; i < MAX_USER; ++i) {
-				if (i == user->id) continue;
-				if (users[i].isConnected) {
-					SendPacket(i, reinterpret_cast<unsigned char*>(&discon));
-					printf("유저 %d :  유저 %d SC_REMOVE_PLAYER 전송\n", user->id, i);
+				if (i == user->getID()) continue;
+				if (users[i].isConnected()) {
+					PacketMaker::instance().RemoveObject(reinterpret_cast<Object*>(&users[i]), user->getID());
 				}
 			}
-			user->sector->erasePlayer(user->id);
-			user->viewList.getView().clear();
-			user->isConnected = false;
-			closesocket(user->hClntSock);
+			//sector 제거
+			user->getCurrentSector()->erasePlayer(user->getID());
+			user->setConnected(false);
+			closesocket(user->getSession().hClntSock);
 			continue;
 		}
 
 		if (OP_RECV == my_overlap->operation) {
 			user = reinterpret_cast<User*> (key);
-			unsigned char *buf_ptr = user->recv_overlap.iocp_buffer;
+			unsigned char *buf_ptr = user->getSession().recv_overlap.iocp_buffer;
 			int remained = iosize;
 			while (0 < remained) {
-				if (0 == user->packet_size)
-					user->packet_size = buf_ptr[0];
-				int required = user->packet_size
-					- user->previous_size;
+				if (0 == user->getSession().packet_size)
+					user->getSession().packet_size = buf_ptr[0];
+				int required = user->getSession().packet_size
+					- user->getSession().previous_size;
 				if (remained >= required) {
 					memcpy(
-						user->packet_buff + user->previous_size,
+						user->getSession().packet_buff + user->getSession().previous_size,
 						buf_ptr, required);
-					ProcessPacket(user, user->packet_buff);
+					ProcessPacket(user, user->getSession().packet_buff);
 					buf_ptr += required;
 					remained -= required;
-					user->packet_size = 0;
-					user->previous_size = 0;
+					user->getSession().packet_size = 0;
+					user->getSession().previous_size = 0;
 				}
 				else {
-					memcpy(user->packet_buff
-						+ user->previous_size,
+					memcpy(user->getSession().packet_buff
+						+ user->getSession().previous_size,
 						buf_ptr, remained);
 					buf_ptr += remained;
-					user->previous_size += remained;
+					user->getSession().previous_size += remained;
 					remained = 0;
 				}
 			}
 			DWORD flags = 0;
-			WSARecv(user->hClntSock,
-				&user->recv_overlap.wsabuf, 1, NULL, &flags,
-				&user->recv_overlap.overlapped, NULL);
+			WSARecv(user->getSession().hClntSock,
+				&user->getSession().recv_overlap.wsabuf, 1, NULL, &flags,
+				&user->getSession().recv_overlap.overlapped, NULL);
 			
 		}
 		else if (OP_SEND == my_overlap->operation) {

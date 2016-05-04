@@ -2,9 +2,7 @@
 #include "Protocol.h"
 #include "Monster.h"
 #include "User.h"
-#include "ConnectedUserManager.h"
 #include "MonsterViewList.h"
-
 
 using namespace std;
 
@@ -99,15 +97,15 @@ void MonsterViewList::updateViewList(const set<DWORD>& nearList)
 			try {
 				User *player = &users[id];
 
-				if (player->viewList.isInViewList(owner->id)) {  // 내가 상대 viewList에 있는지
+				if (player->getViewList().isInViewList(owner->getID())) {  // 내가 상대 viewList에 있는지
 																	//움직인다고 패킷전송
 																	//몬스터 방식으로 패킷전송
-					player->viewList.moveObject(owner->id);
+					player->getViewList().moveObject(owner->getID());
 
 				}
 				else {
 					//상대방에게 추가하라고 패킷전송
-					player->viewList.insertUser(owner->id);
+					player->getViewList().insertUser(owner->getID());
 				}
 			}
 			catch (exception& e) {
@@ -126,8 +124,8 @@ void MonsterViewList::updateViewList(const set<DWORD>& nearList)
 		{
 			//제거는 아래에서 된다.
 			try {
-				if (users[data.first].isConnected)
-					users[data.first].viewList.eraseUser(owner->id);	// 항상 내 view와 상대방 view 동기화시켜야됨
+				if (users[data.first].isConnected())
+					users[data.first].getViewList().eraseUser(owner->getID());	// 항상 내 view와 상대방 view 동기화시켜야됨
 			}
 			catch (exception& e) {
 				printf("MonsterViewList::updateViewList 2 %s", e.what());

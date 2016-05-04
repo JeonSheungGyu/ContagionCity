@@ -15,8 +15,8 @@ public:
 	MonsterViewList viewList;
 	Overlap_ex overlapped;
 
-	Monster(DWORD tx, DWORD ty) : viewList(this) {
-		x = tx, y = ty;
+	Monster(DWORD id, XMFLOAT3 pos) : viewList(this), Object(id, pos) {
+	
 	}
 
 	void updateViewList() {
@@ -27,17 +27,17 @@ public:
 		int dir = rand() % 4 + 1;
 		switch (dir)
 		{
-		case UP: y -= RECTSIZE; break;
-		case DOWN: y += RECTSIZE; break;
-		case LEFT: x -= RECTSIZE; break;
-		case RIGHT: x += RECTSIZE; break;
+		case UP:    obVector.position.z -= RECTSIZE; break;
+		case DOWN:  obVector.position.z += RECTSIZE; break;
+		case LEFT:  obVector.position.x -= RECTSIZE; break;
+		case RIGHT:  obVector.position.x += RECTSIZE; break;
 		default: printf("Unknown type packet received!\n");
 			while (true);
 		}
 
-		if (y < 0) y = 0;
-		if (y >= WORLDSIZE) y = WORLDSIZE - RECTSIZE;
-		if (x < 0) x = 0;
-		if (x >= WORLDSIZE) x = WORLDSIZE - RECTSIZE;
+		if (obVector.position.z < 0)  obVector.position.z = 0;
+		if (obVector.position.z >= WORLDSIZE)  obVector.position.z = WORLDSIZE - RECTSIZE;
+		if (obVector.position.x < 0)  obVector.position.x = 0;
+		if (obVector.position.x >= WORLDSIZE)  obVector.position.x = WORLDSIZE - RECTSIZE;
 	}
 };

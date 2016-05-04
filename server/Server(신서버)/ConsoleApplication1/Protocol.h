@@ -9,8 +9,8 @@
 #define CS_CHAT		5
 
 #define SC_POS           1
-#define SC_PUT_PLAYER    2
-#define SC_REMOVE_PLAYER 3
+#define SC_PUT_OBJECT   2
+#define SC_REMOVE_OBJECT 3
 #define SC_CHAT			4
 
 #pragma pack (push, 1)
@@ -26,16 +26,18 @@ struct sc_packet_pos {
 	WORD id;
 	DWORD x;
 	DWORD y;
+	DWORD z;
 };
 
-struct sc_packet_put_player {
+struct sc_packet_put_object {
 	BYTE size;
 	BYTE type;
 	WORD id;
 	DWORD x;
 	DWORD y;
+	DWORD z;
 };
-struct sc_packet_remove_player {
+struct sc_packet_remove_object {
 	BYTE size;
 	BYTE type;
 	WORD id;
