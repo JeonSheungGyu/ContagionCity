@@ -2,6 +2,7 @@
 #include <vector>
 #include "Shader.h"
 #include "FbxManager.h"
+#include "Timer.h"
 
 using namespace std;
 
@@ -42,11 +43,10 @@ struct LIGHTS
 
 class CScene
 {
-private:
+protected:
 	// 씬은 셰이더들의 리스트이다
 	CShader **m_ppShaders;
 	int m_nShaders;
-	CCamera *m_pCamera;
 
 	// 빛 추가
 	LIGHTS *m_pLights;
@@ -56,6 +56,10 @@ private:
 	float m_fogStart;
 	float m_fogRange;
 	D3DXCOLOR m_fogColor;
+
+	// 게임 내 연산에 필요한 것들
+	CCamera *m_pCamera;
+	CPlayer *m_pPlayer;
 
 public:
 	CScene( );
@@ -72,14 +76,28 @@ public:
 	void LoadFBXs( );
 	void ReleaseObjects( );
 
-	bool ProcessInput( );
+	bool ProcessInput( HWND hWnd, CGameTimer timer );
 	void AnimateObjects( float fTimeElapsed );
 
 	void Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera );
 
 	void SetCamera( CCamera *pCamera ) { m_pCamera = pCamera; }
-
+	void SetPlayer( CPlayer *pPlayer ) { m_pPlayer = pPlayer; }
 	int getShaderCount( ){ return m_nShaders; }
 	CShader** getShaders( ){ return m_ppShaders; }
+
+	// 피킹
+	bool Picking( int x, int y );	// 피킹된 물체가 있으면 true 반환
+	// 충돌체크
+	bool CollisionCheck( );
+	bool CollisionCheck( CGameObject *pObj1, CGameObject *pObj2 );
+	// 사운드 
+	bool LoadingSoundResource( );
+
+	// 마우스 버튼 클릭할 때의 마우스 커서 위치
+	POINT m_ptOldCursorPos;
+	// 피킹된 오브젝트와 피킹위치
+	CGameObject *pPickedObject;
+	XMFLOAT3 vPickPos;
 };
 

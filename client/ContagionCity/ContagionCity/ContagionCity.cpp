@@ -53,7 +53,6 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 
 	hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_CONTAGIONCITY));
 
-	SoundManager::GetInstance( )->Play( BGM );
 	while (1)
 	{
 		if (::PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ))

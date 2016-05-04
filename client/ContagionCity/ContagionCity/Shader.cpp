@@ -248,23 +248,6 @@ void CPlayerShader::AnimateObjects( float fTimeElapsed )
 
 bool CPlayerShader::CollisionCheck( CGameObject* pObject )
 {
-	// 충돌되면 true 반환
-	AABB playerBox = m_ppObjects[0]->m_bcMeshBoundingCube;
-	AABB objBox = pObject->m_bcMeshBoundingCube;
-
-	// AABB를 해당 오브젝트에 맞게 변환		-> 물체를 생성할 때 위치를 잡고나면 update하지 않아도 되야 하는데 자꾸 초기화됨
-	playerBox.Update( &(m_ppObjects[0]->m_mtxWorld));
-	objBox.Update( &(pObject->m_mtxWorld) );
-
-	// AABB 출돌 검사
-	if (playerBox.m_vMax.x < objBox.m_vMin.x) return true;
-	if (playerBox.m_vMax.y < objBox.m_vMin.y) return true;
-	if (playerBox.m_vMax.z < objBox.m_vMin.z) return true;
-	if (playerBox.m_vMin.x > objBox.m_vMax.x) return true;
-	if (playerBox.m_vMin.y > objBox.m_vMax.y) return true;
-	if (playerBox.m_vMin.z > objBox.m_vMax.z) return true;
-
-	// 아무런 체크도 되지 않으면 충돌하지 않은 것
 	return false;
 }
 

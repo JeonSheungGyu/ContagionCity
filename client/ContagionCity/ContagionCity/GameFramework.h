@@ -31,12 +31,6 @@ private:
 	ID3D11Texture2D *m_pd3dDepthStencilBuffer;
 	ID3D11DepthStencilView *m_pd3dDepthStencilView;
 
-	// 마우스 버튼 클릭할 때의 마우스 커서 위치
-	POINT m_ptOldCursorPos;
-	// 피킹된 오브젝트와 피킹위치
-	CGameObject *pPickedObject;
-	XMFLOAT3 vPickPos;
-
 public:
 	CGameFramework( );
 	~CGameFramework( );
@@ -64,15 +58,7 @@ public:
 	void OnProcessingKeyboardMessage( HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam );
 	LRESULT CALLBACK OnProcessingWindowMessage( HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam );
 
-	// 충돌체크
-	bool CollisionCheck( );
-	
-	// 피킹
-	bool Picking( int x, int y );	// 피킹된 물체가 있으면 true 반환
-
-	// 사운드 
 	bool CreateSoundResources( );
-
 public:
 	CPlayerShader *m_pPlayerShader;
 };
