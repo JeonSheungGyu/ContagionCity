@@ -231,11 +231,6 @@ SkinnedVertexOut SkinnedVS( SkinnedVertexIn vin )
 				tangentL += weights[i] * mul( vin.tangentL.xyz, ( float3x3 )gBoneTransforms[vin.boneIndices[i]] );
 			}
 		}
-
-	//		posL = vin.positionL;
-	//normalL = vin.normalL;
-	//tangentL = vin.tangentL.xyz;
-
 	vout.positionW = mul( float4( posL, 1.0f ), gmtxWorld ).xyz;
 	vout.tangentW = float4( mul( tangentL, ( float3x3 )gmtxWorld ), vin.tangentL.w ); 
 	vout.positionH = mul( float4( posL, 1.0f ), gmtxWorld );

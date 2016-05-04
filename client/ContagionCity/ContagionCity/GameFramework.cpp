@@ -30,8 +30,8 @@ bool CGameFramework::OnCreate( HINSTANCE hInstance, HWND hMainWnd )
 	m_hInstance = hInstance;
 	m_hWnd = hMainWnd;
 
-	// FMOD 사운드 시스템 초기화
-	SoundManager::GetInstance( )->Init( );
+	// FMOD 사운드 시스템 초기화 및 로딩
+	CreateSoundResources( );
 
 	// Direct3D 디바이스, 디바이스 컨텍스트, 스왑 체인 등을 생성하는 함수를 호출한다.
 	if (!CreateDirect3DDisplay( )) return false;
@@ -39,6 +39,14 @@ bool CGameFramework::OnCreate( HINSTANCE hInstance, HWND hMainWnd )
 	// 렌더링할 객체를 생성
 	BuildObjects( );
 
+	return true;
+}
+
+bool CGameFramework::CreateSoundResources( )
+{
+	SoundManager::GetInstance( )->Init( );
+	SoundManager::GetInstance( )->Loading( "Sound/stage1bgm2.mp3", FMOD_LOOP_NORMAL, BGM );
+	SoundManager::GetInstance( )->Loading( "Sound/attack.wav", FMOD_DEFAULT, ATTACK );
 	return true;
 }
 
@@ -153,9 +161,13 @@ void CGameFramework::OnProcessingMouseMessage( HWND hWnd, UINT nMessageID, WPARA
 	switch (nMessageID)
 	{
 		case WM_LBUTTONDOWN:
+			SetCapture( hWnd );
+			GetCursorPos( &m_ptOldCursorPos );
+			break;
 		case WM_RBUTTONDOWN:
 			SetCapture( hWnd );
 			GetCursorPos( &m_ptOldCursorPos );
+			Picking( LOWORD( lParam ), HIWORD( lParam ) );
 			break;
 		case WM_LBUTTONUP:
 		case WM_RBUTTONUP:
@@ -199,7 +211,8 @@ LRESULT CALLBACK CGameFramework::OnProcessingWindowMessage( HWND hWnd, UINT nMes
 
 			if (m_pd3dRenderTargetView) m_pd3dRenderTargetView->Release( );
 			if (m_pd3dDepthStencilBuffer) m_pd3dDepthStencilBuffer->Release( );
-			if (m_pd3dDepthStencilView) m_pd3dDepthStencilView->Release( );
+			if (m_pd3dDepthStencilView) 
+				m_pd3dDepthStencilView->Release( );
 
 			m_pDXGISwapChain->ResizeBuffers( 1, 0, 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0 );
 
@@ -305,8 +318,8 @@ void CGameFramework::ProcessInput( )
 		{
 			SetCursor( NULL );
 			GetCursorPos( &ptCursorPos );
-			cxDelta = (float)( ptCursorPos.x - m_ptOldCursorPos.x ) / 3.0f;
-			cyDelta = (float)( ptCursorPos.y - m_ptOldCursorPos.y ) / 3.0f;
+			cxDelta = (float)( ptCursorPos.x - m_ptOldCursorPos.x ) / 5.0f;
+			cyDelta = (float)( ptCursorPos.y - m_ptOldCursorPos.y ) / 50.0f;
 			SetCursorPos( m_ptOldCursorPos.x, m_ptOldCursorPos.y );
 		}
 		if (dwDirection != 0 || cxDelta != 0.0f || cyDelta != 0.0f)
@@ -321,10 +334,11 @@ void CGameFramework::ProcessInput( )
 				else
 					m_pPlayer->Rotate( cyDelta, cxDelta, 0.0f );
 
-				if (pKeyBuffer[VK_LBUTTON] & 0xF0)
-				{
-					//m_pPlayer->m_iAnimState = static_cast<int>( AnimationState::ANIM_LATTACK1 );
-				}
+				//if (pKeyBuffer[VK_LBUTTON] & 0xF0)
+				//{
+				//	//m_pPlayer->m_iAnimState = static_cast<int>( AnimationState::ANIM_LATTACK1 );
+				//	SoundManager::GetInstance( )->Play( ATTACK );
+				//}
 			}
 			/*플레이어를 dwDirection 방향으로 이동한다(실제로는 속도 벡터를 변경한다).
 			이동 거리는 시간에 비례하도록 한다. 플레이어의 이동 속력은 (50/초)로 가정한다.
@@ -334,11 +348,12 @@ void CGameFramework::ProcessInput( )
 				// 현재 플레이어의 AABB 박스의 y좌표 최소가 -0.5임. 따라서 0보다 작으므로 바닥과 겹침, 그로 인해 못움직임
 				// 충돌체크 자체는 제대로 되고 있으나 플레이어의 위치가 문제
 				if (!CollisionCheck())
-					m_pPlayer->Move( dwDirection, 50.0f * m_GameTimer.GetTimeElapsed( ), false );
+					m_pPlayer->Move( dwDirection, 100.0f * m_GameTimer.GetTimeElapsed( ), false );
 			}
 		}
 	}
-	m_pPlayer->Update( m_GameTimer.GetTimeElapsed( ) );
+//	if (!CollisionCheck( ))
+		m_pPlayer->Update( m_GameTimer.GetTimeElapsed( ), vPickPos );
 }
 
 void CGameFramework::AnimateObjects( )
@@ -367,7 +382,6 @@ void CGameFramework::FrameAdvance( )
 	if (m_pScene) m_pScene->Render( m_pd3dDeviceContext, pCamera );
 
 	if (m_pPlayerShader) m_pPlayerShader->Render( m_pd3dDeviceContext, pCamera );
-//	if (m_pPlayerBoneShader) m_pPlayerBoneShader->Render( m_pd3dDeviceContext, pCamera );
 
 	m_pDXGISwapChain->Present( 0, 0 );
 
@@ -397,4 +411,67 @@ bool CGameFramework::CollisionCheck( )
 	}
 	// 하나도 충돌하지 않은 경우 false 리턴
 	return false;
+}
+
+bool CGameFramework::Picking( int x, int y )
+{
+	// 2차원 점의 투영 공간으로의 변환
+	XMMATRIX p = XMLoadFloat4x4( &( m_pCamera->GetProjectionMatrix( ) ) );
+	D3D11_VIEWPORT d3dViewport = m_pCamera->GetViewport( );
+
+	XMFLOAT3 vPickPosition;
+	vPickPosition.x = ( ( ( 2.0f * ( x - d3dViewport.TopLeftX ) ) / d3dViewport.Width ) - 1 ) / p(0,0);
+	vPickPosition.y = -( ( ( 2.0f * ( y - d3dViewport.TopLeftY ) ) / d3dViewport.Height ) - 1 ) / p(1,1);
+
+	XMVECTOR rayOrigin = XMVectorSet( 0.0f, 0.0f, 0.0f, 1.0f );
+	XMVECTOR rayDir = XMVectorSet( vPickPosition.x, vPickPosition.y, 1.0, 0.0f );
+
+	// 2차원 점의 시야공간으로의 변환
+	XMMATRIX v = XMLoadFloat4x4( &( m_pCamera->GetViewMatrix( ) ) );
+	XMMATRIX invView = XMMatrixInverse( &XMMatrixDeterminant( v ), v );		// determinant = 행렬식
+
+	// 각 물체와 충돌체크
+	float fHitDist = FLT_MAX, fNearDist = FLT_MAX;
+	XMFLOAT3 vHitPos, vNearPos;
+	bool bIntersection = false;
+	CGameObject *IntersectionObject = NULL;		// 충돌된 오브젝트 정보를 가짐
+	// 여러개의 셰이더를 돌면서 검사함
+	for (int i = 1; i < m_pScene->getShaderCount( ); i++)		// 0번째 셰이더는 스카이박스만 그리므고 검사할 필요가 없음
+	{
+		for (int j = 0; j < m_pScene->getShaders( )[i]->getObjectCount( ); j++)
+		{
+			CGameObject* tempObj = m_pScene->getShaders( )[i]->getObjects( )[j];
+
+			XMMATRIX w = XMLoadFloat4x4( &(tempObj->m_mtxWorld ) );
+			XMMATRIX invWorld = XMMatrixInverse( &XMMatrixDeterminant( w ), w );
+
+			XMMATRIX toLocal = XMMatrixMultiply( invView, invWorld );
+
+			rayOrigin = XMVector3TransformCoord( rayOrigin, toLocal );	// XMVector3TransformCoord 함수는 벡터의 4번째 성분이 1이라고 가정하고 계산, 따라서 점을 변환할 때 사용
+			rayDir = XMVector3TransformNormal( rayDir, toLocal );			// XMVector3TransformNormal 함수는 벡터의 4번째 성분이 0이라고 가정하고 계산, 따라서 벡터를 변환할 때 사용
+
+			rayDir = XMVector3Normalize( rayDir );	// 교차 판정을 위해 반직선 방향벡터를 단위길이로 정규화
+
+			// 참일 경우 충돌된 것이므로 현재 가장 가까운 곳에 충돌된 것과 검사
+			if (tempObj->CheckRayIntersection( &rayOrigin, &rayDir, &fHitDist, &vHitPos ))
+			{
+				bIntersection = true;
+				if (fNearDist > fHitDist)
+				{
+					fNearDist = fHitDist;
+					IntersectionObject = tempObj;
+					vNearPos = vHitPos;
+				}
+			}
+		}
+	}
+
+	if (IntersectionObject != NULL)
+	{
+		pPickedObject = IntersectionObject;
+		vPickPos = vNearPos;
+		// vNearPos는 오브젝트의 로컬좌표계이므로 이를 월드좌표계로 변환
+		vPickPos = MathHelper::GetInstance( )->Vector3TransformNormal( vPickPos, pPickedObject->m_mtxWorld );
+	}
+	return bIntersection;
 }

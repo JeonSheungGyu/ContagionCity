@@ -158,6 +158,10 @@ public:
 
 	// 객체를 렌더링하기 전에 호출되는 함수
 	virtual void OnPrepareRender( ){}
+
+	// 피킹체크를 위한 함수
+	bool CheckRayIntersection( XMVECTOR *pvRayOrigin, XMVECTOR *pvRayDir, float *pHitDist, XMFLOAT3 *pOutIntersectionPos);
+
 public:
 	// 객체가 가지는 메시들에 대한 포인터와 그 개수
 	CMesh **m_ppMeshes;

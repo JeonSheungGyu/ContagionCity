@@ -188,7 +188,7 @@ public:
 	// 메시의 인덱스를 저장
 	std::vector<UINT> m_vnIndices;
 
-	int CheckRayIntersection( XMFLOAT3 *pvRayPosition, XMFLOAT3 *pvRatDirection, MESHINTERSECTINFO *pIntersectInfo );
+	bool CheckRayIntersection( XMVECTOR *pvRayPosition, XMVECTOR *pvRatDirection, float *pHitDist, XMFLOAT3 *pIntersectionPos );
 
 	CMesh( );
 	CMesh( ID3D11Device *pd3dDevice );

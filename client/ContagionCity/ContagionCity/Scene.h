@@ -34,6 +34,10 @@ struct LIGHTS
 	LIGHT m_pLights[MAX_LIGHTS];
 	D3DXCOLOR m_cGlobalAmbient;
 	XMFLOAT4 m_vCameraPosition;
+
+	double m_FogStart;
+	double m_FogRange;
+	D3DXCOLOR m_FogColor;
 };
 
 class CScene
@@ -49,6 +53,10 @@ private:
 	ID3D11Buffer *m_pd3dcbLights;
 
 	int m_nFbxCount;
+	float m_fogStart;
+	float m_fogRange;
+	D3DXCOLOR m_fogColor;
+
 public:
 	CScene( );
 	~CScene( );

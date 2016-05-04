@@ -381,6 +381,7 @@ void CBackgroundShader::BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbx
 				for (int j = 0; j < textureCount; j++)
 					pGroundMesh->OnChangeTexture( pd3dDevice, vertex[i].m_pTextures[j], j );
 				pGround->SetMesh( pGroundMesh, 0 );
+				pGround->m_mtxWorld = MathHelper::GetInstance( )->Float4x4MulFloat4x4( pGround->m_mtxWorld, XMFLOAT4X4( 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1 ) );
 				m_ppObjects[i] = pGround;
 
 				CMaterial *pGroundMaterial = new CMaterial;

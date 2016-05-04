@@ -134,6 +134,33 @@ void CGameObject::Move( XMFLOAT3& vDirection, float fSpeed )
 	SetPosition( m_mtxWorld._41 + vDirection.x * fSpeed, m_mtxWorld._42 + vDirection.y * fSpeed, m_mtxWorld._43 + vDirection.z * fSpeed );
 }
 
+bool CGameObject::CheckRayIntersection( XMVECTOR *pvRayOrigin, XMVECTOR *pvRayDir, float *pHitDist, XMFLOAT3 *pOutIntersectionPos )
+{
+	float fHitDist = FLT_MAX, fNearDist = FLT_MAX;
+	XMFLOAT3 vNearPos, vIntersectionPos;
+	int iNearMesh = 0;
+	bool bIntersection = false;
+
+	for (int i = 0; i < m_nMeshes; i++)
+	{
+		// 여기서 나온 좌표는 메시의 로컬좌표계의 좌표이므로 월드변환매트릭스를 곱해 월드 공간에서의 좌표로 변환해야함
+		if (m_ppMeshes[i]->CheckRayIntersection( pvRayOrigin, pvRayDir, &fHitDist, &vIntersectionPos ) )
+		{
+			bIntersection = true;
+			if (fNearDist > fHitDist)
+			{
+				fNearDist = fHitDist;
+				iNearMesh = i;
+				vNearPos = vIntersectionPos;
+			}
+		}
+	}
+
+	*pHitDist = fNearDist;
+	*pOutIntersectionPos = vNearPos;
+	return bIntersection;
+}
+
 void CGameObject::Animate( float fTimeElapsed )
 {
 	if (m_fRotationSpeed != 0.0f)
@@ -367,20 +394,20 @@ ObjectInfo::~ObjectInfo( )
 
 void ObjectInfo::OnPrepareRender( )
 {
-	m_mtxWorld._11 = m_vRight.x; m_mtxWorld._12 = m_vRight.y; m_mtxWorld._13 = m_vRight.z;
+	/*m_mtxWorld._11 = m_vRight.x; m_mtxWorld._12 = m_vRight.y; m_mtxWorld._13 = m_vRight.z;
 	m_mtxWorld._21 = m_vUp.x;	 m_mtxWorld._22 = m_vUp.y;	  m_mtxWorld._23 = m_vUp.z;
 	m_mtxWorld._31 = m_vLook.x;  m_mtxWorld._32 = m_vLook.y;  m_mtxWorld._33 = m_vLook.z;
 	m_mtxWorld._41 = m_vPosition.x;
 	m_mtxWorld._42 = m_vPosition.y;
-	m_mtxWorld._43 = m_vPosition.z;
+	m_mtxWorld._43 = m_vPosition.z;*/
 
-	m_mtxWorld = MathHelper::GetInstance( )->Float4x4MulFloat4x4( m_mtxWorld, XMFLOAT4X4( 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1 ) );
+	
 }
 
 void ObjectInfo::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera )
 {
 //	SetPosition( 0.f, 0.0f, 0.0f );
-//	Rotate( 90.0f, 0.0f, 0.0f );
+//	Rotate( 180.0f, 0.0f, 0.0f );
 
 	CShader::UpdateShaderVariable( pd3dDeviceContext, &m_mtxWorld );
 	if (m_pMaterial)

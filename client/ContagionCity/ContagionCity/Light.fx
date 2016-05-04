@@ -40,6 +40,10 @@ cbuffer cbLight : register(b0)
 	LIGHT gLights[MAX_LIGHTS];
 	float4 gcLightGlobalAmbient;
 	float4 gvCameraPosition;
+
+	float gFogStart;
+	float gFogRange;
+	float4 gFogColor;
 };
 
 //재질을 위한 상수버퍼를 선언한다. 
@@ -211,6 +215,11 @@ float4 Lighting(float3 vPosition, float3 vNormal)
 	cColor += (gcLightGlobalAmbient * gMaterial.m_cAmbient);
 	//최종 색상의 알파값은 재질의 디퓨즈 색상의 알파값으로 설정한다.
 	cColor.a = gMaterial.m_cDiffuse.a;
+
+	float distToEye = length( vToCamera );
+	float fogLerp = saturate( ( distToEye - gFogStart ) / gFogRange );
+	cColor = lerp( cColor, gFogColor, fogLerp );
+
 	return(cColor);
 }
 

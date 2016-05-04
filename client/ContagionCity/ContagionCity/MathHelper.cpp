@@ -11,6 +11,10 @@ MathHelper::~MathHelper( )
 {
 }
 
+float MathHelper::DistanceVector3ToVector3( XMFLOAT3 v1, XMFLOAT3 v2 )
+{
+	return sqrt( ( v1.x - v2.x )*( v1.x - v2.x ) + ( v1.y - v2.y ) * ( v1.y - v2.y ) + ( v1.z - v2.z )*( v1.z - v2.z ) );
+}
 
 float MathHelper::Vector3ToLength( XMVECTOR vec )
 {
@@ -258,6 +262,7 @@ XMFLOAT4X4 MathHelper::Float4x4MulFloat4x4( XMFLOAT4X4& mtx1, XMFLOAT4X4& mtx2 )
 
 	return returnValue;
 }
+
 
 XMFLOAT4 MathHelper::MakeFloat4( XMFLOAT3 vec, float w )
 {

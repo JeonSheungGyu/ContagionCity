@@ -381,6 +381,60 @@ void CMesh::GetMinMax( XMFLOAT3* min, XMFLOAT3* max )
 	max->y = m_bcBoundingCube.m_vMax.y;
 	max->z = m_bcBoundingCube.m_vMax.z;
 }
+
+bool CMesh::CheckRayIntersection( XMVECTOR *pvRayPosition, XMVECTOR *pvRatDirection, float *pHitDist, XMFLOAT3 *pIntersectionPos )
+{
+	int iPickedTriangle = -1;
+	float fHitDist = FLT_MAX, fNearDist = FLT_MAX;
+	float fu, fv, fNearU, fNearV;
+	bool bIntersection = false;
+
+	for (int i = 0; i < m_nIndices / 3; i++)
+	{
+		UINT i0 = m_vnIndices[i * 3 + 0];
+		UINT i1 = m_vnIndices[i * 3 + 1];
+		UINT i2 = m_vnIndices[i * 3 + 2];
+
+		D3DXVECTOR3 v0( m_vPositions[i0].x, m_vPositions[i0].y, m_vPositions[i0].z );
+		D3DXVECTOR3 v1( m_vPositions[i1].x, m_vPositions[i1].y, m_vPositions[i1].z );
+		D3DXVECTOR3 v2( m_vPositions[i2].x, m_vPositions[i2].y, m_vPositions[i2].z );
+
+		XMFLOAT3 temp = MathHelper::GetInstance( )->VectorToFloat3( *pvRayPosition );
+		D3DXVECTOR3 rayOrigin( temp.x, temp.y, temp.z);
+		temp = MathHelper::GetInstance( )->VectorToFloat3( *pvRatDirection );
+		D3DXVECTOR3 rayDir( temp.x, temp.y, temp.z );
+
+		// 뻗어나온 반직선이 삼각형(v0,v1,v2)의 안에 있는지 검사하고 안에 있다면 정확한 위치를 계산한 뒤 거리를 rayOrigin과의 거리를 구함
+		if (D3DXIntersectTri( &v0, &v1, &v2, &rayOrigin, &rayDir, &fu, &fv, &fHitDist ))
+		{
+			bIntersection = true;
+			if (fHitDist < fNearDist)
+			{
+				fNearDist = fHitDist;
+				fNearU = fu;
+				fNearV = fv;
+				iPickedTriangle = i;
+			}
+		}
+	}
+
+	// 삼각형의 찍힌 좌표 구하기
+	if (iPickedTriangle != -1)
+	{
+		UINT i0 = m_vnIndices[iPickedTriangle * 3 + 0];
+		UINT i1 = m_vnIndices[iPickedTriangle * 3 + 1];
+		UINT i2 = m_vnIndices[iPickedTriangle * 3 + 2];
+
+		XMVECTOR v0 = XMLoadFloat3( &m_vPositions[i0] );
+		XMVECTOR v1 = XMLoadFloat3( &m_vPositions[i1] );
+		XMVECTOR v2 = XMLoadFloat3( &m_vPositions[i2] );
+
+		XMVECTOR pos = -v0 + -fNearU*( v1 - v0 ) + -fNearV * ( v2 - v0 );
+		XMStoreFloat3( pIntersectionPos, pos );
+	}
+	*pHitDist = fNearDist;
+	return bIntersection;
+}
 // AABB
 
 void AABB::Union( XMFLOAT3& vMin, XMFLOAT3& vMax )

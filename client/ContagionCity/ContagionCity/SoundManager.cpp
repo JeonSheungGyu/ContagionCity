@@ -25,6 +25,12 @@ void SoundManager::Loading( )
 	ErrorCheck( r );
 }
 
+void SoundManager::Loading( const char* pFileName, FMOD_MODE mode, int SoundType )
+{
+	r = m_pFmod->createSound( pFileName, mode, NULL, &m_pSound[SoundType] );
+	ErrorCheck( r );
+}
+
 void SoundManager::Play( int _type )
 {
 	m_pFmod->update( );

@@ -13,8 +13,8 @@ CPlayer::CPlayer( int nMeshes ) : CGameObject( nMeshes )
 
 	m_vVelocity = XMFLOAT3( 0.0f, 0.0f, 0.0f );
 	m_vGravity = XMFLOAT3( 0.0f, 0.0f, 0.0f );
-	m_fMaxVelocityXZ = 0.0f;
-	m_fMaxVelocityY = 0.0f;
+	m_fMaxVelocityXZ = 50.0f;
+	m_fMaxVelocityY = 50.0f;
 	m_fFriction = 0.0f;
 
 	m_fPitch = 0.0f;
@@ -162,11 +162,14 @@ void CPlayer::Rotate( float x, float y, float z )
 	m_vUp = MathHelper::GetInstance( )->NormalizeFloat( m_vUp );
 }
 
-void CPlayer::Update( float fTimeElapsed )
+void CPlayer::Update( float fTimeElapsed, XMFLOAT3 DestPos  )
 {
 	/*플레이어의 속도 벡터를 중력 벡터와 더한다.
 	중력 벡터에 fTimeElapsed를 곱하는 것은 중력을 시간에 비례하도록 적용한다는 의미이다.*/
-	m_vGravity = XMFLOAT3( 0, 0, 0 );
+	if (MathHelper::GetInstance( )->DistanceVector3ToVector3( DestPos, m_vPosition ) > 10)
+		m_vGravity = MathHelper::GetInstance( )->Float3PlusFloat3( DestPos, m_vPosition ); // XMFLOAT3( 0, 0, 0 );
+	else
+		m_vGravity = XMFLOAT3( 0, 0, 0 );
 	m_vVelocity = MathHelper::GetInstance( )->Float3MulFloat( m_vGravity, fTimeElapsed );
 
 	/*플레이어의 속도 벡터의 XZ-성분의 크기를 구한다.
@@ -316,8 +319,8 @@ void CPlayer::ChangeCamera( ID3D11Device *pd3dDevice, DWORD nNewCameraMode, floa
 		case THIRD_PERSON_CAMERA:
 			SetFriction( 250.0f );
 			SetGravity( XMFLOAT3( 0.0f, -300.0f, 0.0f ) );
-			SetMaxVelocityXZ( 300.0f );
-			SetMaxVelocityY( 400.0f );
+			SetMaxVelocityXZ( 50.0f );
+			SetMaxVelocityY( 50.0f );
 			m_pCamera = OnChangeCamera( pd3dDevice, THIRD_PERSON_CAMERA, nCurrentCameraMode );
 			m_pCamera->SetTimeLag( 0.25f );
 			m_pCamera->SetOffset( XMFLOAT3( 0.0f, 200.0f, 400.0f ) );
@@ -327,7 +330,7 @@ void CPlayer::ChangeCamera( ID3D11Device *pd3dDevice, DWORD nNewCameraMode, floa
 		default:
 			break;
 	}
-	Update( fTimeElapsed );
+	Update( fTimeElapsed, XMFLOAT3(0,0,0) );
 }
 
 /*플레이어의 위치와 회전축으로부터 월드 변환 행렬을 생성하는 함수

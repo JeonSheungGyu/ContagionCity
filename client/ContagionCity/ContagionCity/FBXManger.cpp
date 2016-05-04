@@ -200,12 +200,6 @@ void FBXManager::LoadInfluenceWeight( FbxMesh *pMesh, std::vector<CFbxVertex> *p
 			// 해당 본에 영향을 받는 모든 정점을 하나씩 가져옴	
 			int numBoneVertexIndices = cluster->GetControlPointIndicesCount( );		
 
-			//std::vector<int> boneIndices;
-			//for (int i = 0; i < numBoneVertexIndices; i++)
-			//{
-			//	boneIndices.push_back( boneVertexIndices[i]);
-			//}
-
 			for (int boneVertexIndex = 0; boneVertexIndex < numBoneVertexIndices; boneVertexIndex++)
 			{
 				float tempBoneWeight = (float)boneVertexWeights[boneVertexIndex];	// 영향을 받는 정점의 가중치 정도

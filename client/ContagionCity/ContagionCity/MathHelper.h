@@ -11,6 +11,7 @@ public:
 	static MathHelper *GetInstance( ) { if (Instance == NULL) Instance = new MathHelper; return Instance; }
 	~MathHelper( );
 
+	float DistanceVector3ToVector3( XMFLOAT3 v1, XMFLOAT3 v2 );
 	float Vector3ToLength( XMVECTOR vec );
 	float Vector3ToDot( XMVECTOR v1, XMVECTOR v2 );
 	float Float3ToLength( XMFLOAT3 vec );
@@ -32,7 +33,9 @@ public:
 	XMFLOAT4 MakeFloat4( XMFLOAT3 vec, float w );
 	XMFLOAT4 MakeFloat4( float x, float y, float z, float w );
 
+	// 행렬 변환
 	XMFLOAT3 Vector3TransformNormal( XMFLOAT3 vec, XMFLOAT4X4 mtx );
+	// 점 변환
 	XMFLOAT3 Vector3TransformCoord( XMFLOAT3 vec, XMFLOAT4X4 mtx );
 	
 	XMFLOAT4X4 MatrixRotationAxis( XMFLOAT3 vec, float Angle );

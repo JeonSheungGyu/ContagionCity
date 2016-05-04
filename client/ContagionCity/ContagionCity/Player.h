@@ -79,7 +79,7 @@ public:
 	void Rotate( float x, float y, float z );
 
 	// 플레이어의 위치와 회전 정보를 경과 시간에 따라 갱신하는 함수
-	void Update( float fTimeElapsed );
+	void Update( float fTimeElapsed, XMFLOAT3 DestPos );
 	
 	// 플레이어의 애니메이션
 	virtual void Animate( float fTimeElapsed );

@@ -6,7 +6,7 @@ using namespace FMOD;
 #define MAX_SOUND_COUNT 40
 
 enum {
-	BGM,
+	BGM, ATTACK,
 };
 
 class SoundManager
@@ -27,6 +27,7 @@ public:
 
 	void Init( );
 	void Loading( );
+	void Loading( const char* pFileName, FMOD_MODE mode, int SoundType );
 	void Play( int _type );
 	void Stop( int _type );
 	void ErrorCheck( FMOD_RESULT _r );

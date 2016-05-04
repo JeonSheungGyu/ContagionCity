@@ -23,6 +23,9 @@ void CScene::CreateShaderVariables( ID3D11Device *pd3dDevice )
 	::ZeroMemory( m_pLights, sizeof( LIGHTS ) );
 	// 월드 전체를 비추는 주변 조명을 설정
 	m_pLights->m_cGlobalAmbient = D3DXCOLOR( 0.1f, 0.1f, 0.1f, 1.0f );
+	m_pLights->m_FogColor = D3DXCOLOR( 0.7f, 0.7f, 0.7f, 1.0f );
+	m_pLights->m_FogStart = 100.0;
+	m_pLights->m_FogRange = 200.0;
 
 	// 태양
 	m_pLights->m_pLights[0].m_bEnable = true;
@@ -52,6 +55,8 @@ void CScene::ReleaseShaderVariables( )
 
 void CScene::UpdateShaderVariable( ID3D11DeviceContext *pd3dDeviceContext, LIGHTS *pLights )
 {
+	XMFLOAT3 temp = m_pCamera->GetPosition( );
+	pLights->m_vCameraPosition = MathHelper::GetInstance( )->MakeFloat4( temp.x, temp.y, temp.z, 0.0f );
 	D3D11_MAPPED_SUBRESOURCE d3dMappedResource;
 	pd3dDeviceContext->Map( m_pd3dcbLights, 0, D3D11_MAP_WRITE_DISCARD, 0, &d3dMappedResource );
 	LIGHTS *pcbLights = (LIGHTS *)d3dMappedResource.pData;
