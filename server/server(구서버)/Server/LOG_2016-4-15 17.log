@@ -1,0 +1,50 @@
+[2016-4-15 17:25:18] # New client connected : 0x1d18f040(0x2cc)
+
+[2016-4-15 17:25:18] # Read packet : PT_CHANNEL_ENTER ssyauu159/127.0.0.1/1820
+
+[2016-4-15 17:25:18] # Write packet : PT_CHANNEL_ENTER_SUCC_U 0x1d18f040/127.0.0.1/1820/127.0.0.1/49252
+
+[2016-4-15 17:25:29] # Read packet : PT_ROOM_QUICK_JOIN
+
+[2016-4-15 17:25:29] # Write packet : PT_ROOM_QUICK_JOIN_SUCC_U
+
+[2016-4-15 17:25:29] # WriteAll packet : PT_ROOM_ENTER_M 0/ssyauu159/0x1d18f040/127.0.0.1/1820/127.0.0.1/49252
+
+[2016-4-15 17:25:33] # Write packet : PT_CHANNEL_ENTER_FAIL_U 2
+
+[2016-4-15 17:25:43] # Write packet : PT_ROOM_QUICK_JOIN_FAIL_U 2
+
+[2016-4-15 17:25:44] # Write packet : PT_CHANNEL_ENTER_FAIL_U 2
+
+[2016-4-15 17:25:48] # Write packet : PT_ROOM_QUICK_JOIN_FAIL_U 2
+
+[2016-4-15 17:25:48] # Write packet : PT_CHANNEL_ENTER_FAIL_U 2
+
+[2016-4-15 17:25:52] # Write packet : PT_ROOM_QUICK_JOIN_FAIL_U 2
+
+[2016-4-15 17:25:53] # Write packet : PT_CHANNEL_ENTER_FAIL_U 2
+
+[2016-4-15 17:26:9] # WriteAll packet : PT_ROOM_LEAVE_M 0x1d18f040/0x0
+
+[2016-4-15 17:26:9] # Client disconnected : 0x1d18f040(0x2cc)
+
+[2016-4-15 17:26:34] # New client connected : 0x1d825040(0x2e0)
+
+[2016-4-15 17:26:34] # Read packet : PT_CHANNEL_ENTER ssyauu159/127.0.0.1/1820
+
+[2016-4-15 17:26:34] # Write packet : PT_CHANNEL_ENTER_SUCC_U 0x1d825040/127.0.0.1/1820/127.0.0.1/49269
+
+[2016-4-15 17:26:44] # Read packet : PT_ROOM_QUICK_JOIN
+
+[2016-4-15 17:26:44] # Write packet : PT_ROOM_QUICK_JOIN_SUCC_U
+
+[2016-4-15 17:26:44] # WriteAll packet : PT_ROOM_ENTER_M 0/ssyauu159/0x1d825040/127.0.0.1/1820/127.0.0.1/49269
+
+[2016-4-15 17:28:10] # Write packet : PT_CHANNEL_ENTER_FAIL_U 2
+
+[2016-4-15 17:28:13] # Write packet : PT_ROOM_QUICK_JOIN_FAIL_U 2
+
+[2016-4-15 17:28:16] # WriteAll packet : PT_ROOM_LEAVE_M 0x1d825040/0x0
+
+[2016-4-15 17:28:16] # Client disconnected : 0x1d825040(0x2e0)
+
