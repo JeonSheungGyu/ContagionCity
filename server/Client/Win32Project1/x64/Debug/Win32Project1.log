@@ -1,0 +1,4 @@
+﻿  Client.cpp
+c:\users\sheunggyu\desktop\contagioncity\server\client\win32project1\client.cpp(26): warning C4838: 'int'에서 'COLORREF'(으)로의 변환에는 축소 변환이 필요합니다.
+c:\users\sheunggyu\desktop\contagioncity\server\client\win32project1\client.cpp(308): warning C4101: 'lpClientData' :참조되지 않은 지역 변수입니다.
+  Win32Project1.vcxproj -> C:\Users\Sheunggyu\Desktop\ContagionCity\server\Client\x64\Debug\Win32Project1.exe

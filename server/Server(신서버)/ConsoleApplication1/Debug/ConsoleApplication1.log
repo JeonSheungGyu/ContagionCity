@@ -1,0 +1,14 @@
+﻿C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.CppBuild.targets(392,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (ConsoleApplication1.vcxproj, GameServer.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  PacketMaker.cpp
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\sector.h(17): warning C4227: 오래된 구문을 사용했습니다. 참조의 한정자가 무시됩니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\packetmaker.cpp(51): warning C4244: '=': 'DWORD'에서 'WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\packetmaker.cpp(54): warning C4244: '=': 'const float'에서 'DWORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\packetmaker.cpp(55): warning C4244: '=': 'const float'에서 'DWORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\packetmaker.cpp(56): warning C4244: '=': 'const float'에서 'DWORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\packetmaker.cpp(40): warning C4101: 'packet' :참조되지 않은 지역 변수입니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\packetmaker.cpp(80): warning C4244: '=': 'DWORD'에서 'WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\packetmaker.cpp(107): warning C4244: '=': 'DWORD'에서 'WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\packetmaker.cpp(110): warning C4244: '=': 'const float'에서 'DWORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\packetmaker.cpp(111): warning C4244: '=': 'const float'에서 'DWORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\packetmaker.cpp(112): warning C4244: '=': 'const float'에서 'DWORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  ConsoleApplication1.vcxproj -> C:\Users\Sheunggyu\Desktop\ContagionCity\server\Server(신서버)\Debug\ConsoleApplication.exe
