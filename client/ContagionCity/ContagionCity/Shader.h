@@ -115,6 +115,12 @@ public:
 	CEnemyShader( );
 	virtual ~CEnemyShader( );
 
+	UINT m_nInstanceBufferStride;
+	UINT m_nInstanceBufferOffset;
+	ID3D11Buffer *m_pd3dInstanceBuffer;
+
+	virtual void CreateShader( ID3D11Device *pd3dDevice );
+	ID3D11Buffer *CreateInstanceBuffer( ID3D11Device *pd3dDevice, int nObjects, UINT nBufferStride, void *pBufferData );
 	virtual void BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbxMesh> meshes );
 	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera = NULL );
 };

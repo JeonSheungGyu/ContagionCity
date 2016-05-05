@@ -219,8 +219,6 @@ public:
 
 class AnimatedObjectInfo : public ObjectInfo
 {
-protected:
-	float m_fTimes;
 public:
 	virtual void OnPrepareRender( );
 	AnimatedObjectInfo( CFbxMesh vertex, int nMeshes = 1);

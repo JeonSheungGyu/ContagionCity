@@ -219,57 +219,107 @@ CEnemyShader::~CEnemyShader( )
 {
 }
 
+void CEnemyShader::CreateShader( ID3D11Device *pd3dDevice )
+{
+	D3D11_INPUT_ELEMENT_DESC d3dInputElements[ ] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },		// 범프매핑 하면 이거 필요없음
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 2, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 3, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "WEIGHTS", 0, DXGI_FORMAT_R32G32B32_FLOAT, 4, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "BONEINDICES", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 5, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+//		{ "INSTANCEPOS", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 6, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+//		{ "INSTANCEPOS", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 6, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+//		{ "INSTANCEPOS", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 6, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+//		{ "INSTANCEPOS", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 6, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
+	};
+	UINT nElements = ARRAYSIZE( d3dInputElements );
+	CreateVertexShaderFromFile( pd3dDevice, L"Effect.fx", "SkinnedVS", "vs_5_0", &m_pd3dVertexShader, d3dInputElements, nElements, &m_pd3dVertexLayout );
+	CreatePixelShaderFromFile( pd3dDevice, L"Effect.fx", "SkinnedPS", "ps_5_0", &m_pd3dPixelShader );
+
+	CreateShaderVariables( pd3dDevice );
+}
+
+ID3D11Buffer *CEnemyShader::CreateInstanceBuffer( ID3D11Device *pd3dDevice, int nObjects, UINT nBufferStride, void *pBufferData )
+{
+	ID3D11Buffer *pd3dInstanceBuffer = NULL;
+	D3D11_BUFFER_DESC d3dBufferDesc;	
+	ZeroMemory( &d3dBufferDesc, sizeof( D3D11_BUFFER_DESC ) );
+	/*버퍼의 초기화 데이터가 없으면 동적 버퍼로 생성한다. 즉, 나중에 매핑을 하여 내용을 채우거나 변경한다.*/
+	d3dBufferDesc.Usage = ( pBufferData ) ? D3D11_USAGE_DEFAULT : D3D11_USAGE_DYNAMIC;
+	d3dBufferDesc.ByteWidth = nBufferStride * nObjects;
+	d3dBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	d3dBufferDesc.CPUAccessFlags = ( pBufferData ) ? 0 : D3D11_CPU_ACCESS_WRITE;
+	D3D11_SUBRESOURCE_DATA d3dBufferData;
+	ZeroMemory( &d3dBufferData, sizeof( D3D11_SUBRESOURCE_DATA ) );
+	d3dBufferData.pSysMem = pBufferData;
+	pd3dDevice->CreateBuffer( &d3dBufferDesc, ( pBufferData ) ? &d3dBufferData : NULL, &pd3dInstanceBuffer );
+	return( pd3dInstanceBuffer );
+}
+
 void CEnemyShader::BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbxMesh> meshes )
 {
-	//m_nObjects = meshes.size( );
-	//m_ppObjects = new CGameObject*[m_nObjects];
-
-	//for (int i = 0; i < m_nObjects; i++)
-	//{
-	//	// 텍스처개수
-	//	int textureCnt = meshes[i].m_pTextures.size( );
-	//	// 몬스터 오브젝트 생성
-	//	AnimatedObjectInfo* pEnemy = new AnimatedObjectInfo( meshes[i] );
-	//	// 몬스터 메시 생성
-	//	CAnimatedMesh* pEnemyMesh = new CAnimatedMesh( pd3dDevice, meshes[i], textureCnt );
-	//	// 텍스처 등 값 세팅
-	//	for (int j = 0; j < textureCnt; j++)
-	//		pEnemyMesh->OnChangeTexture( pd3dDevice, meshes[i].m_pTextures[j], j );
-	//	// 오브젝트에 메시 세팅
-	//	pEnemy->SetMesh( pEnemyMesh );
-	//	pEnemy->CreateShaderVariables( pd3dDevice );
-	//	// 몬스터 오브젝트를 셰이더에 저장
-	//	m_ppObjects[i] = pEnemy;
-	//}
-
-
 	m_nObjects = 30;
 	m_ppObjects = new CGameObject*[m_nObjects];
 
+	m_nInstanceBufferStride = sizeof( XMFLOAT4X4 );
+	m_nInstanceBufferOffset = 0;
+
+	// 텍스처개수
+	int textureCnt = meshes[0].m_pTextures.size( );
+	
+	// 몬스터 메시 생성
+	CAnimatedMesh* pEnemyMesh = new CAnimatedMesh( pd3dDevice, meshes[0], textureCnt );
+
 	for (int i = 0; i < m_nObjects; i++)
 	{
-		// 텍스처개수
-		int textureCnt = meshes[0].m_pTextures.size( );
 		// 몬스터 오브젝트 생성
 		AnimatedObjectInfo* pEnemy = new AnimatedObjectInfo( meshes[0] );
-		// 몬스터 메시 생성
-		CAnimatedMesh* pEnemyMesh = new CAnimatedMesh( pd3dDevice, meshes[0], textureCnt );
 		// 텍스처 등 값 세팅
 		pEnemyMesh->FindMinMax( );
 		for (int j = 0; j < textureCnt; j++)
 			pEnemyMesh->OnChangeTexture( pd3dDevice, meshes[0].m_pTextures[j], j );
+		CMaterial *pGroundMaterial = new CMaterial;
+		pEnemy->SetMaterial( pGroundMaterial );
+
 		// 오브젝트에 메시 세팅
 		pEnemy->SetMesh( pEnemyMesh );
 		pEnemy->CreateShaderVariables( pd3dDevice );
-		pEnemy->SetPosition( XMFLOAT3(rand( ) % 1000, 0.0f, rand( ) % 1000 ));
+		pEnemy->SetPosition( XMFLOAT3(rand( ) % 1000, 0.0f, rand( ) % 1000 ));	
+
 		// 몬스터 오브젝트를 셰이더에 저장
 		m_ppObjects[i] = pEnemy;
 	}
+
+//	m_pd3dInstanceBuffer = CreateInstanceBuffer( pd3dDevice, m_nObjects, m_nInstanceBufferStride, NULL );
+//	pEnemyMesh->AssembleToVertexBuffer( 1, &m_pd3dInstanceBuffer, &m_nInstanceBufferStride, &m_nInstanceBufferOffset );
 }
 
 void CEnemyShader::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera )
 {
 	CShader::Render( pd3dDeviceContext, pCamera );
+	//D3D11_MAPPED_SUBRESOURCE d3dMappedResource;
+
+	//int nEnemyInstances = 0;
+	//pd3dDeviceContext->Map( m_pd3dInstanceBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &d3dMappedResource );
+	//VS_VB_INSTANCE *pEnemyInstances = (VS_VB_INSTANCE *)d3dMappedResource.pData;
+
+	//for (int i = 0; i < m_nObjects; i++)
+	//{
+	//	if (m_ppObjects[i])
+	//	{
+	//		if (m_ppObjects[i]->IsVisible( pCamera ))
+	//		{
+	//			UpdateShaderVariable( pd3dDeviceContext, ( (AnimatedObjectInfo*)m_ppObjects[i] )->m_pmtxFinalTransforms );
+	//			pEnemyInstances[nEnemyInstances++].m_mtxTransform = MathHelper::GetInstance( )->TransposeFloat4x4( m_ppObjects[i]->m_mtxWorld );
+	//		}
+	//	}
+	//}
+	//pd3dDeviceContext->Unmap( m_pd3dInstanceBuffer, 0 );
+
+	//CMesh *pEnemyMesh = m_ppObjects[m_nObjects - 1]->GetMesh( );
+	//pEnemyMesh->RenderInstanced( pd3dDeviceContext, nEnemyInstances, 0 );
 }
 
 ///////////////////////플레이어를 그리기 위한 셰이더 클래스

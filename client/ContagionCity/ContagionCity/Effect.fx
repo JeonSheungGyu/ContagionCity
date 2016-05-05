@@ -258,3 +258,75 @@ float4 SkinnedPS( SkinnedVertexOut input ) : SV_Target
 
 		return( cColor );
 }
+
+struct SkinnedVertexInstanceIn
+{
+	float3 positionL : POSITION;
+	float3 normalL : NORMAL;
+	float2 texCoord : TEXCOORD0;
+	float4 tangentL : TANGENT;
+	float3 weights : WEIGHTS;
+	float4 boneIndices : BONEINDICES;
+	float4x4 mtxTransform : INSTANCEPOS;		// 현재 이 값이 제대로 안들어옴
+};
+
+struct SkinnedVertexInstanceOut
+{
+	float4 positionH  : SV_POSITION;
+	float3 positionW : POSITION;
+	float3 normalW : NORMAL;
+	float2 texCoord : TEXCOORD0;
+	float3 tangentW : TANGENT;
+};
+
+SkinnedVertexInstanceOut SkinnedInstanceVS( SkinnedVertexInstanceIn vin )
+{
+	SkinnedVertexOut vout;
+
+	float weights[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	weights[0] = vin.weights.x;
+	weights[1] = vin.weights.y;
+	weights[2] = vin.weights.z;
+	weights[3] = 1.0f - weights[0] - weights[1] - weights[2];
+
+	float3 posL = float3( 0.0f, 0.0f, 0.0f );
+		float3 normalL = float3( 0.0f, 0.0f, 0.0f );
+		float3 tangentL = float3( 0.0f, 0.0f, 0.0f );
+
+		if (weights[0] == 0)
+			posL = vin.positionL;
+		else{
+			for (int i = 0; i < 4; ++i)
+			{
+				posL += weights[i] * mul( float4( vin.positionL, 1.0f ), gBoneTransforms[vin.boneIndices[i]] ).xyz;
+				normalL += weights[i] * mul( vin.normalL, ( float3x3 )gBoneTransforms[vin.boneIndices[i]] );
+				tangentL += weights[i] * mul( vin.tangentL.xyz, ( float3x3 )gBoneTransforms[vin.boneIndices[i]] );
+			}
+		}
+		vout.positionW = mul( float4( posL, 1.0f ), vin.mtxTransform ).xyz;
+		vout.tangentW = float4( mul( tangentL, ( float3x3 )vin.mtxTransform ), vin.tangentL.w );
+		vout.positionH = mul( float4( posL, 1.0f ), vin.mtxTransform );
+		vout.positionH = mul( vout.positionH, gmtxView );
+		vout.positionH = mul( vout.positionH, gmtxProjection );
+
+		vout.texCoord = vin.texCoord;
+
+		return vout;
+}
+
+float4 SkinnedInstancePS( SkinnedVertexOut input ) : SV_Target
+{
+	float3 N = normalize( input.normalW );
+	float3 T = normalize( input.tangentW - dot( input.tangentW, N ) * N );
+	float3 B = cross( N, T );
+	float3x3 TBN = float3x3( T, B, N );
+
+	float3 normal = gtxtNormalTexture.Sample( gSamplerState, input.texCoord ).rgb;
+	normal = 2.0f * normal - 1.0f;
+	float3 normalW = mul( normal, TBN );
+
+		float4 cIllumination = Lighting( input.positionW, normalW );
+		float4 cColor = gtxtTexture.Sample( gSamplerState, input.texCoord ) * cIllumination;
+
+		return( cColor );
+}

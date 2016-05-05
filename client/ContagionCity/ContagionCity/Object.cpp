@@ -426,8 +426,6 @@ void AnimatedObjectInfo::Animate( float fTimeElapsed )
 
 AnimatedObjectInfo::AnimatedObjectInfo( CFbxMesh vertex, int nMeshes ) : ObjectInfo( vertex, nMeshes )
 {
-	float m_fTimes = 0;
-
 	m_fTimePos = 0.0f;
 	m_iAnimState = static_cast<int>( AnimationState::ANIM_IDLE );
 

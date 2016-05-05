@@ -222,6 +222,7 @@ CMesh::CMesh( )
 	m_bcBoundingCube.m_vMax = XMFLOAT3( -FLT_MAX, -FLT_MAX, -FLT_MAX );
 
 	m_nReferences = 0;
+	m_nBaseVertex = 0;
 }
 
 CMesh::CMesh( ID3D11Device *pd3dDevice )
@@ -249,6 +250,7 @@ CMesh::CMesh( ID3D11Device *pd3dDevice )
 	m_bcBoundingCube.m_vMax = XMFLOAT3( -FLT_MAX, -FLT_MAX, -FLT_MAX );
 
 	m_nReferences = 0;
+	m_nBaseVertex = 0;
 }
 
 
