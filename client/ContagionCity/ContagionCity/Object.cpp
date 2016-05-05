@@ -35,9 +35,6 @@ CGameObject::CGameObject( int nMeshes )
 
 	m_fRotationSpeed = 0.0f;
 	m_fMovingSpeed = 0.0f;
-
-	m_fTimePos = 0.0f;
-	m_iAnimState = static_cast<int>(AnimationState::ANIM_IDLE);
 }
 
 CGameObject::~CGameObject( )
@@ -67,13 +64,13 @@ bool CGameObject::IsVisible( CCamera *pCamera )
 {
 	OnPrepareRender( );
 
-	bool bIsVisible = false;
+	m_bVisible = false;
 
 	AABB bcBoundingCube = m_bcMeshBoundingCube;
 	bcBoundingCube.Update( &m_mtxWorld );
-	if (pCamera) bIsVisible = pCamera->IsInFrustum( &bcBoundingCube );
+	if (pCamera) m_bVisible = pCamera->IsInFrustum( &bcBoundingCube );
 
-	return bIsVisible;
+	return m_bVisible;
 }
 
 void CGameObject::SetMaterial( CMaterial *pMaterial )
@@ -369,7 +366,7 @@ void CSkyBox::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera )
 }
 
 
-ObjectInfo::ObjectInfo( ID3D11Device *pd3dDevice, CFbxMesh vertex ) : CGameObject( 1 )
+ObjectInfo::ObjectInfo( CFbxMesh vertex, int nMeshes ) : CGameObject( nMeshes )
 {
 	this->m_iLayer = vertex.m_iLayer;
 	this->m_iType = vertex.m_iType;
@@ -417,26 +414,29 @@ void ObjectInfo::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamer
 		m_ppMeshes[0]->Render( pd3dDeviceContext );
 }
 
-void ObjectInfo::Animate( float fTimeElapsed )
+void AnimatedObjectInfo::Animate( float fTimeElapsed )
 {
+	m_fTimePos += fTimeElapsed;
+	if (m_bVisible)
+		( (CAnimatedMesh *)GetMesh( ) )->GetSkinnedData( ).GetFinalTransforms( m_iAnimState, m_fTimePos, m_pmtxFinalTransforms );
 
+	if (m_fTimePos > ( (CAnimatedMesh *)GetMesh( ) )->GetSkinnedData( ).GetClipEndTime( m_iAnimState ))
+		m_fTimePos = 0.0f;
 }
 
-AnimatedObjectInfo::AnimatedObjectInfo( ID3D11Device *pd3dDevice, CFbxMesh vertex ) : ObjectInfo( pd3dDevice, vertex )
+AnimatedObjectInfo::AnimatedObjectInfo( CFbxMesh vertex, int nMeshes ) : ObjectInfo( vertex, nMeshes )
 {
 	float m_fTimes = 0;
+
+	m_fTimePos = 0.0f;
+	m_iAnimState = static_cast<int>( AnimationState::ANIM_IDLE );
+
+	m_pmtxFinalTransforms = vertex.m_skinnedData.mBoneOffsets;
 }
 
 AnimatedObjectInfo::~AnimatedObjectInfo( )
 {
 	
-}
-
-void AnimatedObjectInfo::Animate( float fTimeElapsed )
-{
-	m_fTimes += fTimeElapsed;
-
-	// 애니메이션 하는 코드
 }
 
 void AnimatedObjectInfo::OnPrepareRender( )
@@ -447,6 +447,20 @@ void AnimatedObjectInfo::OnPrepareRender( )
 	m_mtxWorld._41 = m_vPosition.x;
 	m_mtxWorld._42 = m_vPosition.y;
 	m_mtxWorld._43 = m_vPosition.z;
+}
 
-	m_mtxWorld = MathHelper::GetInstance( )->Float4x4MulFloat4x4( m_mtxWorld, XMFLOAT4X4( 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1 ) );
+void AnimatedObjectInfo::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera )
+{
+	CShader::UpdateShaderVariable( pd3dDeviceContext, &m_mtxWorld );
+	if (m_pMaterial)
+		CIlluminatedShader::UpdateShaderVariable( pd3dDeviceContext, &m_pMaterial->m_Material );
+	CAnimatedObjShader::UpdateShaderVariable( pd3dDeviceContext, m_pmtxFinalTransforms );
+
+	if (m_ppMeshes && m_ppMeshes[0])
+		m_ppMeshes[0]->Render( pd3dDeviceContext );
+}
+
+void AnimatedObjectInfo::CreateShaderVariables( ID3D11Device *pd3dDevice )
+{
+	m_pmtxFinalTransforms = ( (CAnimatedMesh*)GetMesh( ) )->GetSkinnedData( ).mBoneOffsets;
 }

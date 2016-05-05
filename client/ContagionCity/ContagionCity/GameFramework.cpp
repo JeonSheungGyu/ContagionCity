@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "GameFramework.h"
+#include "Stage1Scene.h"
 
 CGameFramework::CGameFramework( )
 {
@@ -224,7 +225,7 @@ void CGameFramework::BuildObjects( )
 	CShader::CreateShaderVariables( m_pd3dDevice );
 	CIlluminatedShader::CreateShaderVariables( m_pd3dDevice );
 
-	m_pScene = new CScene( );
+	m_pScene = new CStage1Scene( );
 	m_pScene->BuildObjects( m_pd3dDevice );
 
 	MakePlayer( m_pd3dDevice );
@@ -263,10 +264,8 @@ void CGameFramework::ReleaseObjects( )
 
 void CGameFramework::ProcessInput( )
 {
-	bool bProcessdByScene = false;
-	if (m_pScene) bProcessdByScene = m_pScene->ProcessInput( m_hWnd, m_GameTimer );
-
-	
+	if (m_pScene)
+		m_pScene->ProcessInput( m_hWnd, m_GameTimer );
 }
 
 void CGameFramework::AnimateObjects( )

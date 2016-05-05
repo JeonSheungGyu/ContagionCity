@@ -82,25 +82,41 @@ public:
 	virtual void BuildObjects( ID3D11Device *pd3dDevice );
 };
 
+class CAnimatedObjShader : public CTexturedShader
+{
+public:
+	CAnimatedObjShader( );
+	virtual ~CAnimatedObjShader( );
+
+	virtual void CreateShader( ID3D11Device *pd3dDevice );
+	virtual void CreateShaderVariables( ID3D11Device *pd3dDevice );
+	static void UpdateShaderVariable( ID3D11DeviceContext *pd3dDeviceContext, std::vector<XMFLOAT4X4> pmtxWorld );
+
+	static ID3D11Buffer *m_pd3dcbOffsetMatrix;
+};
 // 플레이어를 렌더링하기 위한 세이더 클래스
-class CPlayerShader : public CTexturedShader
+class CPlayerShader : public CAnimatedObjShader
 {
 public:
 	CPlayerShader( );
 	virtual ~CPlayerShader( );
 
-	virtual void CreateShader( ID3D11Device *pd3dDevice );
-	virtual void CreateShaderVariables( ID3D11Device *pd3dDevice );
-	virtual void UpdateShaderVariable( ID3D11DeviceContext *pd3dDeviceContext, std::vector<XMFLOAT4X4> pmtxWorld );
 	virtual void BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbxMesh> meshes );
 	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera = NULL );
-	void CPlayerShader::AnimateObjects( float fTimeElapsed );
 
 	bool CollisionCheck( CGameObject* pObject );
 
 	CPlayer* GetPlayer( int nIndex = 0 ){ return (CPlayer*)m_ppObjects[nIndex]; }
+};
 
-	static ID3D11Buffer *m_pd3dcbOffsetMatrix;
+class CEnemyShader : public CAnimatedObjShader
+{
+public:
+	CEnemyShader( );
+	virtual ~CEnemyShader( );
+
+	virtual void BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbxMesh> meshes );
+	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera = NULL );
 };
 
 // 플레이어의 bone을 렌더링 하기 위한 셰이더클래스

@@ -82,13 +82,13 @@ public:
 
 private:
 	int m_nReferences;
+	
 
 public:
 	// 오브젝트의 타입 설정, 무엇인지 알 수 있어야한다.
 	int m_iType;
 	int m_iLayer;
-	// 현재 애니메이션 상태
-	int m_iAnimState;
+	bool m_bVisible;
 
 	// 게임 객체는 하나의 재질을 가질 수 있다.
 	CMaterial *m_pMaterial;
@@ -104,10 +104,6 @@ public:
 	XMFLOAT3 m_vMin, m_vMax;
 	XMFLOAT3 m_vVertices[8];
 
-	// 애니메이션을 위한 시간저장 변수
-	float m_fTimePos;
-	// 애니메이션을 위한 매트릭스들
-	std::vector<XMFLOAT4X4> m_pmtxFinalTransforms;
 	virtual void Animate( float fTimeElapsed );
 
 	XMFLOAT3 m_vMovingDirection;
@@ -200,10 +196,8 @@ protected:
 	float m_fYaw;
 	float m_fRoll;
 
-	virtual void Animate( float fTimeElapsed );
-
 public:
-	ObjectInfo( ID3D11Device *pd3dDevice, CFbxMesh vertex );
+	ObjectInfo( CFbxMesh vertex, int nMeshes = 1 );
 	virtual ~ObjectInfo( );
 
 	virtual void OnPrepareRender( );
@@ -229,8 +223,16 @@ protected:
 	float m_fTimes;
 public:
 	virtual void OnPrepareRender( );
-	AnimatedObjectInfo( ID3D11Device *pd3dDevice, CFbxMesh vertex );
+	AnimatedObjectInfo( CFbxMesh vertex, int nMeshes = 1);
 	virtual ~AnimatedObjectInfo( );
-
+	void Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera );
+	void CreateShaderVariables( ID3D11Device *pd3dDevice );
 	virtual void Animate( float fTimeElapsed );
+
+	// 현재 애니메이션 상태
+	int m_iAnimState;
+	// 애니메이션을 위한 시간저장 변수
+	float m_fTimePos;
+	// 애니메이션을 위한 매트릭스들
+	std::vector<XMFLOAT4X4> m_pmtxFinalTransforms;
 };

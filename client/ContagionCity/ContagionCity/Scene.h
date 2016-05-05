@@ -65,19 +65,19 @@ public:
 	CScene( );
 	~CScene( );
 
-	void CreateShaderVariables( ID3D11Device *pd3dDevice );
-	void UpdateShaderVariable( ID3D11DeviceContext *pd3dDeviceContext, LIGHTS *pLights );
-	void ReleaseShaderVariables( );
+	virtual void CreateShaderVariables( ID3D11Device *pd3dDevice );
+	virtual void UpdateShaderVariable( ID3D11DeviceContext *pd3dDeviceContext, LIGHTS *pLights );
+	virtual void ReleaseShaderVariables( );
 
-	bool OnProcessingMouseMessage( HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam );
-	bool OnProcessingKeyboardMessage( HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam );
+	virtual bool OnProcessingMouseMessage( HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam );
+	virtual bool OnProcessingKeyboardMessage( HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam );
 
-	void BuildObjects( ID3D11Device *pd3dDevice );
-	void LoadFBXs( );
-	void ReleaseObjects( );
+	virtual void BuildObjects( ID3D11Device *pd3dDevice );
+	virtual void LoadFBXs( );
+	virtual void ReleaseObjects( );
 
-	bool ProcessInput( HWND hWnd, CGameTimer timer );
-	void AnimateObjects( float fTimeElapsed );
+	virtual bool ProcessInput( HWND hWnd, CGameTimer timer );
+	virtual void AnimateObjects( float fTimeElapsed );
 
 	void Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera );
 
@@ -92,7 +92,7 @@ public:
 	bool CollisionCheck( );
 	bool CollisionCheck( CGameObject *pObj1, CGameObject *pObj2 );
 	// 사운드 
-	bool LoadingSoundResource( );
+	virtual bool LoadingSoundResource( );
 
 	// 마우스 버튼 클릭할 때의 마우스 커서 위치
 	POINT m_ptOldCursorPos;

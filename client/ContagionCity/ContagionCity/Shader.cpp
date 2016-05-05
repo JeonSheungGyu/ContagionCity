@@ -158,14 +158,34 @@ void CShader::UpdateShaderVariable( ID3D11DeviceContext *pd3dDeviceContext, XMFL
 	pd3dDeviceContext->VSSetConstantBuffers( VS_SLOT_WORLD_MATRIX, 1, &m_pd3dcbWorldMatrix );
 }
 
-CPlayerShader::CPlayerShader( )
+// 애니메이션 할 일이 있는 셰이더를 위한 추상 클래스
+CAnimatedObjShader::CAnimatedObjShader( )
+{
+
+}
+CAnimatedObjShader::~CAnimatedObjShader( )
 {
 }
 
-CPlayerShader::~CPlayerShader( )
+void CAnimatedObjShader::CreateShader( ID3D11Device *pd3dDevice )
 {
+	D3D11_INPUT_ELEMENT_DESC d3dInputElements[ ] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },		// 범프매핑 하면 이거 필요없음
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 2, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 3, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "WEIGHTS", 0, DXGI_FORMAT_R32G32B32_FLOAT, 4, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "BONEINDICES", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 5, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	};
+	UINT nElements = ARRAYSIZE( d3dInputElements );
+	CreateVertexShaderFromFile( pd3dDevice, L"Effect.fx", "SkinnedVS", "vs_5_0", &m_pd3dVertexShader, d3dInputElements, nElements, &m_pd3dVertexLayout );
+	CreatePixelShaderFromFile( pd3dDevice, L"Effect.fx", "SkinnedPS", "ps_5_0", &m_pd3dPixelShader );
+
+	CreateShaderVariables( pd3dDevice );
 }
-void CPlayerShader::CreateShaderVariables( ID3D11Device *pd3dDevice )
+
+void CAnimatedObjShader::CreateShaderVariables( ID3D11Device *pd3dDevice )
 {
 	// 애니메이션 변환 행렬을 위한 상수 버퍼를 생성
 	D3D11_BUFFER_DESC bd;
@@ -176,8 +196,7 @@ void CPlayerShader::CreateShaderVariables( ID3D11Device *pd3dDevice )
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	pd3dDevice->CreateBuffer( &bd, NULL, &m_pd3dcbOffsetMatrix );
 }
-
-void CPlayerShader::UpdateShaderVariable( ID3D11DeviceContext *pd3dDeviceContext, std::vector<XMFLOAT4X4> pmtxWorld )
+void CAnimatedObjShader::UpdateShaderVariable( ID3D11DeviceContext *pd3dDeviceContext, std::vector<XMFLOAT4X4> pmtxWorld )
 {
 	// 월드 변환 행렬을 상수 버퍼에 복사
 	D3D11_MAPPED_SUBRESOURCE d3dMappedResource;
@@ -192,23 +211,74 @@ void CPlayerShader::UpdateShaderVariable( ID3D11DeviceContext *pd3dDeviceContext
 	pd3dDeviceContext->VSSetConstantBuffers( VS_SLOT_OFFSET_MATRIX, 1, &m_pd3dcbOffsetMatrix );
 }
 
-void CPlayerShader::CreateShader( ID3D11Device *pd3dDevice )
+///////////////////////////////// 적들을 그릴 클래스
+CEnemyShader::CEnemyShader( )
 {
-	D3D11_INPUT_ELEMENT_DESC d3dInputElements[ ] =
-	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },		// 범프매핑 하면 이거 필요없음
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 2, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 3, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "WEIGHTS", 0, DXGI_FORMAT_R32G32B32_FLOAT, 4, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "BONEINDICES", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 5, 0, D3D11_INPUT_PER_VERTEX_DATA,0 }
-	};
-	UINT nElements = ARRAYSIZE( d3dInputElements );
-	CreateVertexShaderFromFile( pd3dDevice, L"Effect.fx", "SkinnedVS", "vs_5_0", &m_pd3dVertexShader, d3dInputElements, nElements, &m_pd3dVertexLayout );
-	CreatePixelShaderFromFile( pd3dDevice, L"Effect.fx", "SkinnedPS", "ps_5_0", &m_pd3dPixelShader );
+}
+CEnemyShader::~CEnemyShader( )
+{
+}
 
-	CreateShaderVariables( pd3dDevice );
-//	CShader::CreateShader( pd3dDevice );
+void CEnemyShader::BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbxMesh> meshes )
+{
+	//m_nObjects = meshes.size( );
+	//m_ppObjects = new CGameObject*[m_nObjects];
+
+	//for (int i = 0; i < m_nObjects; i++)
+	//{
+	//	// 텍스처개수
+	//	int textureCnt = meshes[i].m_pTextures.size( );
+	//	// 몬스터 오브젝트 생성
+	//	AnimatedObjectInfo* pEnemy = new AnimatedObjectInfo( meshes[i] );
+	//	// 몬스터 메시 생성
+	//	CAnimatedMesh* pEnemyMesh = new CAnimatedMesh( pd3dDevice, meshes[i], textureCnt );
+	//	// 텍스처 등 값 세팅
+	//	for (int j = 0; j < textureCnt; j++)
+	//		pEnemyMesh->OnChangeTexture( pd3dDevice, meshes[i].m_pTextures[j], j );
+	//	// 오브젝트에 메시 세팅
+	//	pEnemy->SetMesh( pEnemyMesh );
+	//	pEnemy->CreateShaderVariables( pd3dDevice );
+	//	// 몬스터 오브젝트를 셰이더에 저장
+	//	m_ppObjects[i] = pEnemy;
+	//}
+
+
+	m_nObjects = 30;
+	m_ppObjects = new CGameObject*[m_nObjects];
+
+	for (int i = 0; i < m_nObjects; i++)
+	{
+		// 텍스처개수
+		int textureCnt = meshes[0].m_pTextures.size( );
+		// 몬스터 오브젝트 생성
+		AnimatedObjectInfo* pEnemy = new AnimatedObjectInfo( meshes[0] );
+		// 몬스터 메시 생성
+		CAnimatedMesh* pEnemyMesh = new CAnimatedMesh( pd3dDevice, meshes[0], textureCnt );
+		// 텍스처 등 값 세팅
+		pEnemyMesh->FindMinMax( );
+		for (int j = 0; j < textureCnt; j++)
+			pEnemyMesh->OnChangeTexture( pd3dDevice, meshes[0].m_pTextures[j], j );
+		// 오브젝트에 메시 세팅
+		pEnemy->SetMesh( pEnemyMesh );
+		pEnemy->CreateShaderVariables( pd3dDevice );
+		pEnemy->SetPosition( XMFLOAT3(rand( ) % 1000, 0.0f, rand( ) % 1000 ));
+		// 몬스터 오브젝트를 셰이더에 저장
+		m_ppObjects[i] = pEnemy;
+	}
+}
+
+void CEnemyShader::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera )
+{
+	CShader::Render( pd3dDeviceContext, pCamera );
+}
+
+///////////////////////플레이어를 그리기 위한 셰이더 클래스
+CPlayerShader::CPlayerShader( )
+{
+}
+
+CPlayerShader::~CPlayerShader( )
+{
 }
 
 void CPlayerShader::BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbxMesh> meshes )
@@ -216,12 +286,12 @@ void CPlayerShader::BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbxMesh
 	m_nObjects = meshes.size();
 	m_ppObjects = new CGameObject*[m_nObjects];
 
-	CPlayer *pPlayer = new CPlayer( );
+	CPlayer *pPlayer = new CPlayer( meshes[0]);
 
 	for (int i = 0; i < m_nObjects; i++)
 	{
 		int textureCount = meshes[i].m_pTextures.size( );
-		CAnimatedMesh *pPlayerMesh = new CAnimatedMesh( pd3dDevice, meshes[i], 1 );
+		CAnimatedMesh *pPlayerMesh = new CAnimatedMesh( pd3dDevice, meshes[i], textureCount );
 		pPlayerMesh->FindMinMax( );		// AABB 상자 값 세팅
 		for (int j = 0; j < textureCount; j++)
 			pPlayerMesh->OnChangeTexture( pd3dDevice, meshes[i].m_pTextures[j], j );
@@ -238,14 +308,6 @@ void CPlayerShader::BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbxMesh
 	m_ppObjects[0] = pPlayer;
 }
 
-void CPlayerShader::AnimateObjects( float fTimeElapsed )
-{
-	for (int i = 0; i < m_nObjects; i++)
-	{
-		m_ppObjects[i]->Animate( fTimeElapsed );
-	}
-}
-
 bool CPlayerShader::CollisionCheck( CGameObject* pObject )
 {
 	return false;
@@ -253,17 +315,17 @@ bool CPlayerShader::CollisionCheck( CGameObject* pObject )
 
 void CPlayerShader::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera )
 {
-	
 	// 3인칭 카메라일 때 플레이어를 렌더링
 	DWORD nCameraMode = ( pCamera ) ? pCamera->GetMode( ) : 0x00;
 
 	if (nCameraMode == THIRD_PERSON_CAMERA)
 	{
-		UpdateShaderVariable( pd3dDeviceContext, m_ppObjects[0]->m_pmtxFinalTransforms);
+		UpdateShaderVariable( pd3dDeviceContext, ((AnimatedObjectInfo*)m_ppObjects[0])->m_pmtxFinalTransforms);
 		CShader::Render( pd3dDeviceContext, pCamera );
 	}
 }
 
+/////////////////////////////// 플레이어의 뼈대를 그리는 클래스
 CPlayerBoneShader::CPlayerBoneShader( )
 {
 	m_TimePos = 0.0f;
@@ -323,6 +385,7 @@ void CPlayerBoneShader::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera 
 	}
 }
 
+// 배경에 관련된 것들을 그리는 클래스
 CBackgroundShader::CBackgroundShader( )
 {
 
@@ -358,7 +421,7 @@ void CBackgroundShader::BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbx
 			case BACK_GROUND:
 			{*/
 				int textureCount = vertex[i].m_pTextures.size( );
-				ObjectInfo *pGround = new ObjectInfo( pd3dDevice, vertex[i] );
+				ObjectInfo *pGround = new ObjectInfo( vertex[i] );
 				CObjectMesh *pGroundMesh = new CObjectMesh( pd3dDevice, vertex[i], textureCount );		// 노멀매핑을 위해 텍스처 2개 사용
 				pGroundMesh->FindMinMax( );		// AABB 값 세팅
 				for (int j = 0; j < textureCount; j++)
@@ -442,6 +505,7 @@ void CBackgroundShader::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera 
 	CShader::Render( pd3dDeviceContext, pCamera );
 }
 
+////////////////////////////////// 빛과관련된 클래스
 CIlluminatedShader::CIlluminatedShader( )
 {
 }
@@ -487,6 +551,7 @@ void CIlluminatedShader::UpdateShaderVariable( ID3D11DeviceContext *pd3dDeviceCo
 	pd3dDeviceContext->PSSetConstantBuffers( PS_SLOT_MATERIAL, 1, &m_pd3dcbMaterial );
 }
 
+/////////////////////////////////////////////// 텍스처매핑이 필요한 객체를 위한 클래스
 CTexturedShader::CTexturedShader( )
 {
 }
@@ -507,6 +572,7 @@ void CTexturedShader::CreateShader( ID3D11Device *pd3dDevice )
 	CreatePixelShaderFromFile( pd3dDevice, L"Effect.fx", "PSTexturedColor", "ps_5_0", &m_pd3dPixelShader );
 }
 
+////////////////////////////////스카이박스를 그릴 클래스
 CSkyBoxShader::CSkyBoxShader( )
 {
 }

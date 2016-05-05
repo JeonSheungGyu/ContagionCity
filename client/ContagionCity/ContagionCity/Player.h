@@ -3,7 +3,7 @@
 #include "Object.h"
 #include "Camera.h"
 
-class CPlayer : public CGameObject
+class CPlayer : public AnimatedObjectInfo
 {
 protected:
 	CCamera *m_pCamera;
@@ -37,7 +37,7 @@ protected:
 	LPVOID m_pCameraUpdatedContext;
 
 public:
-	CPlayer( int nMeshes = 1 );
+	CPlayer( CFbxMesh vertex, int nMeshes = 1 );
 	virtual ~CPlayer( );
 
 	// 플레이어의 현재 카메라를 설정하고 반환하는 멤버 함수

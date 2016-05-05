@@ -215,6 +215,7 @@ bool CScene::ProcessInput( HWND hWnd, CGameTimer timer )
 		if (pKeyBuffer['S'] & 0xF0) dwDirection |= DIR_BACKWARD;
 		if (pKeyBuffer['A'] & 0xF0) dwDirection |= DIR_LEFT;
 		if (pKeyBuffer['D'] & 0xF0) dwDirection |= DIR_RIGHT;
+		if (pKeyBuffer['1'] & 0xF0) m_pCamera->Move( XMFLOAT3( 0.0f, 10.f, 10.0f ));
 	}
 	float cxDelta = 0.0f, cyDelta = 0.0f;
 	POINT ptCursorPos;
@@ -237,8 +238,9 @@ bool CScene::ProcessInput( HWND hWnd, CGameTimer timer )
 			/*cxDelta는 y-축의 회전을 나타내고 cyDelta는 x-축의 회전을 나타낸다.
 			오른쪽 마우스 버튼이 눌려진 경우 cxDelta는 z-축의 회전을 나타낸다.*/
 			// 마우스 클릭시 공격 애니메이션이 행해지도록 해야함
-			if (pKeyBuffer[VK_RBUTTON] & 0xF0)
+			if (pKeyBuffer[VK_RBUTTON] & 0xF0){
 				m_pPlayer->Rotate( cyDelta, 0.0f, -cxDelta );
+			}
 			else
 				m_pPlayer->Rotate( cyDelta, cxDelta, 0.0f );
 
@@ -348,9 +350,12 @@ bool CScene::Picking( int x, int y )
 	if (IntersectionObject != NULL)
 	{
 		pPickedObject = IntersectionObject;
-		vPickPos = vNearPos;
-		// vNearPos는 오브젝트의 로컬좌표계이므로 이를 월드좌표계로 변환
-		vPickPos = MathHelper::GetInstance( )->Vector3TransformNormal( vPickPos, pPickedObject->m_mtxWorld );
+		if (pPickedObject->m_iType == BACK_GROUND)
+		{
+			vPickPos = vNearPos;
+			// vNearPos는 오브젝트의 로컬좌표계이므로 이를 월드좌표계로 변환
+			vPickPos = MathHelper::GetInstance( )->Vector3TransformNormal( vPickPos, pPickedObject->m_mtxWorld );
+		}
 	}
 	return bIntersection;
 }

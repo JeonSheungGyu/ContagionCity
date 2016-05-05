@@ -2,7 +2,7 @@
 #include "Player.h"
 
 
-CPlayer::CPlayer( int nMeshes ) : CGameObject( nMeshes )
+CPlayer::CPlayer( CFbxMesh vertex, int nMeshes ) : AnimatedObjectInfo( vertex, nMeshes )
 {
 	m_pCamera = NULL;
 
@@ -193,7 +193,7 @@ void CPlayer::Update( float fTimeElapsed, XMFLOAT3 DestPos  )
 	// 카메라라의 위치가 변경될 때 추가적으로 수행할 작업 수행
 	if (m_pCameraUpdatedContext) OnCameraUpdated( fTimeElapsed );
 	// 카메라가 3인칭 카메라이면 카메라가 변경된 플레이어를 바라보도록 한다.
-	if (nCurrentCameraMode == THIRD_PERSON_CAMERA) m_pCamera->SetLookAt( m_vPosition );
+//	if (nCurrentCameraMode == THIRD_PERSON_CAMERA) m_pCamera->SetLookAt( m_vPosition );
 	// 카메라의 카메라 변환행렬을 다시 생성
 	m_pCamera->RegenerateViewMatrix( );
 
@@ -356,7 +356,8 @@ void CPlayer::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera )
 void CPlayer::Animate( float fTimeElapsed )
 {
 	m_fTimePos += fTimeElapsed;
-	( (CAnimatedMesh *)GetMesh( ) )->GetSkinnedData( ).GetFinalTransforms( m_iAnimState, m_fTimePos, m_pmtxFinalTransforms );
+	if (m_bVisible)
+		( (CAnimatedMesh *)GetMesh( ) )->GetSkinnedData( ).GetFinalTransforms( m_iAnimState, m_fTimePos, m_pmtxFinalTransforms );
 
 	if (m_fTimePos > ( (CAnimatedMesh *)GetMesh( ) )->GetSkinnedData( ).GetClipEndTime( m_iAnimState ))
 		m_fTimePos = 0.0f;
