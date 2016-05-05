@@ -1,43 +1,36 @@
 #pragma once
-
-
 #include "Object.h"
 #include "MonsterViewList.h"
-
-#define UP 1
-#define DOWN 2
-#define LEFT 3
-#define RIGHT 4
+#include "TargetProcess.h"
+#include "StateHeader.h"
+#include "StateMachine.h"
+#include "User.h"
 
 class Monster : public Object//소켓정보를구조체화.
 {
 public:
-	MonsterViewList viewList;
-	Overlap_ex overlapped;
-
-	Monster(DWORD id, XMFLOAT3 pos) : viewList(this), Object(id, pos) {
+	//action
+	TargetProcess<User, Monster>			m_target;
+	StateMachine<Monster>*					m_pStateMachine;
 	
-	}
+	//viewlist
+	MonsterViewList							m_viewList;
+	Overlap_ex								m_overlapped;
+	bool									m_isAlive;
+	BYTE									m_currentAction, m_preAction;
 
-	void updateViewList() {
-		viewList.updateViewList(nearList);
-	}
-
-	void move() {
-		int dir = rand() % 4 + 1;
-		switch (dir)
-		{
-		case UP:    obVector.position.z -= RECTSIZE; break;
-		case DOWN:  obVector.position.z += RECTSIZE; break;
-		case LEFT:  obVector.position.x -= RECTSIZE; break;
-		case RIGHT:  obVector.position.x += RECTSIZE; break;
-		default: printf("Unknown type packet received!\n");
-			while (true);
-		}
-
-		if (obVector.position.z < 0)  obVector.position.z = 0;
-		if (obVector.position.z >= WORLDSIZE)  obVector.position.z = WORLDSIZE - RECTSIZE;
-		if (obVector.position.x < 0)  obVector.position.x = 0;
-		if (obVector.position.x >= WORLDSIZE)  obVector.position.x = WORLDSIZE - RECTSIZE;
-	}
+public:
+	//생성자
+	Monster(DWORD id, XMFLOAT3 pos);
+	// StateMachine accessor
+	StateMachine<Monster>*					GetFSM()const { return m_pStateMachine; }
+	// Target Process
+	TargetProcess<User, Monster>&			getTargetProcess() { return m_target; }
+	// action accessor
+	void									setAction(const BYTE ac) { m_currentAction = ac; }
+	BYTE									getAction()const { return m_currentAction; }
+	//뷰리스트 업데이트
+	void updateViewList();
+	//몬스터행동계산
+	void heartBeat();
 };

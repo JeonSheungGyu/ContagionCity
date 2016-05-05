@@ -16,6 +16,7 @@
 #include <thread>
 #include <exception>
 #include <DirectXCollision.h>
+#include <DirectXMath.h>
 
 using namespace DirectX;
 

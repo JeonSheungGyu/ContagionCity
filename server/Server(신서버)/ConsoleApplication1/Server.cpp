@@ -103,7 +103,7 @@ void ProcessPacket(User *user, unsigned char buf[]) {
 
 
 	user->setPos(XMFLOAT3(x, user->getPos().y, z));
-
+	user->setCollisionSpherePos(user->getPos()); // 충돌체 업데이트
 	PacketMaker::instance().MoveObject(reinterpret_cast<Object*>(user), user->getID());
 	updatePlayerView(user->getID());
 }
@@ -137,9 +137,9 @@ void process_event(EVENT k) {
 		Object *object = &users[k.id];
 	else {
 		Monster *monster = monsters.at(k.id - MAX_USER);
-		ZeroMemory(&monster->overlapped, sizeof(monster->overlapped));
-		monster->overlapped.operation = k.type;
-		PostQueuedCompletionStatus(hCompletionPort, 1, monster->getID(), (LPOVERLAPPED)&monster->overlapped);
+		ZeroMemory(&monster->m_overlapped, sizeof(monster->m_overlapped));
+		monster->m_overlapped.operation = k.type;
+		PostQueuedCompletionStatus(hCompletionPort, 1, monster->getID(), (LPOVERLAPPED)&monster->m_overlapped);
 	}
 }
 void TimerThread()
@@ -415,7 +415,7 @@ unsigned int __stdcall CompletionThread(LPVOID pComPort)
 			EnterCriticalSection(&monster->cs);
 			//printf("%d 시작", key);
 			//몬스터 움직이기
-			monster->move();
+			monster->heartBeat();
 			//몬스터 뷰 업데이트
 			updateMonsterView(key);
 			LeaveCriticalSection(&monster->cs);

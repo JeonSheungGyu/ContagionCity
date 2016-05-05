@@ -27,6 +27,11 @@
     <ClCompile Include="MonsterViewList.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="PacketMaker.cpp" />
+    <ClCompile Include="State_Chase.cpp" />
+    <ClCompile Include="State_Combat.cpp" />
+    <ClCompile Include="State_Wander.cpp" />
+    <ClCompile Include="State_Die.cpp" />
+    <ClCompile Include="Monster.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PacketMaker.h" />
@@ -40,6 +45,15 @@
     <ClInclude Include="Monster.h" />
     <ClInclude Include="MonsterViewList.h" />
     <ClInclude Include="Object.h" />
+    <ClInclude Include="State.h" />
+    <ClInclude Include="StateMachine.h" />
+    <ClInclude Include="StateHeader.h" />
+    <ClInclude Include="State_Chase.h" />
+    <ClInclude Include="State_Combat.h" />
+    <ClInclude Include="State_Die.h" />
+    <ClInclude Include="State_Wander.h" />
+    <ClInclude Include="TargetProcess.h" />
+    <ClInclude Include="ObjectStatus.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{08FF5596-CE64-47F8-8961-CCF369C1D1A6}</ProjectGuid>

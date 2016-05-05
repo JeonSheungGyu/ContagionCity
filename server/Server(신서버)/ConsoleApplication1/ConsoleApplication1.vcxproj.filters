@@ -22,6 +22,21 @@
     <Filter Include="헤더 파일\Object">
       <UniqueIdentifier>{23f27bc9-755f-441c-bcaf-64c392e80501}</UniqueIdentifier>
     </Filter>
+    <Filter Include="헤더 파일\FSM">
+      <UniqueIdentifier>{6bb8c973-2ff6-4e88-9571-23d907f30e4c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\FSM\State">
+      <UniqueIdentifier>{47b94f78-e4ba-4420-b3c7-660a09ef9e17}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\FSM">
+      <UniqueIdentifier>{ccf7f2c7-d4f2-444f-b2c8-4e311cc2982b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\FSM\State">
+      <UniqueIdentifier>{da732f15-7d7b-4600-abf9-183652f525eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Object">
+      <UniqueIdentifier>{2d6db037-e5a8-4c8e-ae1e-333acf4e932b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Server.cpp">
@@ -47,6 +62,21 @@
     </ClCompile>
     <ClCompile Include="PacketMaker.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="State_Chase.cpp">
+      <Filter>소스 파일\FSM\State</Filter>
+    </ClCompile>
+    <ClCompile Include="State_Combat.cpp">
+      <Filter>소스 파일\FSM\State</Filter>
+    </ClCompile>
+    <ClCompile Include="State_Wander.cpp">
+      <Filter>소스 파일\FSM\State</Filter>
+    </ClCompile>
+    <ClCompile Include="State_Die.cpp">
+      <Filter>소스 파일\FSM\State</Filter>
+    </ClCompile>
+    <ClCompile Include="Monster.cpp">
+      <Filter>소스 파일\Object</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -82,6 +112,33 @@
     </ClInclude>
     <ClInclude Include="PacketMaker.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="State.h">
+      <Filter>헤더 파일\FSM</Filter>
+    </ClInclude>
+    <ClInclude Include="StateMachine.h">
+      <Filter>헤더 파일\FSM</Filter>
+    </ClInclude>
+    <ClInclude Include="StateHeader.h">
+      <Filter>헤더 파일\FSM</Filter>
+    </ClInclude>
+    <ClInclude Include="State_Chase.h">
+      <Filter>헤더 파일\FSM\State</Filter>
+    </ClInclude>
+    <ClInclude Include="State_Combat.h">
+      <Filter>헤더 파일\FSM\State</Filter>
+    </ClInclude>
+    <ClInclude Include="State_Die.h">
+      <Filter>헤더 파일\FSM\State</Filter>
+    </ClInclude>
+    <ClInclude Include="State_Wander.h">
+      <Filter>헤더 파일\FSM\State</Filter>
+    </ClInclude>
+    <ClInclude Include="TargetProcess.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectStatus.h">
+      <Filter>헤더 파일\Object</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
