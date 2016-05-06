@@ -160,9 +160,14 @@ HCURSOR CLoginProgramDlg::OnQueryDragIcon()
 
 void CLoginProgramDlg::OnBnClickedPlay( )
 {
-	//if (m_bLogined)
+	// 로그인에 성공한 상태이면 게임 실행, 아니면 아무것도 실행 안함
+	if (m_bLogined)
 	{
 		WinExec( "ContagionCity.exe", SW_SHOW );
+	}
+	else
+	{
+		MessageBox( _T( "로그인을 먼저 해주세요", _T( "로그인실패" ), MB_OK ));
 	}
 }
 
@@ -179,6 +184,7 @@ void CLoginProgramDlg::OnBnClickedButtonLogin( )
 	CString PW;
 	m_editID.GetWindowTextW( ID );
 	m_editPW.GetWindowTextW( PW );	
-	// ID, PW가 저장된 것
+	// ID, PW가 저장된 것 서버로 보내기
 	// 만약 로그인에 성공하면 m_bLogined 변수를 true로 변경할 것
+
 }

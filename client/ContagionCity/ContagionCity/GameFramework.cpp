@@ -248,6 +248,7 @@ void CGameFramework::MakePlayer( ID3D11Device* pd3dDevice )
 	m_pPlayerShader->CreateShader( m_pd3dDevice );
 	m_pPlayerShader->BuildObjects( m_pd3dDevice, tempMesh );
 	m_pPlayer = m_pPlayerShader->GetPlayer( );
+	m_pPlayer->Rotate( 45, 23, 39 );
 }
 
 void CGameFramework::ReleaseObjects( )

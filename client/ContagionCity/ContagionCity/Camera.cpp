@@ -101,9 +101,6 @@ void CCamera::CalculateFrustumPlanes( )
 	{
 		m_FrustumPlanes[i] = MathHelper::GetInstance( )->NormalizeFloat( m_FrustumPlanes[i] );
 	}
-
-	m_FrustumPlanes[5];
-
 }
 
 bool CCamera::IsInFrustum( XMFLOAT3& vMin, XMFLOAT3& vMax )
@@ -417,40 +414,41 @@ CThirdPersonCamera::CThirdPersonCamera( CCamera *pCamera ) : CCamera( pCamera )
 
 void CThirdPersonCamera::Update( XMFLOAT3& vLookAt, float fTimeElapsed )
 {
-	
 	// 플레이어의 회전에 따라 3인칭 카메라도 회전해야 한다.
 	if (m_pPlayer)
 	{
-		XMFLOAT4X4 mtxRotate;
-		mtxRotate = MathHelper::GetInstance( )->GetMatrixIdentity( );
-		XMFLOAT3 vRight = m_pPlayer->GetRightVector( );
-		XMFLOAT3 vUp = m_pPlayer->GetUpVector( );
-		XMFLOAT3 vLook = m_pPlayer->GetLookVector( );
+		//XMFLOAT4X4 mtxRotate;
+		//mtxRotate = MathHelper::GetInstance( )->GetMatrixIdentity( );
+		//XMFLOAT3 vRight = m_pPlayer->GetRightVector( );
+		//XMFLOAT3 vUp = m_pPlayer->GetUpVector( );
+		//XMFLOAT3 vLook = m_pPlayer->GetLookVector( );
 
-		// 플레이어의 로컬 x,y,z축 벡터로부터 회전행렬을 생성
-		mtxRotate._11 = vRight.x; mtxRotate._21 = vUp.x; mtxRotate._31 = vLook.x;
-		mtxRotate._12 = vRight.y; mtxRotate._22 = vUp.y; mtxRotate._32 = vLook.y;
-		mtxRotate._13 = vRight.z; mtxRotate._23 = vUp.z; mtxRotate._33 = vLook.z;
-		
-		XMFLOAT3 vOffset;
-		vOffset = MathHelper::GetInstance( )->Vector3TransformCoord( m_vOffset, mtxRotate );
+		//// 플레이어의 로컬 x,y,z축 벡터로부터 회전행렬을 생성
+		//mtxRotate._11 = vRight.x; mtxRotate._21 = vUp.x; mtxRotate._31 = vLook.x;
+		//mtxRotate._12 = vRight.y; mtxRotate._22 = vUp.y; mtxRotate._32 = vLook.y;
+		//mtxRotate._13 = vRight.z; mtxRotate._23 = vUp.z; mtxRotate._33 = vLook.z;
+		//
+		//XMFLOAT3 vOffset;
+		//vOffset = MathHelper::GetInstance( )->Vector3TransformCoord( m_vOffset, mtxRotate );
 		// 회전한 카메라의 위치는 플레이어의 위치에 회전한 카메라 오프셋 벡터를 더한 것
-		XMFLOAT3 vPosition = MathHelper::GetInstance( )->Float3PlusFloat3( m_pPlayer->GetPosition( ), vOffset );
-		// 현재의 카메라의 위치에서 회전한 카메라의 위치까지의 벡터
-		XMFLOAT3 vDirection = MathHelper::GetInstance( )->Float3MinusFloat3( vPosition, m_vPosition );
-		float fLength = MathHelper::GetInstance( )->Float3ToLength( vDirection );
-		vDirection = MathHelper::GetInstance( )->NormalizeFloat( vDirection );
-		// 3인칭 카메라의 래그는 플레이어가 회전하더라도 카메라가 동시에 따라서 회전하지 않고 약간의 시차를 두고 회전하는 효과를 구현하기 위한것
-		// m_fTimeLag가 1보다 크면 fTimeLagScale이 작아지고 실제 회전이 적게 일어날 것이다.
-		float fTimeLagScale = ( m_fTimeLag ) ? fTimeElapsed * ( 1.0f / m_fTimeLag ) : 1.0f;
-		float fDistance = fLength * fTimeLagScale;
-		if (fDistance > fLength) fDistance = fLength;
-		if (fLength < 0.01f) fDistance = fLength;
-		if (fDistance >= 0)
-		{
-			m_vPosition = MathHelper::GetInstance( )->Float3PlusFloat3( m_vPosition, MathHelper::GetInstance()->Float3MulFloat( vDirection, fDistance) );
-			SetLookAt( vLookAt );
-		}
+//		XMFLOAT3 vPosition = MathHelper::GetInstance( )->Float3PlusFloat3( m_pPlayer->GetPosition( ), vOffset );
+		XMFLOAT3 vPosition = MathHelper::GetInstance( )->Float3PlusFloat3( m_pPlayer->GetPosition( ), m_vOffset );
+		m_vPosition = vPosition;
+		//// 현재의 카메라의 위치에서 회전한 카메라의 위치까지의 벡터
+		//XMFLOAT3 vDirection = MathHelper::GetInstance( )->Float3MinusFloat3( vPosition, m_vPosition );
+		//float fLength = MathHelper::GetInstance( )->Float3ToLength( vDirection );
+		//vDirection = MathHelper::GetInstance( )->NormalizeFloat( vDirection );
+		//// 3인칭 카메라의 래그는 플레이어가 회전하더라도 카메라가 동시에 따라서 회전하지 않고 약간의 시차를 두고 회전하는 효과를 구현하기 위한것
+		//// m_fTimeLag가 1보다 크면 fTimeLagScale이 작아지고 실제 회전이 적게 일어날 것이다.
+		//float fTimeLagScale = ( m_fTimeLag ) ? fTimeElapsed * ( 1.0f / m_fTimeLag ) : 1.0f;
+		//float fDistance = fLength * fTimeLagScale;
+		//if (fDistance > fLength) fDistance = fLength;
+		//if (fLength < 0.01f) fDistance = fLength;
+		//if (fDistance >= 0)
+		//{
+		//	m_vPosition = MathHelper::GetInstance( )->Float3PlusFloat3( m_vPosition, MathHelper::GetInstance()->Float3MulFloat( vDirection, fDistance) );
+		//	SetLookAt( vLookAt );
+		//}
 	}
 }
 

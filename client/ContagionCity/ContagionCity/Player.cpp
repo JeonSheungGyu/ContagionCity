@@ -55,16 +55,27 @@ void CPlayer::Move( DWORD dwDirection, float fDistance, bool bUpdateVelocity )
 	{
 		fDistance *= 3;
 		XMFLOAT3 vShift = XMFLOAT3( 0.0f, 0.0f, 0.0f );
-		if (dwDirection & DIR_FORWARD)		
+		XMVECTOR playerDirection = XMVectorSet( m_fPitch, m_fYaw, m_fRoll, 0.0f);
+		playerDirection = XMVector3Normalize( playerDirection ); 
+		if (dwDirection & DIR_FORWARD){
+			// 현재 플레이어가 보고 있는 방향과 XMFLOAT3(0.0f, 0.0f, -1.0f) 와 비교하여 방향을 설정함
 			vShift = MathHelper::GetInstance( )->Float3PlusFloat3( vShift, MathHelper::GetInstance( )->Float3MulFloat( m_vLook, fDistance ) );
-		if (dwDirection & DIR_BACKWARD)		
+		}
+		if (dwDirection & DIR_BACKWARD){
 			vShift = MathHelper::GetInstance( )->Float3MinusFloat3( vShift, MathHelper::GetInstance( )->Float3MulFloat( m_vLook, fDistance ) );
-		if (dwDirection & DIR_RIGHT)		
-			vShift = MathHelper::GetInstance( )->Float3PlusFloat3( vShift, MathHelper::GetInstance( )->Float3MulFloat( m_vRight, fDistance ) );
-		if (dwDirection & DIR_LEFT)			
-			vShift = MathHelper::GetInstance( )->Float3MinusFloat3( vShift, MathHelper::GetInstance( )->Float3MulFloat( m_vRight, fDistance ) );
+		}
+		if (dwDirection & DIR_RIGHT){
+				XMVECTOR rotatedir = MathHelper::GetInstance( )->Float3ToVector( XMFLOAT3( 0.0f, 1.0f, 0.0f ) )  * fDistance;
+				XMFLOAT3 rotateDiretion = MathHelper::GetInstance( )->VectorToFloat3( rotatedir );
+				Rotate( rotateDiretion.x, rotateDiretion.y, rotateDiretion.z );
+		}
+		if (dwDirection & DIR_LEFT){
+				XMVECTOR rotatedir = MathHelper::GetInstance( )->Float3ToVector( XMFLOAT3( 0.0f, -1.0f, 0.0f ) ) * fDistance;
+				XMFLOAT3 rotateDiretion = MathHelper::GetInstance( )->VectorToFloat3( rotatedir );
+				Rotate( rotateDiretion.x, rotateDiretion.y, rotateDiretion.z );
+		}
 
-		Move( vShift, bUpdateVelocity );
+	Move( vShift, bUpdateVelocity );
 	}
 }
 
@@ -166,17 +177,22 @@ void CPlayer::Update( float fTimeElapsed, XMFLOAT3 DestPos  )
 {
 	/*플레이어의 속도 벡터를 중력 벡터와 더한다.
 	중력 벡터에 fTimeElapsed를 곱하는 것은 중력을 시간에 비례하도록 적용한다는 의미이다.*/
-	if (MathHelper::GetInstance( )->DistanceVector3ToVector3( DestPos, m_vPosition ) > 10)
-		m_vGravity = MathHelper::GetInstance( )->Float3PlusFloat3( DestPos, m_vPosition ); // XMFLOAT3( 0, 0, 0 );
-	else
-		m_vGravity = XMFLOAT3( 0, 0, 0 );
-	m_vVelocity = MathHelper::GetInstance( )->Float3MulFloat( m_vGravity, fTimeElapsed );
+	//if (MathHelper::GetInstance( )->DistanceVector3ToVector3( DestPos, m_vPosition ) > 10)
+	//{
+	//	XMFLOAT3 go = MathHelper::GetInstance( )->Float3MinusFloat3( DestPos, XMFLOAT3( 0, 0, 0 ) );
+	//	MathHelper::GetInstance( )->NormalizeFloat( go );
+	//	m_vGravity = MathHelper::GetInstance( )->Float3PlusFloat3( go, m_vPosition ); // XMFLOAT3( 0, 0, 0 );
+	//}
+	//else
+	m_vGravity = XMFLOAT3( 0, 0, 0 );
+	m_vVelocity = MathHelper::GetInstance( )->Float3MulFloat( m_vGravity, fTimeElapsed * 50 );
 
 	/*플레이어의 속도 벡터의 XZ-성분의 크기를 구한다.
 	이것이 XZ-평면의 최대 속력보다 크면 속도 벡터의 x와 z-방향 성분을 조정한다.*/
 	float fLength = sqrtf( m_vVelocity.x * m_vVelocity.x + m_vVelocity.z * m_vVelocity.z );
 	float fMaxVeclocityXZ = m_fMaxVelocityXZ * fTimeElapsed;
 	if (fLength > m_fMaxVelocityY) m_vVelocity.y *= ( m_fMaxVelocityY / fLength );
+	
 
 	// 플레이어를 속도 벡터만큼 실제로 이동
 	Move( m_vVelocity, false );
@@ -193,7 +209,7 @@ void CPlayer::Update( float fTimeElapsed, XMFLOAT3 DestPos  )
 	// 카메라라의 위치가 변경될 때 추가적으로 수행할 작업 수행
 	if (m_pCameraUpdatedContext) OnCameraUpdated( fTimeElapsed );
 	// 카메라가 3인칭 카메라이면 카메라가 변경된 플레이어를 바라보도록 한다.
-//	if (nCurrentCameraMode == THIRD_PERSON_CAMERA) m_pCamera->SetLookAt( m_vPosition );
+	if (nCurrentCameraMode == THIRD_PERSON_CAMERA) m_pCamera->SetLookAt( m_vPosition );
 	// 카메라의 카메라 변환행렬을 다시 생성
 	m_pCamera->RegenerateViewMatrix( );
 
