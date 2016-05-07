@@ -209,6 +209,10 @@ public:
 	XMFLOAT3 GetRightVector( )						{ return m_vRight; }
 
 	void SetPosition( XMFLOAT3& vPosition ) {
+		m_mtxWorld._41 = -vPosition.x;
+		m_mtxWorld._42 = vPosition.y;
+		m_mtxWorld._43 = vPosition.z;
+
 		m_vPosition = vPosition;
 	}
 

@@ -34,6 +34,7 @@ private:
 		std::vector<XMFLOAT4X4> *pBoneOffsets, std::vector<Bone> BoneHierarchy );
 	void LoadUVInformation( FbxMesh* pMesh, std::vector<XMFLOAT2> *pVertices );
 	void LoadVertexAndIndexInfomation( FbxMesh* pMesh, std::vector<CFbxVertex> *pVertices, std::vector<UINT> *pIndex );
+	void LoadGeometry( FbxMesh* pMesh, std::vector<CFbxVertex> *pVertex );
 	void LoadNormallnfomation( FbxMesh *pMesh, std::vector<CFbxVertex> *pVertices );
 	void LoadTangentInfomation( FbxMesh *pMesh, std::vector<CFbxVertex> *pVertices );
 	void LoadBinormalInfomation( FbxMesh *pMesh, std::vector<CFbxVertex> *pVertices );

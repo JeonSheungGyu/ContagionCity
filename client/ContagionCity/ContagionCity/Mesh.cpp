@@ -196,7 +196,7 @@ void SkinnedData::GetFinalTransforms( const int& clipName, float timePos, std::v
 		XMStoreFloat4x4( &finalTransforms[i], XMMatrixMultiply( offset, toRoot ) );
 
 		// 변환행렬이 오른손 좌표계이므로 이를 왼손좌표계로 변경
-		finalTransforms[i] = MathHelper::GetInstance( )->Float4x4MulFloat4x4( finalTransforms[i], XMFLOAT4X4( 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1 ) );
+	//	finalTransforms[i] = MathHelper::GetInstance( )->Float4x4MulFloat4x4( finalTransforms[i], XMFLOAT4X4( 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ) );
 	}
 }
 
@@ -498,6 +498,7 @@ void CMeshTextured::CreateRasterizerState( ID3D11Device *pd3dDevice )
 	d3dRastersizerDesc.CullMode = D3D11_CULL_FRONT;
 	// 솔리드와 와이어 설정할 수 있음
 	d3dRastersizerDesc.FrontCounterClockwise = FALSE;
+//	d3dRastersizerDesc.FillMode = D3D11_FILL_WIREFRAME;
 	d3dRastersizerDesc.FillMode = D3D11_FILL_SOLID;
 	pd3dDevice->CreateRasterizerState( &d3dRastersizerDesc, &m_pd3dRasterizerState );
 }
@@ -763,15 +764,15 @@ CObjectMesh::CObjectMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, int Texture
 	{
 		m_vPositions[i] = vertex.m_pVertices[i].m_position;
 		pvTexCoords[i] = vertex.m_pVertices[i].m_textureUV;
-		pvNormals[i] = XMFLOAT3( 0.0f, 0.0f, 1.0f );
-		pvTangents[i] = XMFLOAT3( 1.0f, 0.0f, 0.0f );
+		pvNormals[i] = vertex.m_pVertices[i].m_normal;
+		pvTangents[i] = vertex.m_pVertices[i].m_tangent;
 	}
 
 	// 정점 버퍼 생성
 	D3D11_BUFFER_DESC d3dBufferDesc;
 	::ZeroMemory( &d3dBufferDesc, sizeof( D3D11_BUFFER_DESC ) );
 	d3dBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	d3dBufferDesc.ByteWidth = sizeof( XMFLOAT3 ) * m_nVertices;
+	d3dBufferDesc.ByteWidth = sizeof( XMFLOAT3 ) * m_vPositions.size();
 	d3dBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	d3dBufferDesc.CPUAccessFlags = 0;
 	D3D11_SUBRESOURCE_DATA d3dBufferData;
@@ -817,24 +818,6 @@ CObjectMesh::CObjectMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, int Texture
 
 	CreateRasterizerState( pd3dDevice );
 
-	D3D11_DEPTH_STENCIL_DESC d3dDepthStencilDesc;
-	::ZeroMemory( &d3dDepthStencilDesc, sizeof( D3D11_DEPTH_STENCIL_DESC ) );
-	d3dDepthStencilDesc.DepthEnable = false;
-	d3dDepthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
-	d3dDepthStencilDesc.DepthFunc = D3D11_COMPARISON_NEVER;
-	d3dDepthStencilDesc.StencilEnable = false;
-	d3dDepthStencilDesc.StencilReadMask = 0xFF;
-	d3dDepthStencilDesc.StencilWriteMask = 0xFF;
-	d3dDepthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-	d3dDepthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
-	d3dDepthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-	d3dDepthStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-	d3dDepthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-	d3dDepthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
-	d3dDepthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-	d3dDepthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-	pd3dDevice->CreateDepthStencilState( &d3dDepthStencilDesc, &m_pd3dDepthStencilState );
-
 	ID3D11SamplerState *pd3dSamplerState = NULL;
 	D3D11_SAMPLER_DESC d3dSamplerDesc;
 	::ZeroMemory( &d3dSamplerDesc, sizeof( D3D11_SAMPLER_DESC ) );
@@ -858,8 +841,6 @@ CObjectMesh::CObjectMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, int Texture
 
 CObjectMesh::~CObjectMesh( )
 {
-	if (m_pd3dDepthStencilState)
-		m_pd3dDepthStencilState->Release( );
 	if (m_pMeshTexture)
 		m_pMeshTexture->Release( );
 }
@@ -871,9 +852,6 @@ void CObjectMesh::Render( ID3D11DeviceContext *pd3dDeviceContext )
 	pd3dDeviceContext->IASetIndexBuffer( m_pd3dIndexBuffer, m_dxgiIndexFormat, m_nIndexOffset );
 	pd3dDeviceContext->IASetPrimitiveTopology( m_d3dPrimitiveTopology );
 	pd3dDeviceContext->RSSetState( m_pd3dRasterizerState );
-
-	m_pMeshTexture->UpdateSamplerShaderVariable( pd3dDeviceContext, 0, 0 );
-	pd3dDeviceContext->OMSetDepthStencilState( m_pd3dDepthStencilState, 1 );
 
 	m_pMeshTexture->UpdateTextureShaderVariable( pd3dDeviceContext, 0, 0 );
 	pd3dDeviceContext->DrawIndexed( m_nIndices, 0, 0 );
@@ -963,24 +941,6 @@ CAnimatedMesh::CAnimatedMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, int Tex
 
 	CreateRasterizerState( pd3dDevice );
 
-	D3D11_DEPTH_STENCIL_DESC d3dDepthStencilDesc;
-	::ZeroMemory( &d3dDepthStencilDesc, sizeof( D3D11_DEPTH_STENCIL_DESC ) );
-	d3dDepthStencilDesc.DepthEnable = false;
-	d3dDepthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
-	d3dDepthStencilDesc.DepthFunc = D3D11_COMPARISON_NEVER;
-	d3dDepthStencilDesc.StencilEnable = false;
-	d3dDepthStencilDesc.StencilReadMask = 0xFF;
-	d3dDepthStencilDesc.StencilWriteMask = 0xFF;
-	d3dDepthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-	d3dDepthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
-	d3dDepthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-	d3dDepthStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-	d3dDepthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-	d3dDepthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
-	d3dDepthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-	d3dDepthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-	pd3dDevice->CreateDepthStencilState( &d3dDepthStencilDesc, &m_pd3dDepthStencilState );
-
 	ID3D11SamplerState *pd3dSamplerState = NULL;
 	D3D11_SAMPLER_DESC d3dSamplerDesc;
 	::ZeroMemory( &d3dSamplerDesc, sizeof( D3D11_SAMPLER_DESC ) );
@@ -1013,9 +973,6 @@ void CAnimatedMesh::Render( ID3D11DeviceContext *pd3dDeviceContext )
 	pd3dDeviceContext->IASetIndexBuffer( m_pd3dIndexBuffer, m_dxgiIndexFormat, m_nIndexOffset );
 	pd3dDeviceContext->IASetPrimitiveTopology( m_d3dPrimitiveTopology );
 	pd3dDeviceContext->RSSetState( m_pd3dRasterizerState );
-
-	m_pMeshTexture->UpdateSamplerShaderVariable( pd3dDeviceContext, 0, 0 );
-	pd3dDeviceContext->OMSetDepthStencilState( m_pd3dDepthStencilState, 1 );
 
 	m_pMeshTexture->UpdateTextureShaderVariable( pd3dDeviceContext, 0, 0 );
 	pd3dDeviceContext->DrawIndexed( m_nIndices, 0, 0 );

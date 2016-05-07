@@ -9,7 +9,6 @@ ID3D11Buffer *CPlayerShader::m_pd3dcbOffsetMatrix = NULL;
 
 CShader::CShader( )
 {
-	m_ppObjects = NULL;
 	m_nObjects = 0;
 
 	m_pd3dVertexShader = NULL;
@@ -32,12 +31,11 @@ void CShader::BuildObjects( ID3D11Device *pd3dDevice )
 
 void CShader::ReleaseObject( )
 {
-	if (m_ppObjects)
+	if (m_ppObjects.size())
 	{
 		for (int i = 0; i < m_nObjects; i++)
 			if (m_ppObjects[i])
 				delete m_ppObjects[i];
-		delete[ ] m_ppObjects;
 	}
 }
 
@@ -260,8 +258,7 @@ ID3D11Buffer *CEnemyShader::CreateInstanceBuffer( ID3D11Device *pd3dDevice, int 
 
 void CEnemyShader::BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbxMesh> meshes )
 {
-	m_nObjects = 30;
-	m_ppObjects = new CGameObject*[m_nObjects];
+	m_nObjects = 10;
 
 	m_nInstanceBufferStride = sizeof( XMFLOAT4X4 );
 	m_nInstanceBufferOffset = 0;
@@ -289,7 +286,7 @@ void CEnemyShader::BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbxMesh>
 		pEnemy->SetPosition( XMFLOAT3(rand( ) % 1000, 0.0f, rand( ) % 1000 ));	
 
 		// 몬스터 오브젝트를 셰이더에 저장
-		m_ppObjects[i] = pEnemy;
+		m_ppObjects.push_back(pEnemy);
 	}
 
 //	m_pd3dInstanceBuffer = CreateInstanceBuffer( pd3dDevice, m_nObjects, m_nInstanceBufferStride, NULL );
@@ -333,12 +330,9 @@ CPlayerShader::~CPlayerShader( )
 
 void CPlayerShader::BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbxMesh> meshes )
 {
-	m_nObjects = meshes.size();
-	m_ppObjects = new CGameObject*[m_nObjects];
-
 	CPlayer *pPlayer = new CPlayer( meshes[0]);
 
-	for (int i = 0; i < m_nObjects; i++)
+	for (int i = 0; i < meshes.size(); i++)
 	{
 		int textureCount = meshes[i].m_pTextures.size( );
 		CAnimatedMesh *pPlayerMesh = new CAnimatedMesh( pd3dDevice, meshes[i], textureCount );
@@ -349,13 +343,14 @@ void CPlayerShader::BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbxMesh
 	}
 	pPlayer->CreateShaderVariables( pd3dDevice );
 	pPlayer->ChangeCamera( pd3dDevice, THIRD_PERSON_CAMERA, 0.0f );
-	pPlayer->GetCamera( )->Rotate( 0.0f, 180.0f, 0.0f );
 	pPlayer->SetPosition( XMFLOAT3( 0.0f, 1.0f, 0.0f ) );
 
 	CMaterial *pPlayerMaterial = new CMaterial;
 	pPlayer->SetMaterial( pPlayerMaterial );
 
-	m_ppObjects[0] = pPlayer;
+	m_ppObjects.push_back(pPlayer);
+
+	m_nObjects = m_ppObjects.size( );
 }
 
 bool CPlayerShader::CollisionCheck( CGameObject* pObject )
@@ -393,19 +388,16 @@ void CPlayerBoneShader::CreateShader( ID3D11Device *pd3dDevice )
 
 void CPlayerBoneShader::BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbxMesh> meshes )
 {
-	m_nObjects = meshes[0].m_skinnedData.BoneCount( ); 
-	m_ppObjects = new CGameObject*[m_nObjects];
-
 	m_skinnedData = meshes[0].m_skinnedData;
-
 	for (int i = 0; i < m_nObjects; i++)
 	{
 		CCubeMeshDiffused *pBoneMesh = new CCubeMeshDiffused( pd3dDevice, 5, 5, 5, D3DXCOLOR( 1.0f, 0.0f, 0.0f, 0.0f ) );
 		CGameObject *pBone = new CGameObject( 1 );
 
 		pBone->SetMesh( pBoneMesh, 0 );
-		m_ppObjects[i] = pBone;
+		m_ppObjects.push_back(pBone);
 	}
+	m_nObjects = m_ppObjects.size( );
 }
 
 void CPlayerBoneShader::AnimateObjects( float fTimeElapsed )
@@ -461,93 +453,211 @@ void CBackgroundShader::CreateShader( ID3D11Device *pd3dDevice )
 
 void CBackgroundShader::BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbxMesh> vertex )
 {
-	m_nObjects = vertex.size( );
-	m_ppObjects = new CGameObject*[m_nObjects];
-
-	for (int i = 0; i < m_nObjects; i++)
+	for (int i = 0; i < vertex.size(); i++)
 	{
-		/*switch (vertex[i].m_iType)
+		switch (vertex[i].m_iType)
 		{
 			case BACK_GROUND:
-			{*/
+			{
 				int textureCount = vertex[i].m_pTextures.size( );
 				ObjectInfo *pGround = new ObjectInfo( vertex[i] );
+				pGround->m_iType = vertex[i].m_iType;
+				pGround->m_iLayer = vertex[i].m_iLayer;
+
 				CObjectMesh *pGroundMesh = new CObjectMesh( pd3dDevice, vertex[i], textureCount );		// 노멀매핑을 위해 텍스처 2개 사용
 				pGroundMesh->FindMinMax( );		// AABB 값 세팅
 				for (int j = 0; j < textureCount; j++)
 					pGroundMesh->OnChangeTexture( pd3dDevice, vertex[i].m_pTextures[j], j );
+
 				pGround->SetMesh( pGroundMesh, 0 );
 				pGround->m_mtxWorld = MathHelper::GetInstance( )->Float4x4MulFloat4x4( pGround->m_mtxWorld, XMFLOAT4X4( 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1 ) );
-				m_ppObjects[i] = pGround;
 
 				CMaterial *pGroundMaterial = new CMaterial;
-				m_ppObjects[i]->SetMaterial( pGroundMaterial );
-			//	break;
-			//}
-			//case BACK_SHOP:
-			//{
-			//	ObjectInfo *pShop = new ObjectInfo( pd3dDevice, vertex[i] );
-			//	CObjectMesh *pShopMesh = new CObjectMesh( pd3dDevice, vertex[i], 2 );		// 노멀매핑을 위해 텍스처 2개 사용
-			//	pShopMesh->FindMinMax( );		// AABB 값 세팅
-			//	pShopMesh->OnChangeTexture( pd3dDevice, _T( "./res/city_base_0314_texture.dds" ), 0 );
-			//	pShopMesh->OnChangeTexture( pd3dDevice, _T( "./res/city_base_0314_normal.dds" ), 1 );
-			//	pShop->SetMesh( pShopMesh, 0 );
-			//	m_ppObjects[i] = pShop;
+				pGround->SetMaterial( pGroundMaterial );
+				m_ppObjects.push_back(pGround);
+				break;
+			}
+				//	break;
+				//}
+				//case BACK_SHOP:
+				//{
+				//	ObjectInfo *pShop = new ObjectInfo( pd3dDevice, vertex[i] );
+				//	CObjectMesh *pShopMesh = new CObjectMesh( pd3dDevice, vertex[i], 2 );		// 노멀매핑을 위해 텍스처 2개 사용
+				//	pShopMesh->FindMinMax( );		// AABB 값 세팅
+				//	pShopMesh->OnChangeTexture( pd3dDevice, _T( "./res/city_base_0314_texture.dds" ), 0 );
+				//	pShopMesh->OnChangeTexture( pd3dDevice, _T( "./res/city_base_0314_normal.dds" ), 1 );
+				//	pShop->SetMesh( pShopMesh, 0 );
+				//	m_ppObjects[i] = pShop;
 
-			//	CMaterial *pFenceMaterial = new CMaterial;
-			//	m_ppObjects[i]->SetMaterial( pFenceMaterial );
-			//	break;
-			//}
-			//case BACK_FENCE:
-			//{
-			//	ObjectInfo *pFence = new ObjectInfo( pd3dDevice, vertex[i] );
-			//	CObjectMesh *pFenceMesh = new CObjectMesh( pd3dDevice, vertex[i], 2 );		// 노멀매핑을 위해 텍스처 2개 사용
-			//	pFenceMesh->FindMinMax( );		// AABB 값 세팅
-			//	pFenceMesh->OnChangeTexture( pd3dDevice, _T( "./res/city_base_0314_texture.dds" ), 0 );
-			//	pFenceMesh->OnChangeTexture( pd3dDevice, _T( "./res/city_base_0314_normal.dds" ), 1 );
-			//	pFence->SetMesh( pFenceMesh, 0 );
-			//	m_ppObjects[i] = pFence;
+				//	CMaterial *pFenceMaterial = new CMaterial;
+				//	m_ppObjects[i]->SetMaterial( pFenceMaterial );
+				//	break;
+				//}
+				//case BACK_FENCE:
+				//{
+				//	ObjectInfo *pFence = new ObjectInfo( pd3dDevice, vertex[i] );
+				//	CObjectMesh *pFenceMesh = new CObjectMesh( pd3dDevice, vertex[i], 2 );		// 노멀매핑을 위해 텍스처 2개 사용
+				//	pFenceMesh->FindMinMax( );		// AABB 값 세팅
+				//	pFenceMesh->OnChangeTexture( pd3dDevice, _T( "./res/city_base_0314_texture.dds" ), 0 );
+				//	pFenceMesh->OnChangeTexture( pd3dDevice, _T( "./res/city_base_0314_normal.dds" ), 1 );
+				//	pFence->SetMesh( pFenceMesh, 0 );
+				//	m_ppObjects[i] = pFence;
 
-			//	CMaterial *pFenceMaterial = new CMaterial;
-			//	m_ppObjects[i]->SetMaterial( pFenceMaterial );
-			//	break;
-			//}
-			//case BACK_SHALTER:
-			//{
-			//	ObjectInfo *pShalter = new ObjectInfo( pd3dDevice, vertex[i] );
-			//	CObjectMesh *pShelterMesh = new CObjectMesh( pd3dDevice, vertex[i], 2 );		// 노멀매핑을 위해 텍스처 2개 사용
-			//	pShelterMesh->FindMinMax( );		// AABB 값 세팅
-			//	pShelterMesh->OnChangeTexture( pd3dDevice, _T( "./res/city_base_0314_texture.dds" ), 0 );
-			//	pShelterMesh->OnChangeTexture( pd3dDevice, _T( "./res/city_base_0314_normal.dds" ), 1 );
-			//	pShalter->SetMesh( pShelterMesh, 0 );
-			//	m_ppObjects[i] = pShalter;
+				//	CMaterial *pFenceMaterial = new CMaterial;
+				//	m_ppObjects[i]->SetMaterial( pFenceMaterial );
+				//	break;
+				//}
+				//case BACK_SHALTER:
+				//{
+				//	ObjectInfo *pShalter = new ObjectInfo( pd3dDevice, vertex[i] );
+				//	CObjectMesh *pShelterMesh = new CObjectMesh( pd3dDevice, vertex[i], 2 );		// 노멀매핑을 위해 텍스처 2개 사용
+				//	pShelterMesh->FindMinMax( );		// AABB 값 세팅
+				//	pShelterMesh->OnChangeTexture( pd3dDevice, _T( "./res/city_base_0314_texture.dds" ), 0 );
+				//	pShelterMesh->OnChangeTexture( pd3dDevice, _T( "./res/city_base_0314_normal.dds" ), 1 );
+				//	pShalter->SetMesh( pShelterMesh, 0 );
+				//	m_ppObjects[i] = pShalter;
+				//	CMaterial *pFenceMaterial = new CMaterial;
+				//	m_ppObjects[i]->SetMaterial( pFenceMaterial );
+				//	break;
+				//}
+			case BACK_WALL:
+			{
+				int textureCount = vertex[i].m_pTextures.size( );
+				CObjectMesh *pGroundMesh = new CObjectMesh( pd3dDevice, vertex[i], textureCount );		// 노멀매핑을 위해 텍스처 2개 사용
 
-			//	CMaterial *pFenceMaterial = new CMaterial;
-			//	m_ppObjects[i]->SetMaterial( pFenceMaterial );
-			//	break;
-			//}
-			//case BACK_WALL:
-			//{
-			//	ObjectInfo *pWall = new ObjectInfo( pd3dDevice, vertex[i] );
-			//	CObjectMesh *pWallMesh = new CObjectMesh( pd3dDevice, vertex[i], 2 );		// 노멀매핑을 위해 텍스처 2개 사용
-			//	pWallMesh->FindMinMax( );		// AABB 값 세팅
-			//	pWallMesh->OnChangeTexture( pd3dDevice, _T( "./res/city_base_0314_texture.dds" ), 0 );
-			//	pWallMesh->OnChangeTexture( pd3dDevice, _T( "./res/city_base_0314_normal.dds" ), 1 );
-			//	pWall->SetMesh( pWallMesh, 0 );
-			//	m_ppObjects[i] = pWall;
+				// 앞면
+				for (int j = 0; j < 10; j++)
+				{
+					ObjectInfo *pWall = new ObjectInfo( vertex[i] );
+					pWall->m_iType = vertex[i].m_iType;
+					pWall->m_iLayer = vertex[i].m_iLayer;
 
-			//	CMaterial *pFenceMaterial = new CMaterial;
-			//	m_ppObjects[i]->SetMaterial( pFenceMaterial );
-			//	break;
-			//}
-		//	default:
-		//		// 에러처리
-		//		break;
-		//}
-		
+					pGroundMesh->FindMinMax( );		// AABB 값 세팅
+					for (int j = 0; j < textureCount; j++)
+						pGroundMesh->OnChangeTexture( pd3dDevice, vertex[i].m_pTextures[j], j );
 
-		
+					pWall->SetMesh( pGroundMesh, 0 );
+					pWall->m_mtxWorld = MathHelper::GetInstance( )->Float4x4MulFloat4x4( pWall->m_mtxWorld, XMFLOAT4X4( 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1 ) );
+					pWall->SetPosition( XMFLOAT3( 8500.f - 1000.f*( j - 1 ), 225.f, -5000.f ) );
+
+					CMaterial *pGroundMaterial = new CMaterial;
+					pWall->SetMaterial( pGroundMaterial );
+
+					m_ppObjects.push_back( pWall );
+				}
+				for (int j = 0; j < 10; j++)
+				{
+					ObjectInfo *pWall = new ObjectInfo( vertex[i] );
+					pWall->m_iType = vertex[i].m_iType;
+					pWall->m_iLayer = vertex[i].m_iLayer;
+
+					pGroundMesh->FindMinMax( );		// AABB 값 세팅
+					for (int j = 0; j < textureCount; j++)
+						pGroundMesh->OnChangeTexture( pd3dDevice, vertex[i].m_pTextures[j], j );
+
+					pWall->SetMesh( pGroundMesh, 0 );
+					pWall->m_mtxWorld = MathHelper::GetInstance( )->Float4x4MulFloat4x4( pWall->m_mtxWorld, XMFLOAT4X4( 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1 ) );
+					pWall->SetPosition( XMFLOAT3( -1500.f - 1000.f*( j - 1 ), 225.f, -49.9f ) );
+
+					CMaterial *pGroundMaterial = new CMaterial;
+					pWall->SetMaterial( pGroundMaterial );
+
+					m_ppObjects.push_back( pWall );
+				}
+				// 뒷면
+				for (int j = 0; j < 20; j++)
+				{
+					ObjectInfo *pWall = new ObjectInfo( vertex[i] );
+					pWall->m_iType = vertex[i].m_iType;
+					pWall->m_iLayer = vertex[i].m_iLayer;
+
+					pGroundMesh->FindMinMax( );		// AABB 값 세팅
+					for (int j = 0; j < textureCount; j++)
+						pGroundMesh->OnChangeTexture( pd3dDevice, vertex[i].m_pTextures[j], j );
+
+					pWall->SetMesh( pGroundMesh, 0 );
+					pWall->m_mtxWorld = MathHelper::GetInstance( )->Float4x4MulFloat4x4( pWall->m_mtxWorld, XMFLOAT4X4( 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1 ) );
+					pWall->Rotate( 0.0f, 180.0f, 0.0f );
+					pWall->SetPosition( XMFLOAT3( 8500.f - 1000.f*( j - 1 ), 225.f, 5000.f ) );
+
+					CMaterial *pGroundMaterial = new CMaterial;
+					pWall->SetMaterial( pGroundMaterial );
+
+					m_ppObjects.push_back( pWall );
+				}
+				// 오른쪽면
+				for (int j = 0; j < 10; j++)
+				{
+					ObjectInfo *pWall = new ObjectInfo( vertex[i] );
+					pWall->m_iType = vertex[i].m_iType;
+					pWall->m_iLayer = vertex[i].m_iLayer;
+
+					pGroundMesh->FindMinMax( );		// AABB 값 세팅
+					for (int j = 0; j < textureCount; j++)
+						pGroundMesh->OnChangeTexture( pd3dDevice, vertex[i].m_pTextures[j], j );
+
+					pWall->SetMesh( pGroundMesh, 0 );
+					pWall->m_mtxWorld = MathHelper::GetInstance( )->Float4x4MulFloat4x4( pWall->m_mtxWorld, XMFLOAT4X4( 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1 ) );
+					pWall->Rotate( 180.0f, 0.0f, 90.0f );
+					pWall->SetPosition( XMFLOAT3( 10000.f, 225.f, 3500.0f - 1000.f * ( j - 1 ) ) );
+					
+
+					CMaterial *pGroundMaterial = new CMaterial;
+					pWall->SetMaterial( pGroundMaterial );
+
+					m_ppObjects.push_back( pWall );
+				}
+				// 왼쪽면
+				for (int j = 0; j < 5; j++)
+				{
+					ObjectInfo *pWall = new ObjectInfo( vertex[i] );
+					pWall->m_iType = vertex[i].m_iType;
+					pWall->m_iLayer = vertex[i].m_iLayer;
+
+					pGroundMesh->FindMinMax( );		// AABB 값 세팅
+					for (int j = 0; j < textureCount; j++)
+						pGroundMesh->OnChangeTexture( pd3dDevice, vertex[i].m_pTextures[j], j );
+
+					pWall->SetMesh( pGroundMesh, 0 );
+					pWall->m_mtxWorld = MathHelper::GetInstance( )->Float4x4MulFloat4x4( pWall->m_mtxWorld, XMFLOAT4X4( 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1 ) );
+					pWall->Rotate( 0.0f, 0.0f, 90.0f );
+					pWall->SetPosition( XMFLOAT3( -10000.f, 225.f, 3500.0f - 1000.f * ( j - 1 ) ) );
+
+
+					CMaterial *pGroundMaterial = new CMaterial;
+					pWall->SetMaterial( pGroundMaterial );
+
+					m_ppObjects.push_back( pWall );
+				}
+				for (int j = 0; j < 5; j++)
+				{
+					ObjectInfo *pWall = new ObjectInfo( vertex[i] );
+					pWall->m_iType = vertex[i].m_iType;
+					pWall->m_iLayer = vertex[i].m_iLayer;
+
+					pGroundMesh->FindMinMax( );		// AABB 값 세팅
+					for (int j = 0; j < textureCount; j++)
+						pGroundMesh->OnChangeTexture( pd3dDevice, vertex[i].m_pTextures[j], j );
+
+					pWall->SetMesh( pGroundMesh, 0 );
+					pWall->m_mtxWorld = MathHelper::GetInstance( )->Float4x4MulFloat4x4( pWall->m_mtxWorld, XMFLOAT4X4( 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1 ) );
+					pWall->Rotate( 0.0f, 0.0f, 90.0f );
+					pWall->SetPosition( XMFLOAT3( -49.9f, 225.f, -1500 - 1000.f * ( j - 1 ) ) );
+
+
+					CMaterial *pGroundMaterial = new CMaterial;
+					pWall->SetMaterial( pGroundMaterial );
+
+					m_ppObjects.push_back( pWall );
+				}
+				break;
+			}
+			default:
+				// 에러처리
+				break;
+		}
 	}
+	m_nObjects = m_ppObjects.size( );
 }
 
 void CBackgroundShader::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera )
@@ -634,10 +744,9 @@ CSkyBoxShader::~CSkyBoxShader( )
 void CSkyBoxShader::BuildObjects( ID3D11Device *pd3dDevice )
 {
 	m_nObjects = 1;
-	m_ppObjects = new CGameObject*[m_nObjects];
 
 	CSkyBox *pSkyBox = new CSkyBox( pd3dDevice );
-	m_ppObjects[0] = pSkyBox;
+	m_ppObjects.push_back( pSkyBox );
 }
 
 void CSkyBoxShader::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera )

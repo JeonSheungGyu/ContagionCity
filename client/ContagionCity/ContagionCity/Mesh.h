@@ -123,16 +123,14 @@ public:
 
 struct CFbxVertex
 {
-
 	XMFLOAT3 m_weights = XMFLOAT3( 0.0f, 0.0f, 0.0f );						// 가중치
 	XMFLOAT4 m_boneIndices = XMFLOAT4( 0.0f, 0.0f, 0.0f, 0.0f );		// 이 정점에 영향을 주는 뼈대
 
 	XMFLOAT3 m_position;
 	XMFLOAT2 m_textureUV;
 	XMFLOAT3 m_normal;
-	XMFLOAT4 m_tangent;
+	XMFLOAT3 m_tangent;
 	XMFLOAT3 m_binormal;
-
 };
 
 struct CFbxMesh
@@ -140,6 +138,7 @@ struct CFbxMesh
 public:
 	std::vector<TCHAR*> m_pTextures;
 	std::vector<CFbxVertex> m_pVertices;
+	std::vector<CFbxVertex> m_pVerticesPolygon;
 	std::vector<UINT> m_pvIndices;
 	SkinnedData m_skinnedData;
 
@@ -299,7 +298,6 @@ public:
 class CObjectMesh : public CMeshTextured
 {
 protected:
-	ID3D11DepthStencilState *m_pd3dDepthStencilState;
 	ID3D11Buffer *m_pd3dNormalBuffer;
 	ID3D11Buffer *m_pd3dTangentBuffer;
 
@@ -313,7 +311,6 @@ public:
 class CAnimatedMesh : public CMeshTextured
 {
 protected:
-	ID3D11DepthStencilState *m_pd3dDepthStencilState;
 	ID3D11Buffer *m_pd3dNormalBuffer;
 	ID3D11Buffer *m_pd3dTangentBuffer;
 	ID3D11Buffer *m_pd3dWeightBuffer;

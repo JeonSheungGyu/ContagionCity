@@ -227,8 +227,8 @@ bool CScene::ProcessInput( HWND hWnd, CGameTimer timer )
 	{
 		SetCursor( NULL );
 		GetCursorPos( &ptCursorPos );
-//		cxDelta = (float)( ptCursorPos.x - m_ptOldCursorPos.x ) / 5.0f;
-//		cyDelta = (float)( ptCursorPos.y - m_ptOldCursorPos.y ) / 50.0f;
+		cxDelta = (float)( ptCursorPos.x - m_ptOldCursorPos.x ) / 5.0f;
+		cyDelta = (float)( ptCursorPos.y - m_ptOldCursorPos.y ) / 5.0f;
 		SetCursorPos( ptCursorPos.x, ptCursorPos.y );
 	}
 	if (dwDirection != 0 || cxDelta != 0.0f || cyDelta != 0.0f)
@@ -238,11 +238,13 @@ bool CScene::ProcessInput( HWND hWnd, CGameTimer timer )
 			/*cxDelta는 y-축의 회전을 나타내고 cyDelta는 x-축의 회전을 나타낸다.
 			오른쪽 마우스 버튼이 눌려진 경우 cxDelta는 z-축의 회전을 나타낸다.*/
 			// 마우스 클릭시 공격 애니메이션이 행해지도록 해야함
-		/*	if (pKeyBuffer[VK_RBUTTON] & 0xF0){
-				m_pPlayer->Rotate( cyDelta, 0.0f, -cxDelta );
+			if (pKeyBuffer[VK_RBUTTON] & 0xF0){
+				//m_pCamera->Move( XMFLOAT3( cyDelta, 0.0f, -cxDelta ) );
+	///			m_pCamera->Rotate(0.0f, cxDelta, 0.0f);
+//				m_pCamera->Update( XMFLOAT3( 0.0f, 0.0f, 0.0f ), timer.GetTimeElapsed( ) );
 			}
-			else
-				m_pPlayer->Rotate( cyDelta, cxDelta, 0.0f );*/
+//			else
+//				m_pCamera->Rotate( cyDelta, cxDelta, 0.0f );
 
 			//if (pKeyBuffer[VK_LBUTTON] & 0xF0)
 			//{
@@ -257,7 +259,7 @@ bool CScene::ProcessInput( HWND hWnd, CGameTimer timer )
 		{
 			// 현재 플레이어의 AABB 박스의 y좌표 최소가 -0.5임. 따라서 0보다 작으므로 바닥과 겹침, 그로 인해 못움직임
 			// 충돌체크 자체는 제대로 되고 있으나 플레이어의 위치가 문제
-//			if (!CollisionCheck( ))
+		//	if (!CollisionCheck( ))
 				m_pPlayer->Move( dwDirection, 50.0f * timer.GetTimeElapsed( ), false );
 		}
 	}

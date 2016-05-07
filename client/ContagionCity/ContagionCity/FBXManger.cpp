@@ -150,9 +150,23 @@ void FBXManager::LoadInfluenceWeight( FbxMesh *pMesh, std::vector<CFbxVertex> *p
 	// 본 계층구조, 오프셋변환, 가중치, 영향받는 정점 을 구해야함
 	int numDeformers = pMesh->GetDeformerCount( FbxDeformer::eSkin);
 
-	for (int i = 0; i < numDeformers; i++)
+	for (int deformerCount = 0; deformerCount < numDeformers; deformerCount++)
 	{
-		FbxSkin *skin = (FbxSkin*)pMesh->GetDeformer( i, FbxDeformer::eSkin );
+		FbxVector4* pIndexedVertex = pMesh->GetControlPoints( );
+
+		// 정점 좌표들을 저장할 공간
+		int polygonCount = pMesh->GetPolygonCount( );		// 폴리곤의 개수
+		int vertexCount = pMesh->GetControlPointsCount( );
+		std::vector<CFbxVertex> IndexVertex;
+
+		for (int polyCount = 0; polyCount < vertexCount; polyCount++)
+		{
+			CFbxVertex tempVertex;
+			tempVertex.m_position = XMFLOAT3( pIndexedVertex[polyCount].mData[0], pIndexedVertex[polyCount].mData[1], pIndexedVertex[polyCount].mData[2] );
+			IndexVertex.push_back( tempVertex );
+		}
+
+		FbxSkin *skin = (FbxSkin*)pMesh->GetDeformer( deformerCount, FbxDeformer::eSkin );
 		if (!skin)
 			continue;
 
@@ -211,30 +225,55 @@ void FBXManager::LoadInfluenceWeight( FbxMesh *pMesh, std::vector<CFbxVertex> *p
 				int tempBoneVertexIndex = boneVertexIndices[boneVertexIndex];			// 영향을 받는 정점의 인덱스
 
 				// 가중치 중 x가 0이면 첫번째 인덱스
-				if (pVertices->data()[tempBoneVertexIndex].m_weights.x == 0)		
+				if (IndexVertex[tempBoneVertexIndex].m_weights.x == 0)
 				{
-					pVertices->data( )[tempBoneVertexIndex].m_weights.x = tempBoneWeight;
-					pVertices->data( )[tempBoneVertexIndex].m_boneIndices.x = boneHierIdx;
+					IndexVertex[tempBoneVertexIndex].m_weights.x = tempBoneWeight;
+					IndexVertex[tempBoneVertexIndex].m_boneIndices.x = boneHierIdx;
 				}
 				// 가중치 중 x가 0이 아니고 y가 0이면 두번째 인덱스
-				else if (pVertices->data( )[tempBoneVertexIndex].m_weights.x != 0 && pVertices->data( )[tempBoneVertexIndex].m_weights.y == 0)
+				else if (IndexVertex[tempBoneVertexIndex].m_weights.x != 0 && IndexVertex[tempBoneVertexIndex].m_weights.y == 0)
 				{
-					pVertices->data( )[tempBoneVertexIndex].m_weights.y = tempBoneWeight;
-					pVertices->data( )[tempBoneVertexIndex].m_boneIndices.y = boneHierIdx;
+					IndexVertex[tempBoneVertexIndex].m_weights.y = tempBoneWeight;
+					IndexVertex[tempBoneVertexIndex].m_boneIndices.y = boneHierIdx;
 				}
 				// 가중치 중 x가 0이 아니고 y가 0이 아니고 z가 0이면 세번째 인덱스
-				else if (pVertices->data( )[tempBoneVertexIndex].m_weights.x != 0 && pVertices->data( )[tempBoneVertexIndex].m_weights.y != 0 && pVertices->data( )[tempBoneVertexIndex].m_weights.z == 0)
+				else if (IndexVertex[tempBoneVertexIndex].m_weights.x != 0 && IndexVertex[tempBoneVertexIndex].m_weights.y != 0 && IndexVertex[tempBoneVertexIndex].m_weights.z == 0)
 				{
-					pVertices->data( )[tempBoneVertexIndex].m_weights.z = tempBoneWeight;
-					pVertices->data( )[tempBoneVertexIndex].m_boneIndices.z = boneHierIdx;
+					IndexVertex[tempBoneVertexIndex].m_weights.z = tempBoneWeight;
+					IndexVertex[tempBoneVertexIndex].m_boneIndices.z = boneHierIdx;
 				}
 				// 모두 0이 아니면 4번째 인덱스, 가중치는 1에서 xyz 빼면 나머지 구할 수 있음
-				else if (pVertices->data( )[tempBoneVertexIndex].m_weights.x != 0 && pVertices->data( )[tempBoneVertexIndex].m_weights.y != 0 && pVertices->data( )[tempBoneVertexIndex].m_weights.z != 0)
+				else if (IndexVertex[tempBoneVertexIndex].m_weights.x != 0 && IndexVertex[tempBoneVertexIndex].m_weights.y != 0 && IndexVertex[tempBoneVertexIndex].m_weights.z != 0)
 				{
-					pVertices->data( )[tempBoneVertexIndex].m_boneIndices.w = boneHierIdx;
+					IndexVertex[tempBoneVertexIndex].m_boneIndices.w = boneHierIdx;
 				}
-			}	
+			}
 		}	// end of bonecount for
+
+		for (int i = 0; i < pVertices->size( ); i++)
+		{
+			if (pVertices->data( )[i].m_boneIndices.x == 0 && pVertices->data()[i].m_weights.x == 0)
+			{
+				CFbxVertex tempVertex = pVertices->data( )[i];
+				for (int j = 0; j < IndexVertex.size( ); j++)
+				{
+					CFbxVertex tempVertex2 = IndexVertex[j];
+
+					if (tempVertex.m_position.x == tempVertex2.m_position.x && tempVertex.m_position.y == tempVertex2.m_position.y && tempVertex.m_position.z == tempVertex2.m_position.z)
+					{
+						pVertices->data( )[i].m_weights.x = IndexVertex[j].m_weights.x;
+						pVertices->data( )[i].m_weights.y = IndexVertex[j].m_weights.y;
+						pVertices->data( )[i].m_weights.z = IndexVertex[j].m_weights.z;
+
+						pVertices->data( )[i].m_boneIndices.x = IndexVertex[j].m_boneIndices.x;
+						pVertices->data( )[i].m_boneIndices.y = IndexVertex[j].m_boneIndices.y;
+						pVertices->data( )[i].m_boneIndices.z = IndexVertex[j].m_boneIndices.z;
+						pVertices->data( )[i].m_boneIndices.w = IndexVertex[j].m_boneIndices.w;
+						break;
+					}
+				}
+			}
+		}
 	}	// end of deformer for
 }
 
@@ -342,16 +381,16 @@ void FBXManager::LoadFBXMeshData( FbxMesh* pMesh, std::vector<CFbxVertex> *pVert
 //	LoadBinormalInfomation( pMesh, pVertices );
 
 	//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ UV 좌표 가져오기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-	std::vector<XMFLOAT2> tempUVs;
-	LoadUVInformation( pMesh, &tempUVs );
+//	std::vector<XMFLOAT2> tempUVs;
+//	LoadUVInformation( pMesh, &tempUVs );
 
 	//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 좌표값들 중복들 제거 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-	pUVs->resize( pVertices->size( ) );
-	for (int i = 0; i < pIndices->size( ); i++)
-	{
-		int idx = pIndices->data( )[i];
-		pUVs->data( )[idx] = tempUVs[i];
-	}	
+//	pUVs->resize( pVertices->size( ) );
+//	for (int i = 0; i < pIndices->size( ); i++)
+//	{
+//		int idx = pIndices->data( )[i];
+//		pUVs->data( )[idx] = tempUVs[i];
+//	}	
 
 	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ  가중치와 뼈대 정보가져오기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 	LoadInfluenceWeight( pMesh, pVertices, pBoneOffsets, BoneHierarchy );
@@ -364,12 +403,6 @@ void FBXManager::SaveData( std::vector<CFbxVertex> Vertex, std::vector<UINT> Ind
 
 	tempMesh.m_pVertices.resize( Vertex.size( ) );
 	tempMesh.m_pVertices = Vertex;
-
-	for (int i = 0; i < Vertex.size( ); i++)
-	{
-		// UV좌표 저장
-		tempMesh.m_pVertices[i].m_textureUV = UVVector[i];
-	}
 
 	// vertex 개수
 	tempMesh.m_nVertexCount = Vertex.size( );
@@ -397,13 +430,14 @@ void FBXManager::LoadVertexAndIndexInfomation( FbxMesh* pMesh, std::vector<CFbxV
 	// 정점 좌표들을 저장할 공간
 	int polygonCount = pMesh->GetPolygonCount( );		// 폴리곤의 개수
 	int vertexCount = pMesh->GetControlPointsCount( );
+	//std::vector<CFbxVertex> IndexVertex;
 
-		for (int polyCount = 0; polyCount < vertexCount; polyCount++)
-		{
-			CFbxVertex tempVertex;
-			tempVertex.m_position = XMFLOAT3( pVertices[polyCount].mData[0], pVertices[polyCount].mData[1], pVertices[polyCount].mData[2] );
-			pVertex->push_back( tempVertex );
-		}
+	//for (int polyCount = 0; polyCount < vertexCount; polyCount++)
+	//{
+	//	CFbxVertex tempVertex;
+	//	tempVertex.m_position = XMFLOAT3( pVertices[polyCount].mData[0], pVertices[polyCount].mData[1], pVertices[polyCount].mData[2] );
+	//	IndexVertex.push_back( tempVertex );
+	//}
 
 	int count = 0;
 
@@ -412,15 +446,260 @@ void FBXManager::LoadVertexAndIndexInfomation( FbxMesh* pMesh, std::vector<CFbxV
 		int iNumVertices = pMesh->GetPolygonSize( j );	// 폴리곤을 구성하는 정점의 개수
 		if (iNumVertices != 3)
 		{
-		//	pMesh->Destroy( );
-		//	return;
+			//	pMesh->Destroy( );
+			//	return;
 		}
 
 		for (int k = 0; k < iNumVertices; k++)
 		{
 			int iControlPointIndex = pMesh->GetPolygonVertex( j, k );
 
-			pIndex->push_back( iControlPointIndex );
+			CFbxVertex temp;
+			temp.m_position.x = (float)pVertices[iControlPointIndex].mData[0];
+			temp.m_position.y = (float)pVertices[iControlPointIndex].mData[1];
+			temp.m_position.z = (float)pVertices[iControlPointIndex].mData[2];
+
+	//		pVertex->push_back( temp );
+	//		pIndex->push_back( iControlPointIndex );
+			pIndex->push_back( count++ );
+		}
+	}
+
+	LoadGeometry( pMesh, pVertex );
+}
+
+void FBXManager::LoadGeometry( FbxMesh* pMesh,  std::vector<CFbxVertex> *pVertex )
+{
+	// polygons
+	int countPolys = pMesh->GetPolygonCount( );
+
+	int vertexID = 0;
+	for (int i = 0; i < countPolys; i++)
+	{
+		int countPolyVerts = pMesh->GetPolygonSize( i );
+
+		for (int j = 0; j < countPolyVerts; j++)
+		{
+			CFbxVertex vertex;
+
+			//---------------------------------------------------------
+			// position
+			//---------------------------------------------------------
+			FbxVector4* pVertices = pMesh->GetControlPoints( );
+
+			int cp_index = pMesh->GetPolygonVertex( i, j );
+			vertex.m_position.x = (float)pVertices[cp_index].mData[0];
+			vertex.m_position.y = (float)pVertices[cp_index].mData[1];
+			vertex.m_position.z = (float)pVertices[cp_index].mData[2];
+
+			//---------------------------------------------------------
+			// normal
+			//---------------------------------------------------------
+			FbxVector4 fbxNormal;
+			FbxGeometryElementNormal* leNormal = pMesh->GetElementNormal( 0 );
+			if (leNormal == nullptr)
+			{
+				//				ERRPRINT("No normals in mesh");
+			}
+			else
+			{
+				FbxLayerElement::EMappingMode normals_MapMode = leNormal->GetMappingMode( );
+				if (normals_MapMode == FbxGeometryElement::eByPolygonVertex)
+				{
+					switch (leNormal->GetReferenceMode( ))
+					{
+						case FbxGeometryElement::eDirect:
+							fbxNormal = leNormal->GetDirectArray( ).GetAt( vertexID );
+							break;
+						case FbxGeometryElement::eIndexToDirect:
+						{
+							int id = leNormal->GetIndexArray( ).GetAt( vertexID );
+							fbxNormal = leNormal->GetDirectArray( ).GetAt( id );
+						}
+						break;
+						default:
+							break;
+					}
+				}
+				else if (normals_MapMode == FbxGeometryElement::eByControlPoint)
+				{
+					switch (leNormal->GetReferenceMode( ))
+					{
+						case FbxGeometryElement::eDirect:
+							fbxNormal = leNormal->GetDirectArray( ).GetAt( cp_index );
+							break;
+						case FbxGeometryElement::eIndexToDirect:
+						{
+							int id = leNormal->GetIndexArray( ).GetAt( cp_index );
+							fbxNormal = leNormal->GetDirectArray( ).GetAt( id );
+						}
+						break;
+						default:
+							break;
+					}
+				}
+				vertex.m_normal.x = fbxNormal.mData[0];
+				vertex.m_normal.y = fbxNormal.mData[1];
+				vertex.m_normal.z = fbxNormal.mData[2];
+			}
+
+			//---------------------------------------------------------
+			// tangent
+			//---------------------------------------------------------
+			FbxVector4 fbxTangent;
+			FbxGeometryElementTangent* leTangent = pMesh->GetElementTangent( 0 );
+			if (leTangent == nullptr)
+			{
+				//				ERRPRINT("No tangents in mesh");
+			}
+			else
+			{
+				FbxLayerElement::EMappingMode tangent_MapMode = leTangent->GetMappingMode( );
+				if (tangent_MapMode == FbxGeometryElement::eByPolygonVertex)
+				{
+					switch (leTangent->GetReferenceMode( ))
+					{
+						case FbxGeometryElement::eDirect:
+							fbxTangent = leTangent->GetDirectArray( ).GetAt( vertexID );
+							break;
+						case FbxGeometryElement::eIndexToDirect:
+						{
+							int id = leTangent->GetIndexArray( ).GetAt( vertexID );
+							fbxTangent = leTangent->GetDirectArray( ).GetAt( id );
+						}
+						break;
+						default:
+							break;
+					}
+				}
+				else if (tangent_MapMode == FbxGeometryElement::eByControlPoint)
+				{
+					switch (leTangent->GetReferenceMode( ))
+					{
+						case FbxGeometryElement::eDirect:
+							fbxTangent = leTangent->GetDirectArray( ).GetAt( cp_index );
+							break;
+						case FbxGeometryElement::eIndexToDirect:
+						{
+							int id = leTangent->GetIndexArray( ).GetAt( cp_index );
+							fbxTangent = leTangent->GetDirectArray( ).GetAt( id );
+						}
+						break;
+						default:
+							break;
+					}
+				}
+				vertex.m_tangent.x = fbxTangent.mData[0];
+				vertex.m_tangent.y = fbxTangent.mData[1];
+				vertex.m_tangent.z = fbxTangent.mData[2];
+			}
+
+			//---------------------------------------------------------
+			// binormal
+			//---------------------------------------------------------
+			FbxVector4 fbxBinormal;
+			FbxGeometryElementBinormal* leBinormal = pMesh->GetElementBinormal( 0 );
+			if (leBinormal == nullptr)
+			{
+				//				ERRPRINT( "No binormals in mesh" );
+			}
+			else
+			{
+				FbxLayerElement::EMappingMode binormal_MapMode = leTangent->GetMappingMode( );
+				if (binormal_MapMode == FbxGeometryElement::eByPolygonVertex)
+				{
+					switch (leBinormal->GetReferenceMode( ))
+					{
+						case FbxGeometryElement::eDirect:
+							fbxBinormal = leBinormal->GetDirectArray( ).GetAt( vertexID );
+							break;
+						case FbxGeometryElement::eIndexToDirect:
+						{
+							int id = leBinormal->GetIndexArray( ).GetAt( vertexID );
+							fbxBinormal = leBinormal->GetDirectArray( ).GetAt( id );
+						}
+						break;
+						default:
+							break;
+					}
+				}
+				else if (binormal_MapMode == FbxGeometryElement::eByControlPoint)
+				{
+					switch (leBinormal->GetReferenceMode( ))
+					{
+						case FbxGeometryElement::eDirect:
+							fbxBinormal = leBinormal->GetDirectArray( ).GetAt( cp_index );
+							break;
+						case FbxGeometryElement::eIndexToDirect:
+						{
+							int id = leBinormal->GetIndexArray( ).GetAt( cp_index );
+							fbxBinormal = leBinormal->GetDirectArray( ).GetAt( id );
+						}
+						break;
+						default:
+							break;
+					}
+				}
+				vertex.m_binormal.x = fbxBinormal.mData[0];
+				vertex.m_binormal.y = fbxBinormal.mData[1];
+				vertex.m_binormal.z = fbxBinormal.mData[2];
+			}
+
+			//---------------------------------------------------------
+			// uv
+			//---------------------------------------------------------
+			FbxVector2 uv;
+			FbxGeometryElementUV* leUV = pMesh->GetElementUV( 0 );
+			if (leUV == nullptr)
+			{
+			}
+			else
+			{
+				switch (leUV->GetMappingMode( ))
+				{
+					case FbxGeometryElement::eByControlPoint:
+					{
+						switch (leUV->GetReferenceMode( ))
+						{
+							case FbxGeometryElement::eDirect:
+								uv = leUV->GetDirectArray( ).GetAt( cp_index );
+								break;
+							case FbxGeometryElement::eIndexToDirect:
+							{
+								int id = leUV->GetIndexArray( ).GetAt( cp_index );
+								uv = leUV->GetDirectArray( ).GetAt( id );
+							}
+							break;
+							default:
+								break;
+						}
+					}
+					break;
+
+					case FbxGeometryElement::eByPolygonVertex:
+					{
+						int lTextureUVIndex = pMesh->GetTextureUVIndex( i, j );
+						switch (leUV->GetReferenceMode( ))
+						{
+							case FbxGeometryElement::eDirect:
+							case FbxGeometryElement::eIndexToDirect:
+							{
+								uv = leUV->GetDirectArray( ).GetAt( lTextureUVIndex );
+							}
+							break;
+							default:
+								break;
+						}
+					}
+					default:
+						break;
+				}
+				vertex.m_textureUV.x = uv.mData[0];
+				vertex.m_textureUV.y = uv.mData[1];
+			}
+
+			++vertexID;
+			pVertex->push_back( vertex );
 		}
 	}
 }
@@ -431,7 +710,7 @@ void FBXManager::LoadTangentInfomation( FbxMesh *pMesh, std::vector<CFbxVertex> 
 
 	for (int i = 0; i < polygonVertexCount; i++)
 	{
-		XMFLOAT4 tempTangent;
+		XMFLOAT3 tempTangent;
 		FbxGeometryElementTangent* vertexTangent = pMesh->GetElementTangent( 0 );
 		if (!vertexTangent)
 			continue;
@@ -446,7 +725,7 @@ void FBXManager::LoadTangentInfomation( FbxMesh *pMesh, std::vector<CFbxVertex> 
 						tempTangent.x = static_cast<float>( vertexTangent->GetDirectArray( ).GetAt( i ).mData[0] );
 						tempTangent.y = static_cast<float>( vertexTangent->GetDirectArray( ).GetAt( i ).mData[2] );
 						tempTangent.z = static_cast<float>( vertexTangent->GetDirectArray( ).GetAt( i ).mData[1] );
-						tempTangent.w = static_cast<float>( vertexTangent->GetDirectArray( ).GetAt( i ).mData[3] );
+			//			tempTangent.w = static_cast<float>( vertexTangent->GetDirectArray( ).GetAt( i ).mData[3] );
 					}
 					break;
 
@@ -456,7 +735,7 @@ void FBXManager::LoadTangentInfomation( FbxMesh *pMesh, std::vector<CFbxVertex> 
 						tempTangent.x = static_cast<float>( vertexTangent->GetDirectArray( ).GetAt( index ).mData[0] );
 						tempTangent.y = static_cast<float>( vertexTangent->GetDirectArray( ).GetAt( index ).mData[2] );
 						tempTangent.z = static_cast<float>( vertexTangent->GetDirectArray( ).GetAt( index ).mData[1] );
-						tempTangent.w = static_cast<float>( vertexTangent->GetDirectArray( ).GetAt( index ).mData[3] );
+			//			tempTangent.w = static_cast<float>( vertexTangent->GetDirectArray( ).GetAt( index ).mData[3] );
 					}
 					break;
 				}
@@ -471,7 +750,7 @@ void FBXManager::LoadTangentInfomation( FbxMesh *pMesh, std::vector<CFbxVertex> 
 						tempTangent.x = static_cast<float>( vertexTangent->GetDirectArray( ).GetAt( i ).mData[0] );
 						tempTangent.y = static_cast<float>( vertexTangent->GetDirectArray( ).GetAt( i ).mData[2] );
 						tempTangent.z = static_cast<float>( vertexTangent->GetDirectArray( ).GetAt( i ).mData[1] );
-						tempTangent.w = static_cast<float>( vertexTangent->GetDirectArray( ).GetAt( i ).mData[3] );
+			//			tempTangent.w = static_cast<float>( vertexTangent->GetDirectArray( ).GetAt( i ).mData[3] );
 					}
 					break;
 
@@ -482,7 +761,7 @@ void FBXManager::LoadTangentInfomation( FbxMesh *pMesh, std::vector<CFbxVertex> 
 						tempTangent.x = static_cast<float>( vertexTangent->GetDirectArray( ).GetAt( index ).mData[0] );
 						tempTangent.y = static_cast<float>( vertexTangent->GetDirectArray( ).GetAt( index ).mData[2] );
 						tempTangent.z = static_cast<float>( vertexTangent->GetDirectArray( ).GetAt( index ).mData[1] );
-						tempTangent.w = static_cast<float>( vertexTangent->GetDirectArray( ).GetAt( index ).mData[3] );
+			//			tempTangent.w = static_cast<float>( vertexTangent->GetDirectArray( ).GetAt( index ).mData[3] );
 					}
 					break;
 				}
@@ -626,7 +905,7 @@ void FBXManager::LoadUVInformation( FbxMesh* pMesh, std::vector<XMFLOAT2> *pVert
 	int NameListCount = lUVSetNameList.GetCount( );
 
 	//iterating over all uv sets
-	for (int lUVSetIndex = 0; lUVSetIndex < NameListCount; lUVSetIndex++)
+	for (int lUVSetIndex = 0; lUVSetIndex < 1; lUVSetIndex++)
 	{
 		//get lUVSetIndex-th uv set
 		const char* lUVSetName = lUVSetNameList.GetStringAt( lUVSetIndex );
@@ -683,10 +962,12 @@ void FBXManager::LoadUVInformation( FbxMesh* pMesh, std::vector<XMFLOAT2> *pVert
 					{
 						FbxVector2 lUVValue;
 
+						int lTextureUVIndex = pMesh->GetTextureUVIndex( lPolyIndex, lVertIndex );
+
 						//the UV index depends on the reference mode
 						int lUVIndex = lUseIndex ? lUVElement->GetIndexArray( ).GetAt( lPolyIndexCounter ) : lPolyIndexCounter;
 
-						lUVValue = lUVElement->GetDirectArray( ).GetAt( lUVIndex );
+						lUVValue = lUVElement->GetDirectArray( ).GetAt( lTextureUVIndex );
 
 						XMFLOAT2 temp( lUVValue.mData[0], lUVValue.mData[1] );
 						pVertices->push_back( temp );

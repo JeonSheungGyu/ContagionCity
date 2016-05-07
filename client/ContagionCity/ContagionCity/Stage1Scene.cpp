@@ -14,9 +14,10 @@ CStage1Scene::~CStage1Scene( )
 
 void CStage1Scene::LoadFBXs( )
 {
-	FBXManager::GetInstance( )->LoadFBX( "res/Stage1/Stage1_1f_base.FBX", LAYER_BACKGROUND, BACK_GROUND, 1, _T( "./res/city_base_0314_texture.dds" ) );
-//	FBXManager::GetInstance( )->LoadFBX( "res/Stage1/Stage1_1f_wall.FBX", LAYER_BACKGROUND, BACK_WALL, 1, _T( "./res/city_base_0314_texture.dds" ) );
+	FBXManager::GetInstance( )->LoadFBX( "res/Stage1/Stage1_1f_base_mod.FBX", LAYER_BACKGROUND, BACK_GROUND, 2, _T( "./res/Stage1/Stage1_1f_base_texture.bmp" ), _T( "./res/Stage1/Stage1_1f_baseNormalsMap.dds" ) );
+	FBXManager::GetInstance( )->LoadFBX( "res/Stage1/Stage1_wall.FBX", LAYER_BACKGROUND, BACK_WALL, 1, _T( "./res/Stage1/Stage1_wall_texture.bmp" ) );
 //	FBXManager::GetInstance( )->LoadFBX( "res/Stage1/Stage1_1f_ceiling.FBX", LAYER_BACKGROUND, BACK_GROUND, 1, _T( "./res/city_base_0314_texture.dds" ) );
+
 	FBXManager::GetInstance( )->LoadFBX( "res/animation example.FBX", LAYER_ENEMY, ENEMY_ZOMBIE, 1, _T( "./res/city_base_0314_texture.dds" ) );
 
 	m_nFbxCount = FBXManager::GetInstance( )->m_pMeshes.size( );

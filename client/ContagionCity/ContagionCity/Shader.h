@@ -47,7 +47,7 @@ public:
 	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera = NULL );
 
 	int getObjectCount( ){ return m_nObjects; }
-	CGameObject** getObjects( ){ return m_ppObjects; }
+	std::vector<CGameObject*> getObjects( ){ return m_ppObjects; }
 
 protected:
 	ID3D11VertexShader *m_pd3dVertexShader;
@@ -55,7 +55,7 @@ protected:
 	ID3D11PixelShader *m_pd3dPixelShader;
 
 	// 셰이더 객체가 게임 객체들의 리스트를 가진다.
-	CGameObject **m_ppObjects;
+	std::vector<CGameObject*> m_ppObjects;
 	int m_nObjects;
 
 	// 월드 변환 행렬을 위한 상수 버퍼는 하나만 있어도 되기 때문에 정적으로 선언

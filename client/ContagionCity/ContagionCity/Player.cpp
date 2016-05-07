@@ -59,10 +59,10 @@ void CPlayer::Move( DWORD dwDirection, float fDistance, bool bUpdateVelocity )
 		playerDirection = XMVector3Normalize( playerDirection ); 
 		if (dwDirection & DIR_FORWARD){
 			// 현재 플레이어가 보고 있는 방향과 XMFLOAT3(0.0f, 0.0f, -1.0f) 와 비교하여 방향을 설정함
-			vShift = MathHelper::GetInstance( )->Float3PlusFloat3( vShift, MathHelper::GetInstance( )->Float3MulFloat( m_vLook, fDistance ) );
+			vShift = MathHelper::GetInstance( )->Float3MinusFloat3( vShift, MathHelper::GetInstance( )->Float3MulFloat( m_vLook, fDistance ) );
 		}
 		if (dwDirection & DIR_BACKWARD){
-			vShift = MathHelper::GetInstance( )->Float3MinusFloat3( vShift, MathHelper::GetInstance( )->Float3MulFloat( m_vLook, fDistance ) );
+			vShift = MathHelper::GetInstance( )->Float3PlusFloat3( vShift, MathHelper::GetInstance( )->Float3MulFloat( m_vLook, fDistance ) );
 		}
 		if (dwDirection & DIR_RIGHT){
 				XMVECTOR rotatedir = MathHelper::GetInstance( )->Float3ToVector( XMFLOAT3( 0.0f, 1.0f, 0.0f ) )  * fDistance;
@@ -91,7 +91,9 @@ void CPlayer::Move( XMFLOAT3& vShift, bool bUpdateVelocity )
 		XMFLOAT3 vPosition = MathHelper::GetInstance( )->Float3MinusFloat3( m_vPosition, vShift );
 		m_vPosition = vPosition;
 		// 플레이어가 이동했으므로 카메라도 이동
-		m_pCamera->Move( vShift );
+		XMFLOAT3 vCameraPosition = MathHelper::GetInstance( )->Float3MinusFloat3( m_pCamera->GetPosition( ), vShift );
+		m_pCamera->SetPosition( vCameraPosition );
+		//m_pCamera->Move( vShift );
 	}
 }
 
@@ -128,7 +130,7 @@ void CPlayer::Rotate( float x, float y, float z )
 			if (m_fRoll < -20.0f) { z -= ( m_fRoll + 20.0f ); m_fRoll = -20.0f; }
 		}
 		// 카메라를 x,y,z 만큼 회전 플레이어를 회전하면 카메라가 회전됨
-		m_pCamera->Rotate( x, y, z );
+//		m_pCamera->Rotate( x, y, z );
 
 		/*플레이어를 회전한다. 1인칭 카메라 또는 3인칭 카메라에서 플레이어의 회전은 로컬 y-축에서만 일어난다.
 		플레이어의 로컬 y-축(Up 벡터)을 기준으로 로컬 z-축(Look 벡터)와 로컬 x-축(Right 벡터)을 회전시킨다.
@@ -204,12 +206,15 @@ void CPlayer::Update( float fTimeElapsed, XMFLOAT3 DestPos  )
 	if (m_pPlayerUpdatedContext) OnPlayerUpdated( fTimeElapsed );
 
 	DWORD nCurrentCameraMode = m_pCamera->GetMode( );
-	// 플레이어의 위치가 변경되었으므로 카메라의 상태를 갱신
-	if (nCurrentCameraMode == THIRD_PERSON_CAMERA) m_pCamera->Update( m_vPosition, fTimeElapsed );
 	// 카메라라의 위치가 변경될 때 추가적으로 수행할 작업 수행
 	if (m_pCameraUpdatedContext) OnCameraUpdated( fTimeElapsed );
-	// 카메라가 3인칭 카메라이면 카메라가 변경된 플레이어를 바라보도록 한다.
-	if (nCurrentCameraMode == THIRD_PERSON_CAMERA) m_pCamera->SetLookAt( m_vPosition );
+	
+	if (nCurrentCameraMode == THIRD_PERSON_CAMERA){
+		// 플레이어의 위치가 변경되었으므로 카메라의 상태를 갱신
+		m_pCamera->Update( m_vPosition, fTimeElapsed );
+		// 카메라가 3인칭 카메라이면 카메라가 변경된 플레이어를 바라보도록 한다.
+		m_pCamera->SetLookAt( m_vPosition );
+	}
 	// 카메라의 카메라 변환행렬을 다시 생성
 	m_pCamera->RegenerateViewMatrix( );
 
@@ -338,8 +343,8 @@ void CPlayer::ChangeCamera( ID3D11Device *pd3dDevice, DWORD nNewCameraMode, floa
 			SetMaxVelocityXZ( 50.0f );
 			SetMaxVelocityY( 50.0f );
 			m_pCamera = OnChangeCamera( pd3dDevice, THIRD_PERSON_CAMERA, nCurrentCameraMode );
-			m_pCamera->SetTimeLag( 0.25f );
-			m_pCamera->SetOffset( XMFLOAT3( 0.0f, 200.0f, 400.0f ) );
+			m_pCamera->SetTimeLag( 0.5f );
+			m_pCamera->SetOffset( XMFLOAT3( 0.0f, 200.0f, -400.0f ) );
 			m_pCamera->GenerateProjectionMatrix( 1.01f, 50000.0f, ASPECT_RATIO, 60.0f );
 			break;
 
