@@ -15,9 +15,12 @@
 #include <chrono>
 #include <thread>
 #include <exception>
+#include <sql.h>
+#include <sqlext.h>
+#include <tbb/concurrent_queue.h>
 #include <DirectXCollision.h>
 #include <DirectXMath.h>
-
+#include "ObjectStatus.h"
 using namespace DirectX;
 
 
@@ -35,6 +38,7 @@ using namespace DirectX;
 #define OP_RECV  1
 #define OP_SEND  2
 #define OP_NPC_MOVE  3
+#define OP_DB_EVENT 4
 
 typedef struct // 소켓의버퍼정보를구조체화.
 {
@@ -42,5 +46,33 @@ typedef struct // 소켓의버퍼정보를구조체화.
 	WSABUF wsabuf;
 	unsigned char iocp_buffer[BUFSIZE];
 	int operation;
+
+	//DB로드정보
+	DWORD db_type;
+	ObjectStatus status;
+	XMFLOAT3 pos;
+	//DB로드성공여부
+	BOOL isSuccess;
+
 } Overlap_ex;
 
+//DB_Queue 에들어갈 DB_QUERY
+typedef struct DB_QUERY
+{
+	DWORD ID;
+	DWORD type;
+	enum DB_TYPE{
+		REQUEST_STATE = 1,
+		REQUEST_UPDATE
+	};
+}DB_QUERY;
+
+//EVENT
+typedef struct EVENT {
+	DWORD id;
+	DWORD type;
+	DWORD duration; // after
+	std::chrono::system_clock::time_point startTime;
+
+	bool operator < (const EVENT& e) const { return  startTime < e.startTime; }
+}EVENT;

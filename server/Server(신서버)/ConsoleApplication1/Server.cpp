@@ -6,6 +6,8 @@
 #include "Zone.h"
 #include "UserViewList.h"
 #include "PacketMaker.h"
+#include "RequestToDB.h"
+#include "DBProcess.h"
 
 //전역변수
 HANDLE hCompletionPort;
@@ -14,16 +16,8 @@ std::vector<Monster*> monsters;
 Zone zone;
 
 
-typedef struct EVENT {
-	DWORD id;
-	DWORD type;
-	DWORD duration; // after
-	std::chrono::system_clock::time_point startTime;
 
-	bool operator < (const EVENT& e) const { return  startTime < e.startTime; }
-}EVENT;
-
-
+void ErrorHandling(char *message);
 void error_display(char *msg, int err_no)
 {
 	WCHAR *lpMsgBuf;
@@ -37,25 +31,10 @@ void error_display(char *msg, int err_no)
 	wprintf(L"에러%s\n", lpMsgBuf);
 	LocalFree(lpMsgBuf);
 }
-void SendPacket(int id, unsigned char *packet)
-{
-	
-	Overlap_ex *over = new Overlap_ex;
-	memset(over, 0, sizeof(Overlap_ex));
-	over->operation = OP_SEND;
-	over->wsabuf.buf = reinterpret_cast<CHAR *>(over->iocp_buffer);
-	over->wsabuf.len = packet[0];
-	memcpy(over->iocp_buffer, packet, packet[0]);
-
-	int ret = WSASend(users[id].getSession().hClntSock, &over->wsabuf, 1, NULL, 0,
-		&over->overlapped, NULL);
-	if (0 != ret) {
-		int error_no = WSAGetLastError();
-		error_display("SendPacket:WSASend", error_no);
-		while (true);
-	}
-}
 unsigned int __stdcall CompletionThread(LPVOID pComPort);
+
+
+//뷰처리
 void updatePlayerView( DWORD id)
 {
 	User *user = &users[id];
@@ -79,7 +58,25 @@ void updateMonsterView(DWORD id)
 	//printf("monster viewList Update\n");
 	monster->updateViewList();
 }
+//패킷처리
+void SendPacket(int id, unsigned char *packet)
+{
 
+	Overlap_ex *over = new Overlap_ex;
+	memset(over, 0, sizeof(Overlap_ex));
+	over->operation = OP_SEND;
+	over->wsabuf.buf = reinterpret_cast<CHAR *>(over->iocp_buffer);
+	over->wsabuf.len = packet[0];
+	memcpy(over->iocp_buffer, packet, packet[0]);
+
+	int ret = WSASend(users[id].getSession().hClntSock, &over->wsabuf, 1, NULL, 0,
+		&over->overlapped, NULL);
+	if (0 != ret) {
+		int error_no = WSAGetLastError();
+		error_display("SendPacket:WSASend", error_no);
+		while (true);
+	}
+}
 void ProcessPacket(User *user, unsigned char buf[]) {
 
 	printf("Receive %d from [%d] \n", buf[1], user->getID());
@@ -107,10 +104,80 @@ void ProcessPacket(User *user, unsigned char buf[]) {
 	PacketMaker::instance().MoveObject(reinterpret_cast<Object*>(user), user->getID());
 	updatePlayerView(user->getID());
 }
+//DB처리
+tbb::concurrent_queue<DB_QUERY> DB_Queue;
+std::thread *db_thread;
+void DataBaseThread()
+{
+	Overlap_ex* overEx = new Overlap_ex();
+	DB_QUERY q;
+	SQLHENV henv;
+	SQLHDBC hdbc = 0;
+	SQLHSTMT hstmt = 0;
+	SQLRETURN retcode;
+
+	SQLCHAR * OutConnStr = (SQLCHAR*)malloc(255);
+	SQLSMALLINT * OutConnStrLen = (SQLSMALLINT*)malloc(255);
+
+	// Allocate enviroment handle
+	retcode = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &henv);
+
+	// Set the ODBC version enviroment attribute
+	if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO)
+		retcode = SQLSetEnvAttr(henv, SQL_ATTR_ODBC_VERSION, (void*)SQL_OV_ODBC3, 0);
+	// Allocate connection handle
+	if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO)
+		retcode = SQLAllocHandle(SQL_HANDLE_DBC, henv, &hdbc);
+	// set connect timeout to 5 seconds
+	if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO)
+		SQLSetConnectAttr(hdbc, SQL_LOGIN_TIMEOUT, (SQLPOINTER)5, 0);
+
+	// Connect to data source
+	retcode = SQLConnect(hdbc, (SQLWCHAR*)L"ContagionCity", SQL_NTS, (SQLWCHAR*)L"",
+		SQL_NTS, (SQLWCHAR*)L"", SQL_NTS);
 
 
-void ErrorHandling(char *message);
+	//// TestCode
+	//retcode = SQLConnect(hdbc, (SQLWCHAR*)L"TEST_DB", SQL_NTS, (SQLWCHAR*)L"",
+	//	SQL_NTS, (SQLWCHAR*)L"", SQL_NTS);
 
+	// Allocate statetment handle
+	if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO) {
+		printf("DB Connection success");
+
+		// ---------------------- DB_thread loop start --------------------------//
+		while (true) {
+			ZeroMemory(overEx, sizeof(overEx));
+			if (DB_Queue.empty())
+			{
+				Sleep(1);
+				continue;
+			}
+			DB_Queue.try_pop(q);
+			retcode = SQLAllocHandle(SQL_HANDLE_STMT, hdbc, &hstmt);
+
+			if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO) {
+				switch (q.type) {
+				case DB_QUERY::REQUEST_STATE:
+					RequestToDB::RequestState(overEx, q.ID, hstmt);
+					break;
+				case DB_QUERY::REQUEST_UPDATE:
+					RequestToDB::RequestUpdate(overEx, q.ID, hstmt);
+					break;
+				}
+				PostQueuedCompletionStatus(hCompletionPort, 1, q.ID, (OVERLAPPED*)overEx);
+			}
+		}
+		// ------------------------------ thread loop end -----------------------------------
+	}
+	else { printf("DB Connection fail : %d", retcode); }
+	SQLDisconnect(hdbc);
+	SQLFreeHandle(SQL_HANDLE_DBC, hdbc);
+	SQLFreeHandle(SQL_HANDLE_ENV, henv);
+	//delete overEx;
+}
+
+//Event 처리
 std::priority_queue<EVENT, std::vector<EVENT>, std::less<EVENT> > timer_queue;
 CRITICAL_SECTION qCS;
 std::thread *timer_thread;
@@ -128,9 +195,6 @@ void add_timer(DWORD id, DWORD type, DWORD duration) {
 	timer_queue.push(temp);
 	LeaveCriticalSection(&qCS);
 }
-/*
-	IOCP에서 같은 데이터를 병렬처리 하지 않는다.
-*/
 void process_event(EVENT k) {
 	
 	if (k.id < MAX_USER)
@@ -172,7 +236,6 @@ void TimerThread()
 		} while (true);
 	} while (true);
 }
-
 void MonsterEventThread()
 {
 	std::chrono::system_clock::time_point startTime, endTime;
@@ -193,9 +256,7 @@ void MonsterEventThread()
 	}
 }
 
-/*
-오브젝트 배치
-*/
+//게임 초기화, 릴리즈, 오브젝트 할당
 void allocateObject()
 {
 	monsters.reserve(MAX_NPC);
@@ -215,22 +276,27 @@ void allocateObject()
 		updateMonsterView(i);
 	}
 }
-
 void initializeGame() {
 	//큐 크리티컬섹션 초기화
 	InitializeCriticalSection(&qCS);
 	//타이머 스레드
 	timer_thread = new std::thread{TimerThread};
 	monster_thread = new std::thread{ MonsterEventThread };
-
+	db_thread = new std::thread{ DataBaseThread };
 }
 void releaseGame() {
 	DeleteCriticalSection(&qCS);
 	timer_thread->join();
 	monster_thread->join();
+	db_thread->join();
 	delete timer_thread;
 	delete monster_thread;
+	delete db_thread;
 }
+
+
+
+
 int main(int argc, char** argv)
 {
 	WSADATA wsaData;
@@ -420,6 +486,15 @@ unsigned int __stdcall CompletionThread(LPVOID pComPort)
 			updateMonsterView(key);
 			LeaveCriticalSection(&monster->cs);
 			//printf("%d 끝\n", key);
+		}else if (OP_NPC_MOVE == my_overlap->operation)
+		{
+			//DB에서 받아온 데이터 처리
+			switch (my_overlap->db_type)
+			{
+			case DB_QUERY::REQUEST_STATE: DBProcess::RequestState(my_overlap, key); break;
+			case DB_QUERY::REQUEST_UPDATE: break;
+			}
+			continue;
 		}
 		else {
 			printf("operation : %d ", my_overlap->operation);
