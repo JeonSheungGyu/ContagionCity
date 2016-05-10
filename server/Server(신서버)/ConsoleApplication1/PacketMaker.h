@@ -10,13 +10,19 @@ class PacketMaker
 public:
 	static PacketMaker& instance();
 
+	void Login(const unsigned short id);
+
 	void PutObject(Object *owner, const DWORD id);
 
 	void RemoveObject(Object *owner, const DWORD id);
 
 	void MoveObject(Object *owner, const DWORD id);
 
+	void MonsterAttack(Object* player, const unsigned short id);
 
+	void MonsterChase(Object* player, const unsigned short id);
+
+	void MonsterDie(Object* player, const unsigned short id);
 
 private:
 	static PacketMaker* pInstance;

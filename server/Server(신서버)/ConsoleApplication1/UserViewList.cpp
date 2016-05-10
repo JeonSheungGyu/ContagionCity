@@ -200,4 +200,20 @@ void UserViewList::removeObject(const DWORD id)
 	PacketMaker::instance().RemoveObject(owner, id);
 }
 
+void UserViewList::MonsterWander(const DWORD id)
+{
+	PacketMaker::instance().MonsterChase(owner, id);
+}
+void UserViewList::MonsterChase(const DWORD id)
+{
+	PacketMaker::instance().MonsterChase(owner, id);
+}
+void UserViewList::MonsterAttack(const DWORD id)
+{
+	PacketMaker::instance().MonsterAttack(owner, id);
+}
+void UserViewList::MonsterDie(const DWORD id)
+{
+	PacketMaker::instance().MonsterDie(owner, id);
+}
 

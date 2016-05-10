@@ -26,6 +26,7 @@ void Chase::Enter(Monster* pMonster)
 /*
 타겟을 따라가는 몬스터 State
 (타겟 - 몬스터 위치)를 가지고 몬스터의 방향 거리 위치를 지정한다.
+클라이언트에서는 거리와 방향을 가지고 몬스터를 움직인다.
 */
 void Chase::Execute(Monster* pMonster)
 {
@@ -38,35 +39,19 @@ void Chase::Execute(Monster* pMonster)
 
 	XMFLOAT3 tPos = pMonster->getTargetProcess().getTarget()->getPos();
 
-	//XMVECTOR dir = XMVector3Normalize(XMLoadFloat3(&XMFLOAT3((tPos.x) - mPos.x, 0, (tPos.z) - mPos.z)));
+	XMVECTOR dir = XMVector3Normalize(XMLoadFloat3(&XMFLOAT3((tPos.x) - mPos.x, 0, (tPos.z) - mPos.z)));
 
-	//쫓는방향
-	if (tPos.x > mPos.x)
-		mPos.x += OBJECT_INTERVAL;
-	else {
-		if (tPos.x == mPos.x) {
-			(tPos.z > mPos.z) ? mPos.z += OBJECT_INTERVAL : mPos.z -= OBJECT_INTERVAL;
-		}
-		else
-			mPos.x -= OBJECT_INTERVAL;
-	}
-		
-	
+	(tPos.x > mPos.x) ? tPos.x -= OBJECT_INTERVAL : tPos.x += OBJECT_INTERVAL;
+	(tPos.z > mPos.z) ? tPos.z -= OBJECT_INTERVAL : tPos.z += OBJECT_INTERVAL;
 
-	//FLOAT dist = sqrt((tPos.x - mPos.x)*(tPos.x - mPos.x) + (tPos.z - mPos.z)*(tPos.z - mPos.z));
+	FLOAT dist = sqrt((tPos.x - mPos.x)*(tPos.x - mPos.x) + (tPos.z - mPos.z)*(tPos.z - mPos.z));
 	//dist += OBJECT_INTERVAL;
-	XMVECTOR dir = XMVector3Normalize(XMLoadFloat3(&XMFLOAT3(
-		mPos.x - pMonster->getPos().x, 0, mPos.z - pMonster->getPos().z)));
-
-	// 목표와 현재 플레이어 위치간의 거리
-	float dist = sqrt(
-		(mPos.x - pMonster->getPos().x)*(mPos.x - pMonster->getPos().x) +
-		(mPos.z - pMonster->getPos().z)*(mPos.z - pMonster->getPos().z));
 
 	pMonster->setDir(XMFLOAT3(XMVectorGetX(dir), 0, XMVectorGetZ(dir)));
 	pMonster->setDist(dist);
-	pMonster->setPos(XMFLOAT3(mPos.x, mPos.y, mPos.z));
+	pMonster->setPos(XMFLOAT3(tPos.x, tPos.y, tPos.z));
 }
+
 
 
 void Chase::Exit(Monster* pMonster)

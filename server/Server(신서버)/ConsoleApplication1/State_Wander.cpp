@@ -72,6 +72,7 @@ void Wander::Execute(Monster* pMonster)
 		}
 	}
 
+	assert(pMonster && "<Wander::Execute>: trying to work to a null state");
 
 	std::random_device rnd;
 	std::uniform_real_distribution<float> tx(pMonster->getPos().x - WANDER_RAGNE, pMonster->getPos().x + WANDER_RAGNE);
@@ -80,6 +81,7 @@ void Wander::Execute(Monster* pMonster)
 	float x = tx(rnd);	float z = tz(rnd);
 	// 중간발표 맵 크기
 	if (x < 0 || x>WORLDSIZE || z < 0 || z>WORLDSIZE) return;
+
 
 	try {
 		//if (!CollisionMap::Instance().getCollisionMap().at((int)x / NODE_HEIGHT).at((int)z / NODE_WIDTH).is_move) return;
@@ -95,7 +97,7 @@ void Wander::Execute(Monster* pMonster)
 
 		pMonster->setDir(XMFLOAT3(XMVectorGetX(dir), 0, XMVectorGetZ(dir)));
 		pMonster->setDist(dist);
-		pMonster->setPos(XMFLOAT3(((DWORD)x/RECTSIZE)*RECTSIZE, 0, ((DWORD)z / RECTSIZE)*RECTSIZE));
+		pMonster->setPos(XMFLOAT3(((DWORD)x / RECTSIZE)*RECTSIZE, 0, ((DWORD)z / RECTSIZE)*RECTSIZE));
 	}
 	catch (std::exception& e) {
 		printf("Wander::Execute %s", e.what());

@@ -5,6 +5,7 @@
 #include "StateHeader.h"
 #include "StateMachine.h"
 #include "User.h"
+#include <atomic>
 
 class Monster : public Object//소켓정보를구조체화.
 {
@@ -18,8 +19,11 @@ public:
 	Overlap_ex								m_overlapped;
 	bool									m_isAlive;
 	BYTE									m_currentAction, m_preAction;
-
+	WORD									m_EXP;
 public:
+	std::atomic<bool> is_alive;
+
+
 	//생성자
 	Monster(DWORD id, XMFLOAT3 pos);
 	// StateMachine accessor
@@ -33,4 +37,6 @@ public:
 	void updateViewList();
 	//몬스터행동계산
 	void heartBeat();
+
+	WORD									getEXP() { return m_EXP; }
 };

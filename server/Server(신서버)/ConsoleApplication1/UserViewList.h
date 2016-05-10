@@ -32,7 +32,14 @@ public:
 	void					moveObject(const DWORD id);
 	void					removeObject(const DWORD id);
 
-	
+
+	//∏ÛΩ∫≈Õ
+
+	void MonsterWander(const DWORD id);
+	void MonsterChase(const DWORD id);
+	void MonsterAttack(const DWORD id);
+	void MonsterDie(const DWORD id);
+
 	// List accessor
 	std::vector<ViewData>&	getView() { return view; }
 	std::vector<ViewData>&	getTmpList() { return tmpList; }

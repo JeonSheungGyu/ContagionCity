@@ -1,33 +1,17 @@
 #pragma comment(lib, "ws2_32")
-#include <winsock2.h>
-#include <vector>
-#include <algorithm>
-#include "resource.h"
+#include "stdafx.h"
+#include "User.h"
+#include "Monster.h"
 #include "Protocol.h"
-#define BUFSIZE 1024
-#define RECTSIZE 40
-#define INTERVAL 4
-#define MAX_USER 10
+#include "PacketDispatcher.h"
 
-typedef struct //소켓정보를구조체화.
-{
-	bool isConnected;
-	DWORD id;
-	DWORD x, y, z;
-} CLIENT, *LPCLIENT;
-
-typedef struct //소켓정보를구조체화.
-{
-	DWORD id;
-	DWORD x, y, z;
-} MONSTER, *LPMONSTER;
 
 COLORREF color[10] = { RGB(200,100,150),RGB(100,20,50),RGB(150,100,20),(200,120,0),RGB(0,200,200),
 RGB(200,0,200),RGB(200,200,200),RGB(200,0,0),RGB(0,200,0),RGB(0,0,200)};
 
 
-CLIENT users[MAX_USER];
-std::vector<LPMONSTER> monsters;
+std::vector<User> users(MAX_USER);
+std::vector<Monster> monsters(MAX_NPC);
 
 DWORD WINAPI ThFunc(LPVOID lpParam);
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -41,9 +25,8 @@ HINSTANCE g_hInst;
 LPCSTR lpszClass = TEXT("게임서버프로그래밍_2반_2010180043_전승규");
 HANDLE hStartupEvent;
 HWND hHwnd, hDlg;
-CLIENT MyData;
 bool isSet = false;
-int xPos = -RECTSIZE * 4, zPos = -RECTSIZE * 4;
+int xPos = -RECTSIZE * 4, yPos = -RECTSIZE * 4;
 char server_ip[100];
 //네트워크 전역변수
 WSABUF wsabuf;
@@ -52,6 +35,7 @@ SOCKET hSocket;
 WSAEVENT event;
 WSAOVERLAPPED overlapped;
 RECT clientRect;
+DWORD myID;
 
 
 int sendBytes = 0;
@@ -62,10 +46,6 @@ void initialize() {
 
 	wsabuf.buf = reinterpret_cast<CHAR *>(buffer);
 	wsabuf.len = BUFSIZE;
-
-	memset(&MyData, 0, sizeof(MyData));
-	memset(users, 0, sizeof(users));
-
 }
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdParam, int nCmdShow)
 {
@@ -93,11 +73,17 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmd
 
 	g_hInst = hInstance;
 
+
+	// Check to see if any messages are waiting in the queue
 	while (GetMessage(&msg, NULL, 0, 0))
 	{
+		// Translate the message and dispatch it to WindowProc()
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
+
+
+	
 
 	return (int)msg.wParam;
 }
@@ -134,9 +120,11 @@ LRESULT CALLBACK DlgProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	PAINTSTRUCT ps;
-	HDC hdc;
 	HPEN myPen, oldPen;
 	HBRUSH myBrush, oldBrush, wBrush, bBrush;
+	HDC hdc, hMemDC; // HDC를 하나더 선언해준다. HDC는 '그리는 작업' 이다.
+	HBITMAP hBitmap, OldBitmap; // HBITMAP은 대략 종이를 의미한다. 종이 2장 선언
+
 	static BOOL bMove = FALSE;
 	int check = 0;
 	RECT winRect;
@@ -144,6 +132,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	GetWindowRect(hwnd, &winRect);
 	cs_packet_dir dir_packet;
 	unsigned char *packet;
+	static XMFLOAT2 prePos = { 0,0 };
+
 	hHwnd = hwnd;
 	switch (msg)
 	{
@@ -156,11 +146,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			TRUE); //윈도우 크기를 바꿔주고 클라이언트 영역을 새로 그려준다.
 
 		initialize();
-
-
+		
 		DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DIALOG1), hwnd, DlgProc);
+
+		SetTimer(hwnd, 1, 33, NULL);//타이머1
 		break;
 	case WM_KEYDOWN:
+		if (users[myID].is_move) return 0;
 		switch (wParam)
 		{
 		case VK_LEFT:			
@@ -189,13 +181,37 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				ErrorHandling("WSASend() error");
 		}
 		return 0;
+	case WM_TIMER:
+		//업데이트
+		for (auto& data : users)
+			if (data.is_using) 
+				data.update();
+		for (auto& data : monsters)
+			if (data.is_using) data.update();
+		//렌더링 작업
+		InvalidateRect(hwnd, NULL, FALSE);
+		return 0;
 	case WM_PAINT:
 		hdc = BeginPaint(hwnd, &ps);
+
+
+		//좌표계변환
+		if (isSet) {
+			xPos = users[myID].getPos().x - RECTSIZE * 8;
+			yPos = users[myID].getPos().y - RECTSIZE * 8;
+		}
+		
+
+		hMemDC = CreateCompatibleDC(hdc); // hMemDC 에 기존 DC (hdc)에 맞게 새 DC 생성
+		hBitmap = CreateCompatibleBitmap(hdc, clientRect.right, clientRect.bottom); // crt 규격대로 종이 생성
+		OldBitmap = (HBITMAP)SelectObject(hMemDC, hBitmap); // 종이 교체
+		FillRect(hMemDC, &clientRect, (HBRUSH)GetStockObject(WHITE_BRUSH)); //도화지 색 변경
+
 		myPen = CreatePen(PS_SOLID, 5, RGB(0, 0, 0));
-		oldPen = (HPEN)SelectObject(hdc, myPen);
+		oldPen = (HPEN)SelectObject(hMemDC, myPen);
 		wBrush = CreateSolidBrush(RGB(255, 255, 255));
 		bBrush = CreateSolidBrush(RGB(0, 0, 0));
-		oldBrush = (HBRUSH)SelectObject(hdc, wBrush);
+		oldBrush = (HBRUSH)SelectObject(hMemDC, wBrush);
 
 		check = 0;
 		//체스판 그리기
@@ -204,16 +220,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			for (int j = 0; j < 100; j++) {
 				//간격표시자 ( 8칸 ) 
 				if ( (check + j ) %2 == 0 )
-					(HBRUSH)SelectObject(hdc, bBrush);
+					(HBRUSH)SelectObject(hMemDC, bBrush);
 				else
-					(HBRUSH)SelectObject(hdc, wBrush);
+					(HBRUSH)SelectObject(hMemDC, wBrush);
 
 				for (int z = 0; z < INTERVAL; z++) {
 					for (int x = 0; x < INTERVAL; x++) {
 						if (clientRect.left < (RECTSIZE*INTERVAL*j + x*RECTSIZE) - xPos && (RECTSIZE*INTERVAL*j + x*RECTSIZE) - xPos < clientRect.right &&
-							clientRect.top < (RECTSIZE * INTERVAL * i + z*RECTSIZE) - zPos && (RECTSIZE * INTERVAL * i + z*RECTSIZE) - zPos < clientRect.bottom) {
-							Rectangle(hdc, (RECTSIZE*INTERVAL*j + x*RECTSIZE) - xPos, (RECTSIZE * INTERVAL * i + z*RECTSIZE) - zPos,
-								(RECTSIZE * INTERVAL * j + x*RECTSIZE) - xPos + RECTSIZE, (RECTSIZE * INTERVAL * i + z*RECTSIZE) - zPos + RECTSIZE);
+							clientRect.top < (RECTSIZE * INTERVAL * i + z*RECTSIZE) - yPos && (RECTSIZE * INTERVAL * i + z*RECTSIZE) - yPos < clientRect.bottom) {
+							Rectangle(hMemDC, (RECTSIZE*INTERVAL*j + x*RECTSIZE) - xPos, (RECTSIZE * INTERVAL * i + z*RECTSIZE) - yPos,
+								(RECTSIZE * INTERVAL * j + x*RECTSIZE) - xPos + RECTSIZE, (RECTSIZE * INTERVAL * i + z*RECTSIZE) - yPos + RECTSIZE);
 						}
 					
 					}
@@ -221,66 +237,62 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			}
 			check = 1 - check;
 		}
-		SelectObject(hdc, oldPen);
-		SelectObject(hdc, oldBrush);
+		SelectObject(hMemDC, oldPen);
+		SelectObject(hMemDC, oldBrush);
 		DeleteObject(myPen);
 		DeleteObject(wBrush);
 		DeleteObject(bBrush);
 
-		//시야에 존재하는 Object만 그리므로 따로 필터링할 필요가 없다.
-		//플레이어 그리기
-		if (isSet) {
-			myPen = CreatePen(PS_SOLID, 5, RGB(255, 0, 0));
-			oldPen = (HPEN)SelectObject(hdc, myPen);
-			myBrush = CreateSolidBrush(color[MyData.id]);
-			oldBrush = (HBRUSH)SelectObject(hdc, myBrush);
-			Rectangle(hdc, MyData.x - xPos, MyData.z - zPos, MyData.x - xPos + RECTSIZE, MyData.z - zPos + RECTSIZE);
-			wsprintf(str, TEXT("[%d] %d"), MyData.id, MyData.y);
-			TextOut(hdc, MyData.x + 5 - xPos, MyData.z + 10 - zPos, str, lstrlen(str));
-			SelectObject(hdc, oldPen);
-			SelectObject(hdc, oldBrush);
-			DeleteObject(myPen);
-			DeleteObject(myBrush);
-		}
 	
 		
-		//다른 유저 그리기
+		//유저
 		for (int i = 0; i < MAX_USER; i++) {
-			if (users[i].isConnected) {
+			if (users[i].is_using) {
 				myPen = CreatePen(PS_SOLID, 5, RGB(0, 0, 0));
-				oldPen = (HPEN)SelectObject(hdc, myPen);
-				myBrush = CreateSolidBrush(color[users[i].id]);
+				oldPen = (HPEN)SelectObject(hMemDC, myPen);
+				myBrush = CreateSolidBrush(color[users[i].getID()]);
 				oldBrush = (HBRUSH)SelectObject(hdc, myBrush);
-				Rectangle(hdc, users[i].x - xPos, users[i].z - zPos, users[i].x - xPos + RECTSIZE, users[i].z - zPos + RECTSIZE);
-				wsprintf(str, TEXT("[%d] %d"), users[i].id, users[i].y);
-				TextOut(hdc, users[i].x + 5 - xPos, users[i].z + 10 - zPos, str, lstrlen(str));
-				SelectObject(hdc, oldPen);
-				SelectObject(hdc, oldBrush);
+				Rectangle(hMemDC, users[i].getPos().x - xPos, users[i].getPos().y - yPos, users[i].getPos().x - xPos + RECTSIZE, users[i].getPos().y - yPos + RECTSIZE);
+				wsprintf(str, TEXT("[%d] %d"), users[i].getID(), users[i].getHp());
+				TextOut(hMemDC, users[i].getPos().x + 5 - xPos, users[i].getPos().y + 10 - yPos, str, lstrlen(str));
+				SelectObject(hMemDC, oldPen);
+				SelectObject(hMemDC, oldBrush);
 				DeleteObject(myPen);
 				DeleteObject(myBrush);
 			}
 		}
 
 		//몬스터
-		for (auto iter = monsters.begin(); iter != monsters.end(); iter++) {
-			
-			myPen = CreatePen(PS_SOLID, 5, RGB(0, 0, 0));
-			oldPen = (HPEN)SelectObject(hdc, myPen);
-			myBrush = CreateSolidBrush(COLORREF(RGB(255,0,0)));
-			oldBrush = (HBRUSH)SelectObject(hdc, myBrush);
-			Ellipse(hdc, (*iter)->x - xPos, (*iter)->z - zPos, (*iter)->x - xPos + RECTSIZE, (*iter)->z - zPos + RECTSIZE);
-			wsprintf(str, TEXT("[%d] %d"), (*iter)->id, (*iter)->y);
-			TextOut(hdc, (*iter)->x + 5 - xPos, (*iter)->z + 10 - zPos, str, lstrlen(str));
-			SelectObject(hdc, oldPen);
-			SelectObject(hdc, oldBrush);
-			DeleteObject(myPen);
-			DeleteObject(myBrush);
+		for (int i = MAX_USER; i < MAX_NPC - MAX_USER; i++) {
+			if (monsters[i].is_using) {
+				myPen = CreatePen(PS_SOLID, 5, RGB(0, 0, 0));
+				oldPen = (HPEN)SelectObject(hMemDC, myPen);
+				myBrush = CreateSolidBrush(COLORREF(RGB(255, 0, 0)));
+				oldBrush = (HBRUSH)SelectObject(hMemDC, myBrush);
+				Ellipse(hMemDC, monsters[i].getPos().x - xPos, monsters[i].getPos().y - yPos, monsters[i].getPos().x - xPos + RECTSIZE, monsters[i].getPos().y - yPos + RECTSIZE);
+				wsprintf(str, TEXT("[%d]"), monsters[i].getID());
+				TextOut(hMemDC, monsters[i].getPos().x + 5 - xPos, monsters[i].getPos().y + 10 - yPos, str, lstrlen(str));
+				SelectObject(hMemDC, oldPen);
+				SelectObject(hMemDC, oldBrush);
+				DeleteObject(myPen);
+				DeleteObject(myBrush);
+			}
 		}
 
 
 	
-		wsprintf(str, TEXT("좌표 ( %d, %d ) "), MyData.x/RECTSIZE, MyData.z/ RECTSIZE);
-		TextOut(hdc, winRect.right - 200, winRect.bottom-100, str, lstrlen(str));
+		wsprintf(str, TEXT("좌표 ( %d, %d ) "), users[myID].getPos().x/RECTSIZE, users[myID].getPos().y/ RECTSIZE);
+		TextOut(hMemDC, winRect.right - 200, winRect.bottom-100, str, lstrlen(str));
+
+
+
+		BitBlt(hdc, 0, 0, clientRect.right, clientRect.bottom, hMemDC, 0, 0, SRCCOPY); // 배껴그리기
+																		 // hdc 의 0,0 위치에 hMemDC의 0,0위치부터 crt.right,crt.bottom까지의 영역, 즉 crt범위를 그린다 라는 설정인듯.
+
+		DeleteObject(SelectObject(hMemDC, OldBitmap)); // 종이 원래대로 한 후 제거
+		DeleteDC(hMemDC); // hMemDC 제거
+
+
 
 		EndPaint(hwnd, &ps);
 		return 0;
@@ -305,8 +317,8 @@ DWORD WINAPI ThFunc(LPVOID lpParam)
 	WSADATA wsaData;
 	SOCKADDR_IN recvAddr;
 	char packet[BUFSIZE];
-	LPCLIENT lpClientData;
-	LPMONSTER lpMonster;
+	User* lpClientData;
+	Monster* lpMonster;
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) /* Load Winsock 2.2 DLL */
 		ErrorHandling("WSAStartup() error!");
 
@@ -335,96 +347,32 @@ DWORD WINAPI ThFunc(LPVOID lpParam)
 		recvn(hSocket, packet + sizeof(BYTE) + sizeof(BYTE), packet[0] - (sizeof(BYTE) + sizeof(BYTE)), flags);
 
 
-		if (packet[1] == SC_POS) {
-			printf("Recv :SC_POS \n");
-			sc_packet_pos pos_packet;
-			memcpy(&pos_packet, packet, packet[0]);
+		if (packet[1] == SC_MOVE_OBJECT) {
+			PacketDispatcher::MoveObject(packet);
 
-			if (pos_packet.id == MyData.id) {
-				//기준이 되는곳
-				MyData.x = pos_packet.x;
-				MyData.y = pos_packet.y;
-				MyData.z = pos_packet.z;
-				xPos = MyData.x - RECTSIZE * 10;
-				zPos = MyData.z - RECTSIZE * 10;
-			}
-			else {
-				if (pos_packet.id < MAX_USER) {
-					users[pos_packet.id].x = pos_packet.x;
-					users[pos_packet.id].y = pos_packet.y;
-					users[pos_packet.id].z = pos_packet.z;
-				}
-				else {
-					auto iter = find_if(monsters.begin(), monsters.end(), [=](LPMONSTER m) {
-						if (m->id == pos_packet.id) {
-							return true;
-						}
-						return false;
-					});
-					(*iter)->x = pos_packet.x;
-					(*iter)->y = pos_packet.y;
-					(*iter)->z = pos_packet.z;
-				}
-			
-			}
-			
+		}else if (packet[1] == SC_MONSTER_CHASE) {
+			PacketDispatcher::MonsterChase(packet);
+		}
+		else if (packet[1] == SC_MONSTER_ATTACK) {
+			PacketDispatcher::MonsterAttack(packet);
+		}
+		else if (packet[1] == SC_MONSTER_DIE) {
+			PacketDispatcher::MonsterDie(packet);
 		}
 		else if (packet[1] == SC_PUT_OBJECT) {
-			printf("Recv :SC_PUT_PLAYER \n");
-			sc_packet_put_object put_packet;
-			memcpy(&put_packet, packet, packet[0]);
 			if (!isSet) {
-				MyData.id = put_packet.id;
-				MyData.x = put_packet.x;
-				MyData.y = put_packet.y;
-				MyData.z = put_packet.z;
-				xPos = MyData.x - RECTSIZE * 10;
-				zPos = MyData.z - RECTSIZE * 10;
+				sc_packet_put_object put_packet;
+				memcpy(&put_packet, packet, packet[0]);
+				myID = put_packet.id;
 				isSet = true;
 			}
-			else {
-				if (put_packet.id < MAX_USER) {
-					users[put_packet.id].isConnected = true;
-					users[put_packet.id].id = put_packet.id;
-					users[put_packet.id].x = put_packet.x;
-					users[put_packet.id].y = put_packet.y;
-					users[put_packet.id].z = put_packet.z;
-				}
-				else {
-					lpMonster = new MONSTER();
-					lpMonster->id = put_packet.id;
-					lpMonster->x = put_packet.x;
-					lpMonster->y = put_packet.y;
-					lpMonster->z = put_packet.z;
-					monsters.push_back(lpMonster);
-				}
-			
-			}
+			PacketDispatcher::PutObject(packet);
 		}
 		else if (packet[1] == SC_REMOVE_OBJECT) {
-			printf("Recv :SC_REMOVE_PLAYER \n");
-			sc_packet_remove_object remove_packet;
-			memcpy(&remove_packet, packet, packet[0]);
-			if (remove_packet.id < MAX_USER) {
-				users[remove_packet.id].isConnected = false;
-			}
-			else {
-				auto iter = find_if(monsters.begin(), monsters.end(), [=](LPMONSTER m) {
-						if (m->id == remove_packet.id) {
-							return true;
-						}
-						return false;
-				});
-
-				//패킷이 중복으로 올 수 도 있다.
-				if (iter != monsters.end()) {
-					monsters.erase(iter);
-				}
-			}
+			
+			PacketDispatcher::RemoveObject(packet);
 		}
-		InvalidateRect(hHwnd, NULL, TRUE);
 	}
-
 	closesocket(hSocket);
 	WSACleanup();
 

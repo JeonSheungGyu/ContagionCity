@@ -26,22 +26,32 @@ class Object : public SyncObject
 {
 protected:
 	DWORD									id;
+
+	//이동
 	ObjectVector							obVector;
+	float									speed;
+	//상태
 	ObjectStatus							obStatus;
+
+	//시야
 	Sector									*sector;
 	std::set<Sector*>						nearSectors;
 	std::set<DWORD>							nearList;
+
+	//충돌
 	BoundingSphere							collisionSphere;
 public:
 	Object() : collisionSphere(XMFLOAT3(0,0,0), COLLISIONSPHERE) {
 		id = -1;
 		sector = nullptr;
+		speed = 8;
 		nearList.clear();
 		nearSectors.clear();
 	}
 	Object( DWORD t_id, XMFLOAT3 pos) : id(t_id), collisionSphere(pos, COLLISIONSPHERE) {
 		obVector.position = pos;
 		sector = nullptr;
+		speed = 8;
 		nearList.clear();
 		nearSectors.clear();
 	}
@@ -49,9 +59,14 @@ public:
 		obVector.reset();
 		id = -1;
 		sector = nullptr;
+		speed = 8;
 		nearList.clear();
 		nearSectors.clear();
 	}
+
+	// speed
+	FLOAT					getSpeed()const { return speed; }
+	void					setSpeed(const FLOAT sp) { speed = sp; }
 	// collision sphere
 	const BoundingSphere&		getCollisionSphere() { return collisionSphere; }
 	void						setCollisionSpherePos(const XMFLOAT3& pos) { collisionSphere.Center = pos; }

@@ -13,10 +13,28 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="소스 파일\Object">
+      <UniqueIdentifier>{0c5d881a-67e7-4220-987a-c1dfd166878b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\Object">
+      <UniqueIdentifier>{903a8cd5-ec16-49ef-b254-2a79e0863ad4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="PacketDispatcher.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Monster.cpp">
+      <Filter>소스 파일\Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Object.cpp">
+      <Filter>소스 파일\Object</Filter>
+    </ClCompile>
+    <ClCompile Include="User.cpp">
+      <Filter>소스 파일\Object</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -25,6 +43,24 @@
     </ClInclude>
     <ClInclude Include="Protocol.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketDispatcher.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Monster.h">
+      <Filter>헤더 파일\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Object.h">
+      <Filter>헤더 파일\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="User.h">
+      <Filter>헤더 파일\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectStatus.h">
+      <Filter>헤더 파일\Object</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

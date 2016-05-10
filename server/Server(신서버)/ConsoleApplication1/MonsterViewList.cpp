@@ -3,6 +3,7 @@
 #include "Monster.h"
 #include "User.h"
 #include "MonsterViewList.h"
+#include "PacketMaker.h"
 
 using namespace std;
 
@@ -100,7 +101,20 @@ void MonsterViewList::updateViewList(const set<DWORD>& nearList)
 				if (player->getViewList().isInViewList(owner->getID())) {  // 내가 상대 viewList에 있는지
 																	//움직인다고 패킷전송
 																	//몬스터 방식으로 패킷전송
-					player->getViewList().moveObject(owner->getID());
+					//몬스터 액션에 따른 패킷 전송
+					switch (owner->getAction()) {
+					case wander:
+						player->getViewList().MonsterWander(owner->getID());
+					case chase:
+						player->getViewList().MonsterChase(owner->getID());
+						break;
+					case combat:
+						player->getViewList().MonsterAttack(owner->getID());
+						break;
+					case die:
+						player->getViewList().MonsterDie(owner->getID());
+						break;
+					}
 
 				}
 				else {
