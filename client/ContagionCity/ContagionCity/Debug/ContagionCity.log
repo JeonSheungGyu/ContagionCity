@@ -1,25 +1,11 @@
-﻿  Shader.cpp
-c:\users\garam\documents\github\contagioncity\contagioncity\client\contagioncity\contagioncity\shader.cpp(8): warning C4356: 'CAnimatedObjShader::m_pd3dcbOffsetMatrix' : 정적 데이터 멤버는 파생 클래스를 통해 초기화할 수 없습니다.
-c:\users\garam\documents\github\contagioncity\contagioncity\client\contagioncity\contagioncity\shader.cpp(203): warning C4018: '<' : signed 또는 unsigned가 일치하지 않습니다.
-c:\users\garam\documents\github\contagioncity\contagioncity\client\contagioncity\contagioncity\shader.cpp(286): warning C4244: '인수' : 'int'에서 'FLOAT'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-c:\users\garam\documents\github\contagioncity\contagioncity\client\contagioncity\contagioncity\shader.cpp(335): warning C4018: '<' : signed 또는 unsigned가 일치하지 않습니다.
-c:\users\garam\documents\github\contagioncity\contagioncity\client\contagioncity\contagioncity\shader.cpp(456): warning C4018: '<' : signed 또는 unsigned가 일치하지 않습니다.
-c:\users\garam\documents\github\contagioncity\contagioncity\client\contagioncity\contagioncity\shader.cpp(541): warning C4258: 'j' : for 루프의 정의가 무시되고 바깥쪽 범위의 정의가 사용됩니다.
-          c:\users\garam\documents\github\contagioncity\contagioncity\client\contagioncity\contagioncity\shader.cpp(536) : 'j' 정의가 무시됩니다.
-          c:\users\garam\documents\github\contagioncity\contagioncity\client\contagioncity\contagioncity\shader.cpp(529) : 'j' 정의가 사용됩니다.
-c:\users\garam\documents\github\contagioncity\contagioncity\client\contagioncity\contagioncity\shader.cpp(560): warning C4258: 'j' : for 루프의 정의가 무시되고 바깥쪽 범위의 정의가 사용됩니다.
-          c:\users\garam\documents\github\contagioncity\contagioncity\client\contagioncity\contagioncity\shader.cpp(555) : 'j' 정의가 무시됩니다.
-          c:\users\garam\documents\github\contagioncity\contagioncity\client\contagioncity\contagioncity\shader.cpp(548) : 'j' 정의가 사용됩니다.
-c:\users\garam\documents\github\contagioncity\contagioncity\client\contagioncity\contagioncity\shader.cpp(581): warning C4258: 'j' : for 루프의 정의가 무시되고 바깥쪽 범위의 정의가 사용됩니다.
-          c:\users\garam\documents\github\contagioncity\contagioncity\client\contagioncity\contagioncity\shader.cpp(575) : 'j' 정의가 무시됩니다.
-          c:\users\garam\documents\github\contagioncity\contagioncity\client\contagioncity\contagioncity\shader.cpp(568) : 'j' 정의가 사용됩니다.
-c:\users\garam\documents\github\contagioncity\contagioncity\client\contagioncity\contagioncity\shader.cpp(602): warning C4258: 'j' : for 루프의 정의가 무시되고 바깥쪽 범위의 정의가 사용됩니다.
-          c:\users\garam\documents\github\contagioncity\contagioncity\client\contagioncity\contagioncity\shader.cpp(596) : 'j' 정의가 무시됩니다.
-          c:\users\garam\documents\github\contagioncity\contagioncity\client\contagioncity\contagioncity\shader.cpp(589) : 'j' 정의가 사용됩니다.
-c:\users\garam\documents\github\contagioncity\contagioncity\client\contagioncity\contagioncity\shader.cpp(624): warning C4258: 'j' : for 루프의 정의가 무시되고 바깥쪽 범위의 정의가 사용됩니다.
-          c:\users\garam\documents\github\contagioncity\contagioncity\client\contagioncity\contagioncity\shader.cpp(618) : 'j' 정의가 무시됩니다.
-          c:\users\garam\documents\github\contagioncity\contagioncity\client\contagioncity\contagioncity\shader.cpp(611) : 'j' 정의가 사용됩니다.
-c:\users\garam\documents\github\contagioncity\contagioncity\client\contagioncity\contagioncity\shader.cpp(645): warning C4258: 'j' : for 루프의 정의가 무시되고 바깥쪽 범위의 정의가 사용됩니다.
-          c:\users\garam\documents\github\contagioncity\contagioncity\client\contagioncity\contagioncity\shader.cpp(639) : 'j' 정의가 무시됩니다.
-          c:\users\garam\documents\github\contagioncity\contagioncity\client\contagioncity\contagioncity\shader.cpp(632) : 'j' 정의가 사용됩니다.
-  ContagionCity.vcxproj -> C:\Users\Garam\Documents\GitHub\ContagionCity\ContagionCity\client\ContagionCity\Debug\ContagionCity.exe
+﻿Build started 2016-05-13 오전 12:56:37.
+     1>Project "C:\Users\Sheunggyu\Desktop\ContagionCity\client\ContagionCity\ContagionCity\ContagionCity.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _WINDOWS /D FBXDSK_NEW_API /D FBXSDK_SHARED /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yc"stdafx.h" /Fp"Debug\ContagionCity.pch" /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt stdafx.cpp
+         stdafx.cpp
+     1>c:\users\sheunggyu\desktop\contagioncity\client\contagioncity\contagioncity\stdafx.h(25): fatal error C1083: Cannot open include file: 'D3DX11.h': No such file or directory
+     1>Done Building Project "C:\Users\Sheunggyu\Desktop\ContagionCity\client\ContagionCity\ContagionCity\ContagionCity.vcxproj" (Build target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:00.82

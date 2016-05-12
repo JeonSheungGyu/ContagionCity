@@ -9,6 +9,7 @@ void PacketDispatcher_DB_Server::PermisionLogin(char*buf,const unsigned short id
 
 	memcpy(reinterpret_cast<char*>(&rPacket), buf, *buf);
 
+
 	sPacket.permit_check = rPacket.check;
 	sPacket.type = LC_PERMISION_LOGIN;
 	sPacket.size = sizeof(sPacket);

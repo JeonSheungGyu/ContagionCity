@@ -339,7 +339,7 @@ int main(int argc, char** argv)
 	// 소켓을 만들때는 꼭 중첩 입출력 형식으로 만들어 주어야 한다.
 	servAddr.sin_family = AF_INET;
 	servAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	servAddr.sin_port = htons(atoi("2738"));
+	servAddr.sin_port = htons(GAME_PORT);
 
 	bind(hServSock, (SOCKADDR*)&servAddr, sizeof(servAddr));
 	listen(hServSock, 5);

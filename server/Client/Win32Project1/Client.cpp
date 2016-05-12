@@ -4,6 +4,7 @@
 #include "Monster.h"
 #include "Protocol.h"
 #include "PacketDispatcher.h"
+#include "PacketSender.h"
 
 
 COLORREF color[10] = { RGB(200,100,150),RGB(100,20,50),RGB(150,100,20),(200,120,0),RGB(0,200,200),
@@ -28,6 +29,9 @@ HWND hHwnd, hDlg;
 bool isSet = false;
 int xPos = -RECTSIZE * 4, yPos = -RECTSIZE * 4;
 char server_ip[100];
+char id[ID_LEN];
+char password[PASSWORD_LEN];
+
 //네트워크 전역변수
 WSABUF wsabuf;
 CHAR buffer[BUFSIZE] = { 0, };
@@ -42,6 +46,7 @@ int sendBytes = 0;
 int recvBytes = 0;
 int flags = 0;
 
+BYTE LoginPermit();
 void initialize() {
 
 	wsabuf.buf = reinterpret_cast<CHAR *>(buffer);
@@ -98,6 +103,17 @@ LRESULT CALLBACK DlgProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		switch (wParam) {
 		case IDOK:
 			GetDlgItemText(hDlg, IDC_EDIT1, server_ip, 128);
+			GetDlgItemText(hDlg, IDC_EDIT2, id, 20);
+			GetDlgItemText(hDlg, IDC_EDIT3, password, 20);
+
+			//로그인 인증을해야 된다.
+			if ( LoginPermit() == 0) {
+				EndDialog(hDlg, IDCANCEL);
+				hDlg = NULL;
+				PostQuitMessage(0);
+				return TRUE;
+			}
+
 
 			hStartupEvent = CreateEvent(0, FALSE, FALSE, 0);
 			//통신스레드
@@ -310,7 +326,38 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
+BYTE LoginPermit() {
+	WSADATA wsaData;
+	SOCKADDR_IN recvAddr;
+	char packet[BUFSIZE];
+	User* lpClientData;
+	Monster* lpMonster;
+	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) /* Load Winsock 2.2 DLL */
+		ErrorHandling("WSAStartup() error!");
 
+	hSocket = WSASocket(PF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
+	if (hSocket == INVALID_SOCKET)
+		ErrorHandling("socket() error");
+
+	memset(&recvAddr, 0, sizeof(recvAddr));
+	recvAddr.sin_family = AF_INET;
+	recvAddr.sin_addr.s_addr = inet_addr(server_ip);
+	recvAddr.sin_port = htons(LOGIN_PORT);
+
+	if (connect(hSocket, (SOCKADDR*)&recvAddr, sizeof(recvAddr)) == SOCKET_ERROR)
+		ErrorHandling("connect() error!");
+
+	PacketSender::instance().requestLogin(hSocket, id, password);
+	//응답패킷 받아오기
+	recvn(hSocket, packet, sizeof(BYTE) + sizeof(BYTE), flags);
+	//나머지 데이터 받아오기
+	recvn(hSocket, packet + sizeof(BYTE) + sizeof(BYTE), packet[0] - (sizeof(BYTE) + sizeof(BYTE)), flags);
+
+	closesocket(hSocket);
+	WSACleanup();
+	
+	return PacketDispatcher::PermisionLogin(packet);
+}
 
 DWORD WINAPI ThFunc(LPVOID lpParam)
 {
@@ -329,7 +376,7 @@ DWORD WINAPI ThFunc(LPVOID lpParam)
 	memset(&recvAddr, 0, sizeof(recvAddr));
 	recvAddr.sin_family = AF_INET;
 	recvAddr.sin_addr.s_addr = inet_addr(server_ip);
-	recvAddr.sin_port = htons(atoi("2738"));
+	recvAddr.sin_port = htons(GAME_PORT);
 
 	if (connect(hSocket, (SOCKADDR*)&recvAddr, sizeof(recvAddr)) == SOCKET_ERROR)
 		ErrorHandling("connect() error!");

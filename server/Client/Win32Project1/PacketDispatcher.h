@@ -5,7 +5,7 @@ class PacketDispatcher
 {
 public:
 	//·Î±×ÀÎ
-	//static void PermisionLogin(char* buf);
+	static BYTE PermisionLogin(char* buf);
 	//static void Login(char* buf);
 
 

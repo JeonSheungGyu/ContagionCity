@@ -10,7 +10,7 @@ typedef struct NetworkSession {
 	int	packet_size;
 	int previous_size;
 	unsigned char packet_buff[BUFSIZE];
-
+	
 	NetworkSession() {
 		hClntSock = NULL;
 		memset(&clntAddr, 0, sizeof(clntAddr));
@@ -41,7 +41,7 @@ private:
 	NetworkSession session;
 	UserViewList viewList;
 public:
-	
+
 	User() : viewList(this), Object () {
 		blnConnected = false;
 	}

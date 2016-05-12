@@ -18,10 +18,11 @@ public:
 		//int tid, tlv, element, hp, mp, ap, dp, exp, rexp;
 
 		auto ret = SQLBindParameter(hstmt, 1, SQL_PARAM_INPUT, SQL_C_LONG, SQL_CHAR, sizeof(client_ID), 0, &client_ID, sizeof(client_ID), &cbClientid);
-		retcode = SQLExecDirect(hstmt, (SQLWCHAR*)L"{CALL RequestState(?)}", SQL_NTS);
+		retcode = SQLExecDirect(hstmt, (SQLWCHAR*)L"select * from contagioncity.character c where c.id = ?", SQL_NTS);
 
 		if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO) {
-			retcode = SQLBindCol(hstmt, 1, SQL_INTEGER, &dummy, sizeof(int), &cb_ret[0]);
+			//ID는 쓰지 않지만 받아오는걸로
+			retcode = SQLBindCol(hstmt, 1, SQL_INTEGER, &client_ID, sizeof(int), &cb_ret[0]);
 			retcode = SQLBindCol(hstmt, 2, SQL_INTEGER, &over->status.lv, sizeof(int), &cb_ret[1]);
 			retcode = SQLBindCol(hstmt, 3, SQL_INTEGER, &over->status.hp, sizeof(int), &cb_ret[2]);
 			retcode = SQLBindCol(hstmt, 4, SQL_INTEGER, &over->status.ap, sizeof(int), &cb_ret[3]);
@@ -53,9 +54,7 @@ public:
 	{
 		DWORD client_ID, level, hp, ap, damage, defense, exp, rexp, etype;
 		double posX, posY, posZ, speed;
-
 		User &player = users[id];
-		client_ID = id;
 		level = player.getStatus().lv;
 		hp = player.getStatus().hp;
 		ap = player.getStatus().ap;
@@ -66,7 +65,6 @@ public:
 		posX = player.getPos().x;
 		posY = player.getPos().y;
 		posZ = player.getPos().z;
-
 
 		auto ret = SQLBindParameter(hstmt, 1, SQL_PARAM_INPUT, SQL_C_LONG, SQL_INTEGER, 0, 0, &client_ID, sizeof(int), SQL_NULL_HANDLE);
 		ret = SQLBindParameter(hstmt, 2, SQL_PARAM_INPUT, SQL_C_LONG, SQL_INTEGER, 0, 0, &level, sizeof(int), SQL_NULL_HANDLE);
@@ -79,11 +77,9 @@ public:
 		ret = SQLBindParameter(hstmt, 9, SQL_PARAM_INPUT, SQL_C_DOUBLE, SQL_DOUBLE, 0, 0, &posX, sizeof(double), SQL_NULL_HANDLE);
 		ret = SQLBindParameter(hstmt, 10, SQL_PARAM_INPUT, SQL_C_DOUBLE, SQL_DOUBLE, 0, 0, &posY, sizeof(double), SQL_NULL_HANDLE);
 		ret = SQLBindParameter(hstmt, 11, SQL_PARAM_INPUT, SQL_C_DOUBLE, SQL_DOUBLE, 0, 0, &posZ, sizeof(double), SQL_NULL_HANDLE);
+		ret = SQLBindParameter(hstmt, 12, SQL_PARAM_INPUT, SQL_C_LONG, SQL_INTEGER, 0, 0, &client_ID, sizeof(int), SQL_NULL_HANDLE);
 
-		ret = SQLExecDirect(hstmt, (SQLWCHAR*)L"{CALL RequestUpdate(?,?,?,?,?,?,?,?,?,?,?)}", SQL_NTS);
-
-		if (ret == SQL_SUCCESS || ret == SQL_SUCCESS_WITH_INFO)
-			printf("Login Update Success");
+		ret = SQLExecDirect(hstmt, (SQLWCHAR*)L"update contagioncity.character c set c.id =?, c.lv=?, c.hp=?, c.ap=?, c.damage=?, c.defense=?, c.exp=?, c.requestEXP=?, c.x=?, c.y=?, c.z=? where c.id=?", SQL_NTS);
 
 		over->operation = OP_DB_EVENT;
 		over->db_type = DB_QUERY::REQUEST_UPDATE;

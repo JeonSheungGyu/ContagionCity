@@ -19,12 +19,15 @@
     <Filter Include="헤더 파일\Object">
       <UniqueIdentifier>{903a8cd5-ec16-49ef-b254-2a79e0863ad4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="헤더 파일\Packet">
+      <UniqueIdentifier>{92f9072f-4bb9-4cd4-954a-74625bc656f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Packet">
+      <UniqueIdentifier>{73483d2f-4a72-40b1-a9f5-296a1c2f1145}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="PacketDispatcher.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="Monster.cpp">
@@ -36,15 +39,18 @@
     <ClCompile Include="User.cpp">
       <Filter>소스 파일\Object</Filter>
     </ClCompile>
+    <ClCompile Include="PacketDispatcher.cpp">
+      <Filter>소스 파일\Packet</Filter>
+    </ClCompile>
+    <ClCompile Include="PacketSender.cpp">
+      <Filter>소스 파일\Packet</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Protocol.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="PacketDispatcher.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">
@@ -61,6 +67,12 @@
     </ClInclude>
     <ClInclude Include="ObjectStatus.h">
       <Filter>헤더 파일\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketDispatcher.h">
+      <Filter>헤더 파일\Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketSender.h">
+      <Filter>헤더 파일\Packet</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

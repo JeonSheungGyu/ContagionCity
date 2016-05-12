@@ -247,22 +247,21 @@ void Login::DB_thread()
 								sprintf_s(checkPw, sizeof(checkPw), "%s", q.pw);
 
 								// 저장프로시저 호출
-								retcode = SQLExecDirect(hstmt, (SQLWCHAR*)L"{CALL UsableLogin(?,?)}", SQL_NTS);
+								retcode = SQLExecDirect(hstmt, (SQLWCHAR*)L"select count(id) from contagioncity.user u where u.id = ? and u.passwd = ?", SQL_NTS);
 
 								if (retcode == SQL_SUCCESS || SQL_SUCCESS_WITH_INFO){
 									retcode = SQLBindCol(hstmt, 1, SQL_INTEGER, &PermisionOfLogin, sizeof(PermisionOfLogin), &cbCheckLogin);
 
+									
 									// 데이터 가져오기
 									retcode = SQLFetch(hstmt);
 									ZeroMemory(overEx, sizeof(overEx));
 									overEx->command = DB_EVENT;
 
-
-
 									//로그인 가능여부
 									if (PermisionOfLogin) overEx->Login_Permision = true;
 									else overEx->Login_Permision = false;
-
+									cout <<"로그인여부 : " << overEx->Login_Permision << endl;
 									PostQueuedCompletionStatus(Login::hIOCP, 1, accountID, (OVERLAPPED*)overEx);
 								}
 							}

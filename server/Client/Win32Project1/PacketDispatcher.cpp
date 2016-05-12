@@ -10,7 +10,14 @@ extern std::vector<Monster> monsters;
 using namespace DirectX;
 
 
+//로그인 퍼밋처리
+BYTE PacketDispatcher::PermisionLogin(char* buf)
+{
+	lc_packet_permit_login packet;
+	memcpy(reinterpret_cast<char*>(&packet), buf, *buf);
 
+	return packet.permit_check;
+}
 // 플레이어 or 몬스터 추가 ( 시야범위 안 )
 void PacketDispatcher::PutObject(char* buf)
 {
@@ -67,13 +74,6 @@ void PacketDispatcher::Login(char* buf)
 	PlayState::updateThread = new thread{ PlayState::requestUpdate };
 }
 
-void PacketDispatcher::PermisionLogin(char* buf)
-{
-	lc_packet_permit_login packet;
-	memcpy(reinterpret_cast<char*>(&packet), buf, *buf);
-
-	GameEngine::login_success = packet.permit_check;
-}
 */
 void PacketDispatcher::MoveObject(char* buf)
 {

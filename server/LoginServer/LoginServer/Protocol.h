@@ -3,6 +3,7 @@
 #include <WinSock2.h>
 
 #define LOGIN_PORT	9011
+#define GAME_PORT   9012
 
 #define MAX_BUF_SIZE	512
 
@@ -21,15 +22,13 @@
 #define ID_LEN			20
 #define PASSWORD_LEN	20
 
-// Client && DBServer -> Login
-#define CL_REQUEST_LOGIN	0
+// Login <-> DB
+#define LD_REQUEST_LOGIN	0
 #define DL_PERMISION_LOGIN	1
 
-// Login -> DBServer
-#define LD_REQUEST_LOGIN	0
-
-// Login -> Client
-#define LC_PERMISION_LOGIN	8
+// Login <-> Client
+#define CL_REQUEST_LOGIN		0
+#define LC_PERMISION_LOGIN		1
 
 
 #pragma pack(push,1)

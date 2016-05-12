@@ -1,5 +1,7 @@
 #pragma once
 
+#define LOGIN_PORT	9011
+#define GAME_PORT   9012
 //프로토콜
 #define CS_UP					1
 #define CS_DOWN					2
@@ -19,10 +21,9 @@
 #define SC_MONSTER_DIE			7
 
 // Login_Server -> Client
-#define LC_PERMISION_LOGIN		5
+#define ID_LEN					20
+#define PASSWORD_LEN			20
 
-// Client -> Login_Server
-#define CL_REQUEST_LOGIN		0
 
 #pragma pack (push, 1)
 // Server -> Client

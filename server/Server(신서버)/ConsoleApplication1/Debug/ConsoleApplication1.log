@@ -33,8 +33,8 @@ c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplica
 c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\sector.h(17): warning C4227: 오래된 구문을 사용했습니다. 참조의 한정자가 무시됩니다.
 c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\object.h(44): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
 c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\object.h(51): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\requesttodb.h(54): warning C4101: 'etype' :참조되지 않은 지역 변수입니다.
-c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\requesttodb.h(55): warning C4101: 'speed' :참조되지 않은 지역 변수입니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\requesttodb.h(55): warning C4101: 'etype' :참조되지 않은 지역 변수입니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\requesttodb.h(56): warning C4101: 'speed' :참조되지 않은 지역 변수입니다.
 c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\server.cpp(335): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
 c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\server.cpp(414): warning C4101: 'flags' :참조되지 않은 지역 변수입니다.
   Sector.cpp

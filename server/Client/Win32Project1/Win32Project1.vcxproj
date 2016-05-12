@@ -101,7 +101,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_WINSOCK_DEPRECATED_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
@@ -151,6 +151,7 @@
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="PacketDispatcher.cpp" />
     <ClCompile Include="User.cpp" />
+    <ClCompile Include="PacketSender.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Monster.h" />
@@ -161,6 +162,7 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="User.h" />
     <ClInclude Include="ObjectStatus.h" />
+    <ClInclude Include="PacketSender.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
