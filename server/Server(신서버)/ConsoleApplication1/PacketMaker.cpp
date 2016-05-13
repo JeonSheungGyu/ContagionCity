@@ -3,7 +3,7 @@
 #include "User.h"
 #include "Monster.h"
 #include "PacketMaker.h"
-
+#include "CombatCollision.h"
 
 using namespace std;
 
@@ -178,7 +178,6 @@ void PacketMaker::MoveObject(Object* owner, const DWORD id)
 		SendPacket(owner->getID(), reinterpret_cast<unsigned char *>(&move_packet));
 		printf("Send [%d] about  [%d] SC_POS pos( %f, %f, %f) \n", owner->getID(),
 			object->getID(), object->getPos().x, object->getPos().y, object->getPos().z);
-		//중복패킷 발생가능함. 한명은 뷰를 보고 한명은 tmp를 보고 있으니까
 	}
 	catch (exception& e) {
 		printf("PacketMaker::MoveObject : %s", e.what());
@@ -259,8 +258,45 @@ void PacketMaker::MonsterDie(Object* player, const unsigned short id)
 		SendPacket(player->getID(), reinterpret_cast<unsigned char *>(&packet));
 		monsters.at(id - MAX_USER)->getTargetProcess().setTarget(nullptr);
 		monsters.at(id - MAX_USER)->is_alive = false;
+		printf("Send [%d] about  [%d] SC_MONSTER_DIE \n", player->getID(), id);
 	}
 	catch (exception& e) {
 		printf("PacketMaker::MonsterDie : %s", e.what());
+	}
+}
+
+//플레이어 공격
+void PacketMaker::CombatObject(Object* player, const unsigned short id)
+{
+	assert(player && id >= 0);
+
+	sc_packet_combat packet;
+
+	try {
+		auto& user = users[id];
+
+		for (int i = 0; i < user.combatData.size; i++) {
+			packet.InfoList[i] = user.combatData.InfoList[i];
+			printf("Send [%d] about  [%d] SC_COMBAT_OBJECT \n", player->getID(), packet.InfoList[i].first);
+		}
+
+
+		packet.combatCollision = user.combatData.combatCollision;
+		packet.ListSize = user.combatData.size;
+		packet.id = id;
+		packet.type = SC_COMBAT_OBJECT;
+		packet.size = sizeof(sc_packet_combat);
+
+		if (user.combatData.combatCollision == CC_PointCircle) {
+			packet.x = user.combatData.x;
+			packet.z = user.combatData.z;
+		}
+		//user->setAction(-1);
+
+		SendPacket(player->getID(), reinterpret_cast<unsigned char*>( &packet));
+		
+	}
+	catch (exception& e) {
+		printf("PacketMaker::ObjectCombat %s", e.what());
 	}
 }

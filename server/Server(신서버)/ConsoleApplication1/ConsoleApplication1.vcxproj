@@ -24,7 +24,6 @@
     <ClCompile Include="Zone.cpp" />
     <ClCompile Include="UserViewList.cpp" />
     <ClCompile Include="SyncObject.cpp" />
-    <ClCompile Include="MonsterViewList.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="PacketMaker.cpp" />
     <ClCompile Include="State_Chase.cpp" />
@@ -32,6 +31,8 @@
     <ClCompile Include="State_Wander.cpp" />
     <ClCompile Include="State_Die.cpp" />
     <ClCompile Include="Monster.cpp" />
+    <ClCompile Include="CombatCollision.cpp" />
+    <ClCompile Include="PacketDispatcher.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PacketMaker.h" />
@@ -43,7 +44,6 @@
     <ClInclude Include="UserViewList.h" />
     <ClInclude Include="SyncObject.h" />
     <ClInclude Include="Monster.h" />
-    <ClInclude Include="MonsterViewList.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="State.h" />
     <ClInclude Include="StateMachine.h" />
@@ -56,6 +56,8 @@
     <ClInclude Include="ObjectStatus.h" />
     <ClInclude Include="RequestToDB.h" />
     <ClInclude Include="DBProcess.h" />
+    <ClInclude Include="CombatCollision.h" />
+    <ClInclude Include="PacketDispatcher.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{08FF5596-CE64-47F8-8961-CCF369C1D1A6}</ProjectGuid>

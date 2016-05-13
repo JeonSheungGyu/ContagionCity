@@ -130,7 +130,7 @@ void PacketDispatcher::MoveObject(char* buf)
 	//}
 }
 
-/*
+
 void PacketDispatcher::ObjectCombat(char* buf)
 {
 	sc_packet_combat packet;
@@ -139,13 +139,10 @@ void PacketDispatcher::ObjectCombat(char* buf)
 	// packet.id와 packet.action에 따라 애니메이션 변화
 
 	// player -> monster 공격
-	auto& monsters = GameEngine::getMonster();
 	for (int i = 0; i < packet.ListSize; ++i){
 		monsters[packet.InfoList[i].first - MAX_USER].setHp(packet.InfoList[i].second);
-		cout << "[플레이어 -> 몬스터 공격] Monster ID: " << packet.InfoList[i].first
-			 << " HP: " << monsters[packet.InfoList[i].first-MAX_USER].getHp() << endl;
 	}
-}*/
+}
 
 
 void PacketDispatcher::MonsterAttack(char* buf)
@@ -169,7 +166,7 @@ void PacketDispatcher::MonsterChase(char* buf)
 	//cout << "MonsterChase" << endl;
 	sc_packet_monster_chase packet;
 	memcpy(reinterpret_cast<char*>(&packet), buf, *buf);
-
+	//monsters[packet.id - MAX_USER].setPos(XMFLOAT2(packet.dx, packet.dz));
 	monsters[packet.id - MAX_USER].setDir(XMFLOAT2(packet.dx, packet.dz));
 	monsters[packet.id - MAX_USER].setDist(packet.dist);
 	monsters[packet.id - MAX_USER].is_move = true;

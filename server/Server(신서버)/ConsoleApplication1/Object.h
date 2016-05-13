@@ -1,5 +1,5 @@
 #pragma once
-
+#include "Protocol.h"
 #include "SyncObject.h"
 #include "Sector.h"
 #include "ObjectStatus.h"
@@ -8,6 +8,7 @@
 typedef struct ObjectVector
 {
 	XMFLOAT3		position;
+	XMFLOAT3		oldPos;
 	XMFLOAT3		direction;
 	FLOAT			dist;
 
@@ -15,7 +16,8 @@ typedef struct ObjectVector
 	ObjectVector(const XMFLOAT3 pos) : position(pos), direction(0.0, 0.0, 0.0), dist(0.0) {}
 	void reset(){
 		position = XMFLOAT3(0, 0, 0);
-		direction = XMFLOAT3(0, 0, 0);
+		//방향 초기설정 RayCast 때문에
+		direction = XMFLOAT3(1, 0, 0);
 		dist = 0;
 	}
 }ObjectVector;
@@ -26,21 +28,23 @@ class Object : public SyncObject
 {
 protected:
 	DWORD									id;
-
 	//이동
 	ObjectVector							obVector;
 	float									speed;
 	//상태
 	ObjectStatus							obStatus;
-
 	//시야
 	Sector									*sector;
 	std::set<Sector*>						nearSectors;
 	std::set<DWORD>							nearList;
-
 	//충돌
 	BoundingSphere							collisionSphere;
 public:
+	//공격정보 ( 본인전송, 다른유저전송할때 필요, 디스패치에서 저장 )
+	CombatData							combatData;
+
+	//////
+
 	Object() : collisionSphere(XMFLOAT3(0,0,0), COLLISIONSPHERE) {
 		id = -1;
 		sector = nullptr;
@@ -97,4 +101,9 @@ public:
 	const std::set<DWORD>&		getNearList() { return nearList; }
 	const std::set<Sector*>&	getNearSectors() { return nearSectors; }
 	void updateNearList();
+
+
+	const XMFLOAT3							getOldPos()const { return obVector.oldPos; }
+	void									setOldPos(const XMFLOAT3 pos) { obVector.oldPos = pos; }
+
 };

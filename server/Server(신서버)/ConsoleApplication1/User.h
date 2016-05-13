@@ -3,6 +3,14 @@
 #include "Object.h"
 #include "UserViewList.h"
 
+// 플레이어가 할 수 있는 행동
+enum
+{
+	action_move,
+	action_combat,
+	action_stop
+};
+
 typedef struct NetworkSession {
 	SOCKET hClntSock;
 	SOCKADDR_IN clntAddr;
@@ -40,6 +48,9 @@ private:
 	bool blnConnected;
 	NetworkSession session;
 	UserViewList viewList;
+
+	//이동, 공격, 정지
+	BYTE			 action;
 public:
 
 	User() : viewList(this), Object () {
@@ -62,6 +73,8 @@ public:
 		viewList.updateViewList(nearList);
 	}
 
-	
+	// action
+	void					setAction(const BYTE ac) { action = ac; }
+	const BYTE				getAction()const { return action; }
 
 };

@@ -1,8 +1,13 @@
 #include "PacketSender.h"
 #include "Protocol.h"
+#include "User.h"
 
 std::mutex PacketSender::sMutex;
 PacketSender* PacketSender::sInstance = nullptr;
+
+extern SOCKET hSocket;
+extern std::vector<User> users;
+extern DWORD myID;
 
 PacketSender& PacketSender::instance()
 {
@@ -20,7 +25,7 @@ PacketSender::~PacketSender()
 	sInstance = nullptr;
 }
 
-void PacketSender::requestLogin( SOCKET sock, char *id, char *password )
+void PacketSender::requestLogin( char *id, char *password )
 {
 	cl_packet_request_login packet;
 
@@ -29,7 +34,7 @@ void PacketSender::requestLogin( SOCKET sock, char *id, char *password )
 	strncpy(packet.id, id, ID_LEN);
 	strncpy(packet.password, password, ID_LEN);
 
-	send(sock, reinterpret_cast<char*>(&packet), packet.size, 0);
+	send(hSocket, reinterpret_cast<char*>(&packet), packet.size, 0);
 }
 //
 //void PacketSender::positionUpdate()
@@ -56,43 +61,39 @@ void PacketSender::requestLogin( SOCKET sock, char *id, char *password )
 //}
 //
 //
-//void PacketSender::playerMove(const float tx, const float ty)
-//{
-//	cout << "playerMove::Client ID:" << GameEngine::getClientID() << endl;
-//	cs_packet_object_move packet;
-//	auto& user = GameEngine::getUser()[GameEngine::getClientID()];
-//
-//	packet.id = GameEngine::getClientID();
-//	packet.tx = tx;
-//	packet.ty = 0;
-//	packet.tz = ty;
-//
-//	packet.type = CS_OBJECT_MOVE;
-//	packet.size = sizeof(packet);
-//
-//	send(GameEngine::getSock(), reinterpret_cast<char*>(&packet), packet.size, 0);
-//}
-//
-//
+void PacketSender::PlayerMove(BYTE dir)
+{
+	cs_packet_object_move move_packet;
+	char buf[BUFSIZE];
+
+	move_packet.type = CS_MOVE_OBJECT;
+	move_packet.size = sizeof(move_packet);
+	move_packet.dir = dir;
+	move_packet.x = users[myID].getPos().x;
+	move_packet.y = 0;
+	move_packet.z = users[myID].getPos().y;
+	
+	send(hSocket, reinterpret_cast<char*>(&move_packet), move_packet.size, 0);
+}
+
 //// 플레이어가 스킬 or 기본공격 시 호출
 //// 매개변수: 플레이어가 어떤 키를 눌렀는지 action BYTE값
-//void PacketSender::playerCombat(const char action, const float x, const float y)
-//{
-//	cout << "Client playerCombat 호출" << endl;
-//	assert(action >= 0);
-//	cs_packet_combat packet;
-//
-//	packet.id = GameEngine::getClientID();
-//	packet.action = action;
-//	packet.x = x;
-//	packet.z = y;
-//	packet.type = CS_COMBAT;
-//	packet.size = sizeof(packet);
-//
-//	send(GameEngine::getSock(), reinterpret_cast<char*>(&packet), packet.size, 0);
-//}
-//
-//
+void PacketSender::PlayerCombat(const char combatCollision, const float x, const float y)
+{
+	assert(combatCollision >= 0);
+	cs_packet_combat packet;
+
+	packet.id = myID;
+	packet.combatCollision = combatCollision;
+	packet.x = x;
+	packet.z = y;
+	packet.type = CS_COMBAT_OBJECT;
+	packet.size = sizeof(packet);
+
+	send(hSocket, reinterpret_cast<char*>(&packet), packet.size, 0);
+}
+
+
 //// 플레이어가 2초 이상 정지하고 있을 때 send
 //void PacketSender::staticUpdate()
 //{

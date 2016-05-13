@@ -10,6 +10,7 @@
 COLORREF color[10] = { RGB(200,100,150),RGB(100,20,50),RGB(150,100,20),(200,120,0),RGB(0,200,200),
 RGB(200,0,200),RGB(200,200,200),RGB(200,0,0),RGB(0,200,0),RGB(0,0,200)};
 
+FuncProcess funcDispatcher[PACKET_TYPE];
 
 std::vector<User> users(MAX_USER);
 std::vector<Monster> monsters(MAX_NPC);
@@ -46,11 +47,33 @@ int sendBytes = 0;
 int recvBytes = 0;
 int flags = 0;
 
+
+
+
+
 BYTE LoginPermit();
+
+void FuncInit()
+{
+	funcDispatcher[SC_PUT_OBJECT].Func = PacketDispatcher::PutObject;
+	funcDispatcher[SC_REMOVE_OBJECT].Func = PacketDispatcher::RemoveObject;
+	//미구현
+	//funcDispatcher[SC_LOGIN].Func = PacketDispatcher::Login;
+	funcDispatcher[SC_MOVE_OBJECT].Func = PacketDispatcher::MoveObject;
+	funcDispatcher[SC_COMBAT_OBJECT].Func = PacketDispatcher::ObjectCombat;
+	funcDispatcher[SC_MONSTER_ATTACK].Func = PacketDispatcher::MonsterAttack;
+	funcDispatcher[SC_MONSTER_CHASE].Func = PacketDispatcher::MonsterChase;
+	funcDispatcher[SC_MONSTER_DIE].Func = PacketDispatcher::MonsterDie;
+	//따로사용한다.
+	//funcDispatcher[LC_PERMISION_LOGIN].Func = PacketDispatcher::PermisionLogin;
+}
+
 void initialize() {
 
 	wsabuf.buf = reinterpret_cast<CHAR *>(buffer);
 	wsabuf.len = BUFSIZE;
+
+	FuncInit();
 }
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdParam, int nCmdShow)
 {
@@ -107,12 +130,12 @@ LRESULT CALLBACK DlgProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			GetDlgItemText(hDlg, IDC_EDIT3, password, 20);
 
 			//로그인 인증을해야 된다.
-			if ( LoginPermit() == 0) {
+			/*if ( LoginPermit() == 0) {
 				EndDialog(hDlg, IDCANCEL);
 				hDlg = NULL;
 				PostQuitMessage(0);
 				return TRUE;
-			}
+			}*/
 
 
 			hStartupEvent = CreateEvent(0, FALSE, FALSE, 0);
@@ -140,13 +163,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	HBRUSH myBrush, oldBrush, wBrush, bBrush;
 	HDC hdc, hMemDC; // HDC를 하나더 선언해준다. HDC는 '그리는 작업' 이다.
 	HBITMAP hBitmap, OldBitmap; // HBITMAP은 대략 종이를 의미한다. 종이 2장 선언
-
+	BYTE dir;
 	static BOOL bMove = FALSE;
 	int check = 0;
 	RECT winRect;
 	TCHAR str[50];
+	char key;
 	GetWindowRect(hwnd, &winRect);
-	cs_packet_dir dir_packet;
+	
 	unsigned char *packet;
 	static XMFLOAT2 prePos = { 0,0 };
 
@@ -165,37 +189,44 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		
 		DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DIALOG1), hwnd, DlgProc);
 
+		
 		SetTimer(hwnd, 1, 33, NULL);//타이머1
 		break;
 	case WM_KEYDOWN:
 		if (users[myID].is_move) return 0;
 		switch (wParam)
 		{
-		case VK_LEFT:			
-			dir_packet.type = CS_LEFT;
+		case VK_LEFT:
+			dir = LEFT;
+			PacketSender::instance().PlayerMove(dir);
 			break;
 		case VK_RIGHT:
-			dir_packet.type = CS_RIGHT;
+			dir = RIGHT;
+			PacketSender::instance().PlayerMove(dir);
 			break;
 		case VK_UP:
-			dir_packet.type = CS_UP;
+			dir = UP;
+			PacketSender::instance().PlayerMove(dir);
 			break;
 		case VK_DOWN:
-			dir_packet.type = CS_DOWN;
+			dir = DOWN;
+			PacketSender::instance().PlayerMove(dir);
 			break;
 		default:
 			return 0;
 		}
-		dir_packet.size = sizeof(dir_packet);
-		packet = reinterpret_cast<unsigned char *>(&dir_packet);
-		memcpy(buffer, packet, packet[0]);
-		wsabuf.len = dir_packet.size;
-
-		if (WSASend(hSocket, &wsabuf, 1, (LPDWORD)&sendBytes, 0, NULL, NULL) == SOCKET_ERROR)
-		{
-			if (WSAGetLastError() != WSA_IO_PENDING)
-				ErrorHandling("WSASend() error");
-		}
+		return 0;
+	case WM_CHAR:
+		key = (TCHAR)wParam;
+		key = tolower(key);
+		if (key == 'q')
+			PacketSender::instance().PlayerCombat(CC_CircleAround, 0, 0);
+		else if (key == 'w')
+			PacketSender::instance().PlayerCombat(CC_CircleFront, 0, 0);
+		else if (key == 'e')
+			PacketSender::instance().PlayerCombat(CC_Eraser, 0, 0);
+		else if (key == 'r')
+			PacketSender::instance().PlayerCombat(CC_PointCircle, 0, 0);
 		return 0;
 	case WM_TIMER:
 		//업데이트
@@ -286,7 +317,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				myBrush = CreateSolidBrush(COLORREF(RGB(255, 0, 0)));
 				oldBrush = (HBRUSH)SelectObject(hMemDC, myBrush);
 				Ellipse(hMemDC, monsters[i].getPos().x - xPos, monsters[i].getPos().y - yPos, monsters[i].getPos().x - xPos + RECTSIZE, monsters[i].getPos().y - yPos + RECTSIZE);
-				wsprintf(str, TEXT("[%d]"), monsters[i].getID());
+				wsprintf(str, TEXT("[%d] %d"), monsters[i].getID(), monsters[i].getHp());
 				TextOut(hMemDC, monsters[i].getPos().x + 5 - xPos, monsters[i].getPos().y + 10 - yPos, str, lstrlen(str));
 				SelectObject(hMemDC, oldPen);
 				SelectObject(hMemDC, oldBrush);
@@ -347,7 +378,7 @@ BYTE LoginPermit() {
 	if (connect(hSocket, (SOCKADDR*)&recvAddr, sizeof(recvAddr)) == SOCKET_ERROR)
 		ErrorHandling("connect() error!");
 
-	PacketSender::instance().requestLogin(hSocket, id, password);
+	PacketSender::instance().requestLogin(id, password);
 	//응답패킷 받아오기
 	recvn(hSocket, packet, sizeof(BYTE) + sizeof(BYTE), flags);
 	//나머지 데이터 받아오기
@@ -358,7 +389,6 @@ BYTE LoginPermit() {
 	
 	return PacketDispatcher::PermisionLogin(packet);
 }
-
 DWORD WINAPI ThFunc(LPVOID lpParam)
 {
 	WSADATA wsaData;
@@ -394,31 +424,15 @@ DWORD WINAPI ThFunc(LPVOID lpParam)
 		recvn(hSocket, packet + sizeof(BYTE) + sizeof(BYTE), packet[0] - (sizeof(BYTE) + sizeof(BYTE)), flags);
 
 
-		if (packet[1] == SC_MOVE_OBJECT) {
-			PacketDispatcher::MoveObject(packet);
-
-		}else if (packet[1] == SC_MONSTER_CHASE) {
-			PacketDispatcher::MonsterChase(packet);
-		}
-		else if (packet[1] == SC_MONSTER_ATTACK) {
-			PacketDispatcher::MonsterAttack(packet);
-		}
-		else if (packet[1] == SC_MONSTER_DIE) {
-			PacketDispatcher::MonsterDie(packet);
-		}
-		else if (packet[1] == SC_PUT_OBJECT) {
+		if(packet[1] == SC_PUT_OBJECT) {
 			if (!isSet) {
 				sc_packet_put_object put_packet;
 				memcpy(&put_packet, packet, packet[0]);
 				myID = put_packet.id;
 				isSet = true;
 			}
-			PacketDispatcher::PutObject(packet);
 		}
-		else if (packet[1] == SC_REMOVE_OBJECT) {
-			
-			PacketDispatcher::RemoveObject(packet);
-		}
+		funcDispatcher[*(packet + 1)].Func(packet);
 	}
 	closesocket(hSocket);
 	WSACleanup();

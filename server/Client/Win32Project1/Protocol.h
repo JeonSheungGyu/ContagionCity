@@ -1,15 +1,24 @@
 #pragma once
 #include "stdafx.h"
-//포트
 #define LOGIN_PORT	9011
 #define GAME_PORT   9012
-//프로토콜
-#define CS_UP					1
-#define CS_DOWN					2
-#define CS_LEFT					3
-#define CS_RIGHT				4
-#define CS_CHAT					5
 
+// Login <-> Client
+#define CL_REQUEST_LOGIN		0
+#define LC_PERMISION_LOGIN		1
+
+
+//프로토콜
+#define CS_MOVE_OBJECT			0
+#define CS_COMBAT_OBJECT		1
+#define CS_CHAT					2
+
+enum {
+	UP,
+	DOWN,
+	LEFT,
+	RIGHT
+};
 
 #define SC_LOGIN				0
 #define SC_MOVE_OBJECT          1
@@ -21,12 +30,12 @@
 #define SC_MONSTER_ATTACK		6
 #define SC_MONSTER_DIE			7
 
-// Login_Server <-> Client
-#define CL_REQUEST_LOGIN		0
-#define LC_PERMISION_LOGIN		1
+#define SC_COMBAT_OBJECT		8
 
+// Login_Server -> Client
 #define ID_LEN					20
 #define PASSWORD_LEN			20
+
 
 #pragma pack (push, 1)
 // Server -> Client
@@ -82,6 +91,8 @@ struct sc_packet_move_object
 	FLOAT ty;
 	FLOAT tz;
 };
+
+
 struct sc_packet_monster_attack
 {
 	BYTE size;
@@ -90,6 +101,7 @@ struct sc_packet_monster_attack
 	WORD target_id;
 	WORD damage;
 };
+
 struct sc_packet_monster_chase
 {
 	BYTE size;
@@ -100,6 +112,7 @@ struct sc_packet_monster_chase
 	FLOAT dz;
 	FLOAT dist;
 };
+
 struct sc_packet_monster_die
 {
 	BYTE size;
@@ -109,12 +122,43 @@ struct sc_packet_monster_die
 	WORD EXP;
 };
 
-
-//Client -> Server
-struct cs_packet_dir {
+struct sc_packet_combat
+{
 	BYTE size;
 	BYTE type;
+	//시전자
+	WORD id;
+	BYTE combatCollision;
+	std::pair<WORD, WORD> InfoList[10];
+	BYTE  ListSize;
+	FLOAT x;
+	FLOAT z;
 };
+
+//Client -> Server
+
+struct cs_packet_object_move
+{
+	BYTE size;
+	BYTE type;
+	BYTE dir;
+	FLOAT x;
+	FLOAT y;
+	FLOAT z;
+	BYTE is_whirl;
+};
+
+struct cs_packet_combat
+{
+	BYTE size;
+	BYTE type;
+	//시전자
+	WORD id;
+	BYTE combatCollision;
+	FLOAT x;
+	FLOAT z;
+};
+
 
 //Client <-> LoginServer
 struct cl_packet_request_login
@@ -132,4 +176,19 @@ struct lc_packet_permit_login
 	BYTE permit_check;
 };
 
+
+//기타
+
+struct CombatData
+{
+	BYTE size;
+	BYTE type;
+	//누가공격을 시전하였는지
+	WORD id;
+	BYTE combatCollision;
+	std::pair<WORD, WORD> InfoList[10];
+	BYTE  ListSize;
+	FLOAT x;
+	FLOAT z;
+};
 #pragma pack (pop)

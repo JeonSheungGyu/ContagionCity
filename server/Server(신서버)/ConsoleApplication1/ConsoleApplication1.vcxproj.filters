@@ -9,15 +9,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="소스 파일\ViewList">
-      <UniqueIdentifier>{916bc147-7905-460b-a165-fc9eb5dda0ad}</UniqueIdentifier>
-    </Filter>
     <Filter Include="헤더 파일">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
-    <Filter Include="헤더 파일\ViewList">
-      <UniqueIdentifier>{3572a47c-ddd0-4c4e-a491-d148df3e2838}</UniqueIdentifier>
     </Filter>
     <Filter Include="헤더 파일\Object">
       <UniqueIdentifier>{23f27bc9-755f-441c-bcaf-64c392e80501}</UniqueIdentifier>
@@ -40,30 +34,33 @@
     <Filter Include="헤더 파일\DB">
       <UniqueIdentifier>{1ea9db9d-3d22-4e5b-b5fc-d4beb2a7f92e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="헤더 파일\Combat">
+      <UniqueIdentifier>{f2c50cac-70cc-4e71-ade2-600351b09baa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Combat">
+      <UniqueIdentifier>{2a1c367e-28e0-4fcd-bb57-5e8193202728}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\Packet">
+      <UniqueIdentifier>{03b14f3c-d880-41c4-9eb6-231ea24c4200}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Packet">
+      <UniqueIdentifier>{249e71dd-0b79-41cb-97c5-cd91b6a49470}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\View">
+      <UniqueIdentifier>{3572a47c-ddd0-4c4e-a491-d148df3e2838}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\View">
+      <UniqueIdentifier>{782b4129-bffc-4e2e-98a4-5e322c9d6aa7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Server.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Sector.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="Zone.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="SyncObject.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="UserViewList.cpp">
-      <Filter>소스 파일\ViewList</Filter>
-    </ClCompile>
-    <ClCompile Include="MonsterViewList.cpp">
-      <Filter>소스 파일\ViewList</Filter>
-    </ClCompile>
     <ClCompile Include="Object.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="PacketMaker.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="State_Chase.cpp">
@@ -81,6 +78,24 @@
     <ClCompile Include="Monster.cpp">
       <Filter>소스 파일\Object</Filter>
     </ClCompile>
+    <ClCompile Include="CombatCollision.cpp">
+      <Filter>소스 파일\Combat</Filter>
+    </ClCompile>
+    <ClCompile Include="PacketDispatcher.cpp">
+      <Filter>소스 파일\Packet</Filter>
+    </ClCompile>
+    <ClCompile Include="PacketMaker.cpp">
+      <Filter>소스 파일\Packet</Filter>
+    </ClCompile>
+    <ClCompile Include="Sector.cpp">
+      <Filter>소스 파일\View</Filter>
+    </ClCompile>
+    <ClCompile Include="UserViewList.cpp">
+      <Filter>소스 파일\View</Filter>
+    </ClCompile>
+    <ClCompile Include="Zone.cpp">
+      <Filter>소스 파일\View</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -93,28 +108,22 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Sector.h">
-      <Filter>헤더 파일\ViewList</Filter>
+      <Filter>헤더 파일\View</Filter>
     </ClInclude>
     <ClInclude Include="Zone.h">
-      <Filter>헤더 파일\ViewList</Filter>
+      <Filter>헤더 파일\View</Filter>
     </ClInclude>
     <ClInclude Include="UserViewList.h">
-      <Filter>헤더 파일\ViewList</Filter>
+      <Filter>헤더 파일\View</Filter>
     </ClInclude>
     <ClInclude Include="Monster.h">
       <Filter>헤더 파일\Object</Filter>
-    </ClInclude>
-    <ClInclude Include="MonsterViewList.h">
-      <Filter>헤더 파일\ViewList</Filter>
     </ClInclude>
     <ClInclude Include="Object.h">
       <Filter>헤더 파일\Object</Filter>
     </ClInclude>
     <ClInclude Include="User.h">
       <Filter>헤더 파일\Object</Filter>
-    </ClInclude>
-    <ClInclude Include="PacketMaker.h">
-      <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="State.h">
       <Filter>헤더 파일\FSM</Filter>
@@ -148,6 +157,15 @@
     </ClInclude>
     <ClInclude Include="DBProcess.h">
       <Filter>헤더 파일\DB</Filter>
+    </ClInclude>
+    <ClInclude Include="CombatCollision.h">
+      <Filter>헤더 파일\Combat</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketMaker.h">
+      <Filter>헤더 파일\Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketDispatcher.h">
+      <Filter>헤더 파일\Packet</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

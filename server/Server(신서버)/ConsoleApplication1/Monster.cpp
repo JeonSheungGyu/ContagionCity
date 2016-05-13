@@ -1,16 +1,16 @@
-#include "stdafx.h"
+#include "Sector.h"
+#include "StateHeader.h"
+#include "PacketMaker.h"
 #include "Monster.h"
 
-Monster::Monster(DWORD id, XMFLOAT3 pos) : m_viewList(this), Object(id, pos), m_currentAction(wander), m_preAction(wander),
+extern User users[MAX_USER];
+
+
+Monster::Monster(DWORD id, XMFLOAT3 pos) : Object(id, pos), m_currentAction(wander), m_preAction(wander),
 	m_isAlive(true), m_pStateMachine(new StateMachine<Monster>(this)) {
 	// FSM 현재상태 초기화
 	m_pStateMachine->SetCurrentState(Wander::Instance());
 }
-
-void Monster::updateViewList() {
-	m_viewList.updateViewList(nearList);
-}
-
 void Monster::heartBeat() {
 	if (m_isAlive == false)
 	{
@@ -41,6 +41,65 @@ void Monster::heartBeat() {
 		}
 		m_preAction = m_currentAction;
 	}
-	m_pStateMachine->Update();	// 현재 FSM에 따라 행동
-	setCollisionSpherePos(getPos()); // 충돌체도 업데이트 (원)
+
+	try {
+		m_pStateMachine->Update();	// 현재 FSM에 따라 행동
+		setCollisionSpherePos(getPos()); // 충돌체도 업데이트 (원)
+
+		std::set<int> old_view;
+		std::set<int> new_view;
+
+		//updateNearList();
+		// 플레이어와 동일하게 nearList 구하는방식으로 변경
+		updateNearList();
+		// 플레이어와 동일하게 nearList 구하는방식으로 변경
+
+		for (auto& id : nearList)
+		{
+			if (id < MAX_USER)
+			{
+				if (!users[id].isConnected()) continue;
+				if (Sector::isinView(this->getOldPos().x, this->getOldPos().z, users[id].getPos().x, users[id].getPos().z))
+					old_view.insert(id);
+				if (Sector::isinView(this->getPos().x, this->getOldPos().z, users[id].getPos().x, users[id].getPos().z))
+					new_view.insert(id);
+			}
+		}
+
+		for (auto& player_id : old_view)
+		{
+			size_t isDeleted = new_view.erase(player_id);
+
+			if (isDeleted)	// old에도 있고 new에도 있다.-> move_obj 호출
+			{
+				switch (m_currentAction) {
+				case wander:
+				case chase:
+					PacketMaker::instance().MonsterChase(reinterpret_cast<Object*>(&users[player_id]), id);
+					break;
+				case combat:
+					PacketMaker::instance().MonsterAttack(reinterpret_cast<Object*>(&users[player_id]), id);
+					break;
+				case die:
+					PacketMaker::instance().MonsterDie(reinterpret_cast<Object*>(&users[player_id]), id);
+					break;
+				}
+			}
+			else  // old에만 있고 new에는 없음. -> remove obj 호출
+			{
+				PacketMaker::instance().RemoveObject(reinterpret_cast<Object*>(&users[player_id]), id);
+			}
+		}
+
+		for (auto& new_player_id : new_view)
+		{
+			// old에는 없고 new에만 있다.
+			// push_object 호출
+			PacketMaker::instance().PutObject(reinterpret_cast<Object*>(&users[new_player_id]), id);
+		}
+	}
+	catch (std::exception& e) {
+		printf("Monster::heart_beat : %s", e.what());
+	}
+	setOldPos(this->getPos());
 }

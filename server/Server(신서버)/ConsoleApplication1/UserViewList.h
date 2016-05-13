@@ -27,18 +27,11 @@ public:
 	void					updateViewList(const std::set<DWORD>& nearLIst);
 	bool					isInViewList(const DWORD id);
 
-	// 플레이어 및 몬스터 추가,삭제,이동
+	// 플레이어 및 몬스터 추가,이동,삭제,전투(유저)
 	void					putObject(const DWORD id);
 	void					moveObject(const DWORD id);
 	void					removeObject(const DWORD id);
-
-
-	//몬스터
-
-	void MonsterWander(const DWORD id);
-	void MonsterChase(const DWORD id);
-	void MonsterAttack(const DWORD id);
-	void MonsterDie(const DWORD id);
+	void					combatObject(const DWORD id);
 
 	// List accessor
 	std::vector<ViewData>&	getView() { return view; }

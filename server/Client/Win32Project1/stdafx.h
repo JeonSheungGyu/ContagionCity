@@ -19,3 +19,23 @@
 #define INTERVAL 4
 #define MAX_USER 10
 #define MAX_NPC 1000
+
+#define PACKET_TYPE			10
+
+//공격종류
+enum
+{
+	CC_CircleAround = 0,
+	CC_CircleFront,
+	CC_Eraser,
+	CC_PointCircle,
+};
+
+//ObjectHandler에서 사용할 함수를 담을 함수포인터 구조체
+struct FuncProcess
+{
+	using FuncType = void(*)(char*);
+	FuncType Func;
+	FuncProcess() { Func = nullptr; }
+};
+

@@ -1,8 +1,6 @@
 #pragma once
 #include "Object.h"
-#include "MonsterViewList.h"
 #include "TargetProcess.h"
-#include "StateHeader.h"
 #include "StateMachine.h"
 #include "User.h"
 #include <atomic>
@@ -14,8 +12,7 @@ public:
 	TargetProcess<User, Monster>			m_target;
 	StateMachine<Monster>*					m_pStateMachine;
 	
-	//viewlist
-	MonsterViewList							m_viewList;
+
 	Overlap_ex								m_overlapped;
 	bool									m_isAlive;
 	BYTE									m_currentAction, m_preAction;
@@ -33,10 +30,9 @@ public:
 	// action accessor
 	void									setAction(const BYTE ac) { m_currentAction = ac; }
 	BYTE									getAction()const { return m_currentAction; }
-	//뷰리스트 업데이트
-	void updateViewList();
 	//몬스터행동계산
-	void heartBeat();
-
+	void									heartBeat();
+	// monster vector accessor
+	
 	WORD									getEXP() { return m_EXP; }
 };

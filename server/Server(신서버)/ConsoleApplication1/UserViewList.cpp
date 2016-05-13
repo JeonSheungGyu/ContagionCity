@@ -128,14 +128,15 @@ void UserViewList::updateViewList(const set<DWORD>& nearList)
 			try {
 				User *player = &users[id];
 
-				if (player->getViewList().isInViewList(owner->getID())) {  // 내가 상대 viewList에 있는지
-																 //움직인다고 패킷전송
-					player->getViewList().moveObject(owner->getID());
+				if (player->getViewList().isInViewList(owner->getID())) {  
+	
+					if (owner->getAction() == action_move)
+						player->getViewList().moveObject(owner->getID());
+
+					else if (owner->getAction() == action_combat)
+						player->getViewList().combatObject(owner->getID());
 				}
-				else {
-					//상대방에게 추가하라고 패킷전송
-					player->getViewList().insertUser(owner->getID());
-				}
+				else player->getViewList().insertUser(owner->getID());
 			}
 			catch (exception& e) {
 				printf("ViewList::updateViewList 1 %s", e.what());
@@ -200,20 +201,7 @@ void UserViewList::removeObject(const DWORD id)
 	PacketMaker::instance().RemoveObject(owner, id);
 }
 
-void UserViewList::MonsterWander(const DWORD id)
+void UserViewList::combatObject(const DWORD id)
 {
-	PacketMaker::instance().MonsterChase(owner, id);
+	PacketMaker::instance().CombatObject(owner, id);
 }
-void UserViewList::MonsterChase(const DWORD id)
-{
-	PacketMaker::instance().MonsterChase(owner, id);
-}
-void UserViewList::MonsterAttack(const DWORD id)
-{
-	PacketMaker::instance().MonsterAttack(owner, id);
-}
-void UserViewList::MonsterDie(const DWORD id)
-{
-	PacketMaker::instance().MonsterDie(owner, id);
-}
-

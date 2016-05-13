@@ -21,12 +21,14 @@
 #include <DirectXCollision.h>
 #include <DirectXMath.h>
 #include "ObjectStatus.h"
-using namespace DirectX;
+
 
 
 #define BUFSIZE 1024
+
 #define MAX_USER 10
 #define MAX_NPC 1000
+
 #define RECTSIZE 40
 #define INTERVAL 4
 #define WORLDSIZE RECTSIZE * INTERVAL * 100
@@ -39,6 +41,8 @@ using namespace DirectX;
 #define OP_SEND  2
 #define OP_NPC_MOVE  3
 #define OP_DB_EVENT 4
+
+using namespace DirectX;
 
 typedef struct // 소켓의버퍼정보를구조체화.
 {
@@ -76,3 +80,4 @@ typedef struct EVENT {
 
 	bool operator < (const EVENT& e) const { return  startTime < e.startTime; }
 }EVENT;
+

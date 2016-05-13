@@ -24,6 +24,9 @@ public:
 
 	void MonsterDie(Object* player, const unsigned short id);
 
+	void CombatObject(Object* player, const unsigned short id);
+
+
 private:
 	static PacketMaker* pInstance;
 	static std::mutex pMutex;

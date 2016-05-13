@@ -8,14 +8,16 @@
 #include "PacketMaker.h"
 #include "RequestToDB.h"
 #include "DBProcess.h"
+#include "CombatCollision.h"
+#include "PacketDispatcher.h"
 
 //전역변수
 HANDLE hCompletionPort;
 User users[MAX_USER];
 std::vector<Monster*> monsters;
 Zone zone;
-
-
+DispatcherFuncArray PacketDispatcher[DISPATCHER_FUNC_TYPE];
+CollisionFuncArray CollisionProcess[COLLISION_FUNC_TYPE];
 
 void ErrorHandling(char *message);
 void error_display(char *msg, int err_no)
@@ -46,18 +48,7 @@ void updatePlayerView( DWORD id)
 	printf("user viewList Update\n");
 	user->updateViewList();
 }
-void updateMonsterView(DWORD id)
-{
-	
-	assert(id >= MAX_USER);
-	Monster *monster = monsters.at(id - MAX_USER);
-	//printf("monster Zone Update\n");
-	zone.SectorUpdateOfMonster(id);
-	//printf("monster nearList Update\n");
-	monster->updateNearList();
-	//printf("monster viewList Update\n");
-	monster->updateViewList();
-}
+
 //패킷처리
 void SendPacket(int id, unsigned char *packet)
 {
@@ -79,30 +70,9 @@ void SendPacket(int id, unsigned char *packet)
 }
 void ProcessPacket(User *user, unsigned char buf[]) {
 
-	printf("Receive %d from [%d] \n", buf[1], user->getID());
+	printf("Receive packet from [%d] \n", user->getID());
+	PacketDispatcher[*(buf + 1)].Func(reinterpret_cast<char *>(buf), user->getID());	// 함수포인터배열을 이용한 패킷처리
 	
-	int x = user->getPos().x;
-	int z = user->getPos().z;
-
-	switch (buf[1])
-	{
-	case CS_UP: z-= RECTSIZE; break;
-	case CS_DOWN: z+= RECTSIZE; break;
-	case CS_LEFT: x-= RECTSIZE; break;
-	case CS_RIGHT: x+= RECTSIZE; break;
-	default: printf( "Unknown type packet received!\n");
-		while (true);
-	}
-	if (z < 0) z = 0;
-	if (z >= WORLDSIZE ) z = WORLDSIZE - RECTSIZE;
-	if (x < 0) x = 0;
-	if (x >= WORLDSIZE ) x = WORLDSIZE - RECTSIZE;
-
-
-	user->setPos(XMFLOAT3(x, user->getPos().y, z));
-	user->setCollisionSpherePos(user->getPos()); // 충돌체 업데이트
-	PacketMaker::instance().MoveObject(reinterpret_cast<Object*>(user), user->getID());
-	updatePlayerView(user->getID());
 }
 //DB처리
 tbb::concurrent_queue<DB_QUERY> DB_Queue;
@@ -273,9 +243,22 @@ void allocateObject()
 		x = ((int)(mx(gen) / RECTSIZE))*RECTSIZE;
 		z = ((int)(mz(gen) / RECTSIZE))*RECTSIZE;
 		monsters.push_back(new Monster(i, XMFLOAT3(x,0,z)));
-		updateMonsterView(i);
+		zone.SectorUpdateOfMonster(i);
 	}
 }
+
+void InitFunc()
+{
+	// 패킷처리 함수
+	PacketDispatcher[CS_MOVE_OBJECT].Func = PacketDispatcher::ObjectMove;	// 클라이언트 갱신요청
+	PacketDispatcher[CS_COMBAT_OBJECT].Func = PacketDispatcher::Combat;	
+
+	CollisionProcess[CC_CircleAround].Func = CombatCollision::CircleAround;
+	CollisionProcess[CC_CircleFront].Func = CombatCollision::CircleFront;
+	CollisionProcess[CC_Eraser].Func = CombatCollision::Eraser;
+	CollisionProcess[CC_PointCircle].Func = CombatCollision::PointCircle;
+}
+
 void initializeGame() {
 	//큐 크리티컬섹션 초기화
 	InitializeCriticalSection(&qCS);
@@ -283,7 +266,11 @@ void initializeGame() {
 	timer_thread = new std::thread{TimerThread};
 	monster_thread = new std::thread{ MonsterEventThread };
 	db_thread = new std::thread{ DataBaseThread };
+
+	InitFunc();
 }
+
+
 void releaseGame() {
 	DeleteCriticalSection(&qCS);
 	timer_thread->join();
@@ -483,7 +470,7 @@ unsigned int __stdcall CompletionThread(LPVOID pComPort)
 			//몬스터 움직이기
 			monster->heartBeat();
 			//몬스터 뷰 업데이트
-			updateMonsterView(key);
+			zone.SectorUpdateOfMonster(monster->getID());
 			LeaveCriticalSection(&monster->cs);
 			//printf("%d 끝\n", key);
 		}else if (OP_NPC_MOVE == my_overlap->operation)
