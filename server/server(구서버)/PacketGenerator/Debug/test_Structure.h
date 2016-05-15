@@ -1,8 +1,0 @@
-#pragma once
-
-typedef struct _S_PT_CHANNEL_NICKNAME
-{
-	WCHAR USER_ID[32];
-	WCHAR NICK_NAME[32];
-} S_PT_CHANNEL_NICKNAME;
-
