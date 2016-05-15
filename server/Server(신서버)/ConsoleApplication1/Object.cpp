@@ -63,3 +63,16 @@ void Object::updateNearList()
 		}
 	}
 }
+
+void Object::ObjectDeadReckoning(const float elapsed)
+{
+	float NewSpeed = speed*(elapsed/1000.0);
+	obVector.position.x += obVector.direction.x*NewSpeed;
+	obVector.position.z += obVector.direction.z*NewSpeed;
+	obVector.dist -= NewSpeed;
+	//obVector.position.y += dir.y*speed;
+	//cout << "obVector.dist: " << obVector.dist << endl;
+
+	if (obVector.dist <= 0)
+		is_DeadReckoning = false;
+}

@@ -7,12 +7,12 @@ extern User users[MAX_USER];
 
 
 Monster::Monster(DWORD id, XMFLOAT3 pos) : Object(id, pos), m_currentAction(wander), m_preAction(wander),
-	m_isAlive(true), m_pStateMachine(new StateMachine<Monster>(this)) {
+	is_alive(true), m_pStateMachine(new StateMachine<Monster>(this)) {
 	// FSM 현재상태 초기화
 	m_pStateMachine->SetCurrentState(Wander::Instance());
 }
 void Monster::heartBeat() {
-	if (m_isAlive == false)
+	if (is_alive == false)
 	{
 		printf("is_alive==false id: %d", id);
 		return;

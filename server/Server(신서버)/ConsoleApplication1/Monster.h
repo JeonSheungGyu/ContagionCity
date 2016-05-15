@@ -14,7 +14,6 @@ public:
 	
 
 	Overlap_ex								m_overlapped;
-	bool									m_isAlive;
 	BYTE									m_currentAction, m_preAction;
 	WORD									m_EXP;
 public:

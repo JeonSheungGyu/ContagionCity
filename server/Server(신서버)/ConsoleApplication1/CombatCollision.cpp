@@ -5,8 +5,10 @@
 
 using namespace std;
 
-const int BASIC_ATTACK_RANGE = 40;
-const int CRASH_RANGE = 70;
+const int CA_RANGE = 80;
+const int CF_RANGE = 40;
+const int E_DIST = 80;
+const int PC_RANGE = 40;
 
 extern User users[MAX_USER];
 extern std::vector<Monster*> monsters;
@@ -22,7 +24,7 @@ void CombatCollision::CircleAround(const WORD id, vector<pair<WORD, WORD>>& Info
 	try {
 		auto player = &users[id];
 		WORD damage = 0;
-		BoundingSphere crashRange(player->getPos(), CRASH_RANGE);	// 플레이어 기준 10반경 충돌체크
+		BoundingSphere crashRange(player->getPos(), CA_RANGE);	// 플레이어 기준 10반경 충돌체크
 
 		for (const auto& ID : player->getNearList())
 		{
@@ -60,7 +62,7 @@ void CombatCollision::CircleFront(const WORD id, vector<pair<WORD, WORD>>& InfoL
 		auto player = &users[id];
 		WORD damage = 0;
 		XMFLOAT3 store;
-		BoundingSphere basicRange(player->getPos(), BASIC_ATTACK_RANGE);	// 플레이어 기준 4반경 충돌체크
+		BoundingSphere basicRange(player->getPos(), CF_RANGE);	// 플레이어 기준 4반경 충돌체크
 
 		for (const auto& ID : player->getNearList())
 		{
@@ -80,8 +82,9 @@ void CombatCollision::CircleFront(const WORD id, vector<pair<WORD, WORD>>& InfoL
 						damage = player->getStatus().damage / 5;
 
 						monsters.at(ID - MAX_USER)->minusHP(damage);
-						InfoList.push_back(make_pair(ID, damage));
-
+						//패킷에 전송할 몬스터 정보
+						InfoList.push_back(make_pair(ID, monsters.at(ID - MAX_USER)->getStatus().hp));
+						//타겟설정
 						monsters.at(ID - MAX_USER)->getTargetProcess().setTarget(player);
 					}
 				}
@@ -101,20 +104,22 @@ void CombatCollision::Eraser(const WORD id, vector<pair<WORD, WORD>>& InfoList, 
 
 	try {
 		auto player = &users[id];
-		float dist = 14;
+		float dist = E_DIST;
 		WORD damage = 0;
 
 		for (const auto& ID : player->getNearList())
 		{
 			if (ID < MAX_USER) continue;
 			else {
-				if (RayCast(player->getPos(), player->getDir(), dist, monsters.at(ID)->getCollisionSphere())) {
+				if (RayCast(player->getPos(), player->getDir(), dist, monsters.at(ID - MAX_USER)->getCollisionSphere())) {
 					//damage = calculator(player->getState().AP, monsters.at(ID - MAX_USER)->getState().DP,
 						//player->getState().ElementType, monsters.at(ID - MAX_USER)->getState().ElementType);
 					damage = player->getStatus().damage / 5;
 
 					monsters.at(ID - MAX_USER)->minusHP(damage);
-					InfoList.push_back(make_pair(ID, damage));
+					//패킷에 전송할 몬스터 정보
+					InfoList.push_back(make_pair(ID, monsters.at(ID - MAX_USER)->getStatus().hp));
+					//타겟설정
 					monsters.at(ID - MAX_USER)->getTargetProcess().setTarget(player);
 				}
 			}
@@ -134,7 +139,7 @@ void CombatCollision::PointCircle(const WORD id, vector<pair<WORD, WORD>>& InfoL
 	try {
 		auto player = &users[id];
 		WORD damage = 0;
-		BoundingSphere holeRange(XMFLOAT3(x, 0, z), 8);
+		BoundingSphere holeRange(XMFLOAT3(x, 0, z), PC_RANGE);
 
 		for (const auto& ID : player->getNearList())
 		{
@@ -146,7 +151,9 @@ void CombatCollision::PointCircle(const WORD id, vector<pair<WORD, WORD>>& InfoL
 
 					damage = player->getStatus().damage / 5;
 					monsters.at(ID - MAX_USER)->minusHP(damage);
-					InfoList.push_back(make_pair(ID, damage));
+					//패킷에 전송할 몬스터 정보
+					InfoList.push_back(make_pair(ID, monsters.at(ID - MAX_USER)->getStatus().hp));
+					//타겟설정
 					monsters.at(ID - MAX_USER)->getTargetProcess().setTarget(player);
 				}
 			}

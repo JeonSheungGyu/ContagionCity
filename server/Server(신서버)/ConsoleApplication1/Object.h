@@ -3,6 +3,7 @@
 #include "SyncObject.h"
 #include "Sector.h"
 #include "ObjectStatus.h"
+#include <atomic>
 
 // 나중에 클래스로 바꾸기... 귀차니즘
 typedef struct ObjectVector
@@ -39,6 +40,9 @@ protected:
 	std::set<DWORD>							nearList;
 	//충돌
 	BoundingSphere							collisionSphere;
+
+	std::atomic<bool>	 is_DeadReckoning;
+
 public:
 	//공격정보 ( 본인전송, 다른유저전송할때 필요, 디스패치에서 저장 )
 	CombatData							combatData;
@@ -106,4 +110,10 @@ public:
 	const XMFLOAT3							getOldPos()const { return obVector.oldPos; }
 	void									setOldPos(const XMFLOAT3 pos) { obVector.oldPos = pos; }
 
+
+
+	//데드레커닝
+	void					setDeadReckoning(const bool tf) { is_DeadReckoning = tf; }
+	bool					getDeadReckoning()const { return is_DeadReckoning; }
+	void ObjectDeadReckoning(const float elapsed);
 };

@@ -156,6 +156,7 @@ LRESULT CALLBACK DlgProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	}
 	return FALSE;
 }
+
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	PAINTSTRUCT ps;
@@ -173,7 +174,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	
 	unsigned char *packet;
 	static XMFLOAT2 prePos = { 0,0 };
-
+	POINT p, userPoint[4][3];
+	
 	hHwnd = hwnd;
 	switch (msg)
 	{
@@ -188,7 +190,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		initialize();
 		
 		DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DIALOG1), hwnd, DlgProc);
-
 		
 		SetTimer(hwnd, 1, 33, NULL);//타이머1
 		break;
@@ -225,8 +226,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			PacketSender::instance().PlayerCombat(CC_CircleFront, 0, 0);
 		else if (key == 'e')
 			PacketSender::instance().PlayerCombat(CC_Eraser, 0, 0);
-		else if (key == 'r')
-			PacketSender::instance().PlayerCombat(CC_PointCircle, 0, 0);
+		else if (key == 'r') {
+			GetCursorPos(&p);
+			ScreenToClient(hwnd, &p);
+			PacketSender::instance().PlayerCombat(CC_PointCircle, p.x+xPos, p.y+yPos);
+		}
+			
 		return 0;
 	case WM_TIMER:
 		//업데이트
@@ -299,13 +304,30 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				oldPen = (HPEN)SelectObject(hMemDC, myPen);
 				myBrush = CreateSolidBrush(color[users[i].getID()]);
 				oldBrush = (HBRUSH)SelectObject(hdc, myBrush);
+								
 				Rectangle(hMemDC, users[i].getPos().x - xPos, users[i].getPos().y - yPos, users[i].getPos().x - xPos + RECTSIZE, users[i].getPos().y - yPos + RECTSIZE);
-				wsprintf(str, TEXT("[%d] %d"), users[i].getID(), users[i].getHp());
-				TextOut(hMemDC, users[i].getPos().x + 5 - xPos, users[i].getPos().y + 10 - yPos, str, lstrlen(str));
+
 				SelectObject(hMemDC, oldPen);
 				SelectObject(hMemDC, oldBrush);
 				DeleteObject(myPen);
 				DeleteObject(myBrush);
+
+
+				myPen = CreatePen(PS_SOLID, 5, RGB(255, 0, 0));
+				oldPen = (HPEN)SelectObject(hMemDC, myPen);
+
+				//방향그리기
+				MoveToEx(hMemDC, users[i].getPos().x - xPos + RECTSIZE / 2, users[i].getPos().y - yPos + RECTSIZE / 2, NULL);
+				LineTo(hMemDC, users[i].getPos().x - xPos + RECTSIZE / 2 + users[i].getDir().x*RECTSIZE,
+					users[i].getPos().y - yPos + RECTSIZE / 2 + users[i].getDir().y*RECTSIZE);
+
+				SelectObject(hMemDC, oldPen);
+				DeleteObject(myPen);
+
+
+				wsprintf(str, TEXT("[%d] %d"), users[i].getID(), users[i].getHp());
+				TextOut(hMemDC, users[i].getPos().x  - xPos, users[i].getPos().y + 10 - yPos, str, lstrlen(str));
+		
 			}
 		}
 

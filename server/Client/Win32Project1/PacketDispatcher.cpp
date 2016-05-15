@@ -32,6 +32,7 @@ void PacketDispatcher::PutObject(char* buf)
 		user.setPos(XMFLOAT2(packet.x, packet.z));
 		user.setStatus(ObjectStatus(packet.lv,packet.hp, packet.ap, packet.damage, packet.defense, packet.exp,packet.request_exp));
 		user.setSpeed(packet.speed);
+		user.setDir(XMFLOAT2(0,0));
 		user.is_using = true;
 	} 
 	else  // Monster
@@ -41,6 +42,7 @@ void PacketDispatcher::PutObject(char* buf)
 		monster.setPos(XMFLOAT2(packet.x, packet.z));
 		monster.setStatus(ObjectStatus(packet.lv, packet.hp, packet.ap, packet.damage, packet.defense, packet.exp, packet.request_exp));
 		monster.setSpeed(packet.speed);
+		monster.setDir(XMFLOAT2(0, 0));
 		monster.is_using = true;
 	}
 }
@@ -167,9 +169,9 @@ void PacketDispatcher::MonsterChase(char* buf)
 	sc_packet_monster_chase packet;
 	memcpy(reinterpret_cast<char*>(&packet), buf, *buf);
 	//monsters[packet.id - MAX_USER].setPos(XMFLOAT2(packet.dx, packet.dz));
-	monsters[packet.id - MAX_USER].setDir(XMFLOAT2(packet.dx, packet.dz));
+	monsters[packet.id - MAX_USER].setPos(XMFLOAT2(packet.dx, packet.dz));
 	monsters[packet.id - MAX_USER].setDist(packet.dist);
-	monsters[packet.id - MAX_USER].is_move = true;
+	monsters[packet.id - MAX_USER].is_move = false;
 }
 
 

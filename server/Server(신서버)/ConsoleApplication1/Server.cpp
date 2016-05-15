@@ -10,7 +10,7 @@
 #include "DBProcess.h"
 #include "CombatCollision.h"
 #include "PacketDispatcher.h"
-
+#include "DeadReckoning.h"
 //전역변수
 HANDLE hCompletionPort;
 User users[MAX_USER];
@@ -403,10 +403,24 @@ unsigned int __stdcall CompletionThread(LPVOID pComPort)
 	{
 		BOOL result = GetQueuedCompletionStatus(hCompletionPort,
 			&iosize, (LPDWORD)&key, reinterpret_cast<LPOVERLAPPED *>(&my_overlap), INFINITE);
-		
 
-		if (FALSE == result) {
-			// 에러 처리
+		WORD errorCode = GetLastError();
+
+		if (result == SOCKET_ERROR) error_display("getQueuedCompletionStatus", 0);
+
+		// DeadReckoning
+		// 이전에 실행된 시간과 현재 시간의 차만큼 이동하는데 현재 시간계산 잘못되어 있음, 하지만 내일 출근.... 보이는건 제대로기에 무시
+		if (errorCode == WAIT_TIMEOUT)
+		{
+			if (!DeadReckoning::Instance().is_process) {
+				DeadReckoning::Instance().is_process = true;
+				DeadReckoning::Instance().Execute();
+			}
+
+				
+			else continue;
+
+			continue;
 		}
 
 		if (iosize == 0) //EOF 전송시.

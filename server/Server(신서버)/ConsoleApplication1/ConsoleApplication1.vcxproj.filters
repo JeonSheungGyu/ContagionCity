@@ -96,6 +96,9 @@
     <ClCompile Include="Zone.cpp">
       <Filter>소스 파일\View</Filter>
     </ClCompile>
+    <ClCompile Include="DeadReckoning.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -166,6 +169,9 @@
     </ClInclude>
     <ClInclude Include="PacketDispatcher.h">
       <Filter>헤더 파일\Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="DeadReckoning.h">
+      <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

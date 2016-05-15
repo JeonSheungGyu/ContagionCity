@@ -4,7 +4,7 @@
 class User : public Object
 {
 public:
-	User(){ }
+	User() : Object() { }
 	User(const XMFLOAT2& pos, const XMFLOAT2& dir, const float sp)
 		: Object(pos,dir,sp) 
 	{}

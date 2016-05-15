@@ -2,7 +2,7 @@
 
 #include "Object.h"
 #include "UserViewList.h"
-
+#include <atomic>
 // 플레이어가 할 수 있는 행동
 enum
 {
