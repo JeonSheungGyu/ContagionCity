@@ -1,10 +1,21 @@
-﻿  Client.cpp
-c:\users\sheunggyu\desktop\contagioncity\server\client\win32project1\object.h(54): warning C4244: 'return': 'const DWORD'에서 'const WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+﻿  User.cpp
+c:\users\sheunggyu\desktop\contagioncity\server\client\win32project1\user.cpp(26): warning C4244: '+=': 'const FLOAT'에서 'DWORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  PacketSender.cpp
+c:\users\sheunggyu\desktop\contagioncity\server\client\win32project1\packetsender.cpp(67): warning C4101: 'buf' :참조되지 않은 지역 변수입니다.
+c:\users\sheunggyu\desktop\contagioncity\server\client\win32project1\packetsender.cpp(86): warning C4244: '=': 'DWORD'에서 'WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  Object.cpp
+  Monster.cpp
+  Client.cpp
 c:\users\sheunggyu\desktop\contagioncity\server\client\win32project1\client.cpp(11): warning C4838: 'int'에서 'COLORREF'(으)로의 변환에는 축소 변환이 필요합니다.
+c:\users\sheunggyu\desktop\contagioncity\server\client\win32project1\client.cpp(232): warning C4244: '인수': 'LONG'에서 'const float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
 c:\users\sheunggyu\desktop\contagioncity\server\client\win32project1\client.cpp(175): warning C4101: 'packet' :참조되지 않은 지역 변수입니다.
 c:\users\sheunggyu\desktop\contagioncity\server\client\win32project1\client.cpp(177): warning C4101: 'userPoint' :참조되지 않은 지역 변수입니다.
 c:\users\sheunggyu\desktop\contagioncity\server\client\win32project1\client.cpp(387): warning C4101: 'lpMonster' :참조되지 않은 지역 변수입니다.
 c:\users\sheunggyu\desktop\contagioncity\server\client\win32project1\client.cpp(386): warning C4101: 'lpClientData' :참조되지 않은 지역 변수입니다.
 c:\users\sheunggyu\desktop\contagioncity\server\client\win32project1\client.cpp(420): warning C4101: 'lpMonster' :참조되지 않은 지역 변수입니다.
 c:\users\sheunggyu\desktop\contagioncity\server\client\win32project1\client.cpp(419): warning C4101: 'lpClientData' :참조되지 않은 지역 변수입니다.
+  코드를 생성하고 있습니다...
+  컴파일하고 있습니다...
+  PacketDispatcher.cpp
+  코드를 생성하고 있습니다...
   Win32Project1.vcxproj -> C:\Users\Sheunggyu\Desktop\ContagionCity\server\Client\x64\Debug\Win32Project1.exe

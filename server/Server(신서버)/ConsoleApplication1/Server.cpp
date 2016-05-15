@@ -381,8 +381,7 @@ int main(int argc, char** argv)
 			(LPDWORD)&RecvBytes,
 			(LPDWORD)&Flags,
 			&(users[id].getSession().recv_overlap.overlapped), // OVERLAPPED 구조체 포인터.
-			NULL
-			);
+			NULL);
 	}
 
 	releaseGame();
@@ -483,7 +482,7 @@ unsigned int __stdcall CompletionThread(LPVOID pComPort)
 			//printf("%d 시작", key);
 			//몬스터 움직이기
 			monster->heartBeat();
-			//몬스터 뷰 업데이트
+			//몬스터 존 업데이트
 			zone.SectorUpdateOfMonster(monster->getID());
 			LeaveCriticalSection(&monster->cs);
 			//printf("%d 끝\n", key);

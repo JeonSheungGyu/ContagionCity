@@ -1,16 +1,6 @@
 ﻿C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.CppBuild.targets(392,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (ConsoleApplication1.vcxproj, GameServer.vcxproj).  This can lead to incorrect clean and rebuild behavior.
-  CombatCollision.cpp
+  Object.cpp
 c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\sector.h(16): warning C4227: 오래된 구문을 사용했습니다. 참조의 한정자가 무시됩니다.
 c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\object.h(52): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
 c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\object.h(59): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\combatcollision.cpp(27): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\combatcollision.cpp(38): warning C4244: '=': 'DWORD'에서 'WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\combatcollision.cpp(65): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\combatcollision.cpp(82): warning C4244: '=': 'DWORD'에서 'WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\combatcollision.cpp(117): warning C4244: '=': 'DWORD'에서 'WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\combatcollision.cpp(142): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\combatcollision.cpp(152): warning C4244: '=': 'DWORD'에서 'WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-c:\program files (x86)\microsoft visual studio 14.0\vc\include\utility(158): warning C4244: '초기화 중': 'unsigned long'에서 'WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\combatcollision.cpp(42): note: 컴파일 중인 함수 템플릿 인스턴스화 'std::pair<WORD,WORD>::pair<unsigned long,unsigned long,void>(std::pair<unsigned long,unsigned long> &&) noexcept'에 대한 참조를 확인하십시오.
-  c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\combatcollision.cpp(42): note: 컴파일 중인 함수 템플릿 인스턴스화 'std::pair<WORD,WORD>::pair<unsigned long,unsigned long,void>(std::pair<unsigned long,unsigned long> &&) noexcept'에 대한 참조를 확인하십시오.
   ConsoleApplication1.vcxproj -> C:\Users\Sheunggyu\Desktop\ContagionCity\server\Server(신서버)\Debug\ConsoleApplication.exe

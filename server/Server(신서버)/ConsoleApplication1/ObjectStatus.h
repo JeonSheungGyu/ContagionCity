@@ -5,8 +5,8 @@
 struct ObjectStatus
 {
 	DWORD lv;		// 레벨
-	DWORD hp;		// 체력
-	DWORD ap;		// 행동력
+	int hp;		// 체력
+	int ap;		// 행동력
 	DWORD damage;	// 공격력
 	DWORD defense;	// 방어력
 	DWORD exp;		// 경험치

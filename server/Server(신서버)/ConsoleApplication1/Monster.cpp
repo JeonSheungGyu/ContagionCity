@@ -14,7 +14,7 @@ Monster::Monster(DWORD id, XMFLOAT3 pos) : Object(id, pos), m_currentAction(wand
 void Monster::heartBeat() {
 	if (is_alive == false)
 	{
-		printf("is_alive==false id: %d", id);
+		printf("is_alive==false id: %d\n", id);
 		return;
 	}
 	if (sector == nullptr) return;

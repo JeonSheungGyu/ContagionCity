@@ -1,6 +1,6 @@
 #pragma once
 const int	CHASE_FAIL_DIST = RECTSIZE * 6;
-const int   CHASE_DIST = RECTSIZE*1;
+const int   CHASE_DIST = RECTSIZE*2;
 
 enum
 {
@@ -47,6 +47,7 @@ void TargetProcess<Target_type, Owner>::CalculateDistWithTarget(Owner* owner)
 {
 	assert(owner &&" TargetProcess owner is nullptr! ");
 
+	//만약 피가 없으면 해당 객체는 죽는다.
 	if (owner->getStatus().hp <= 0) {
 		owner->setAction(die);
 		return;

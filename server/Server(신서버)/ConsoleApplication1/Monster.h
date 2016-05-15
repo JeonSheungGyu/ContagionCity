@@ -31,7 +31,7 @@ public:
 	BYTE									getAction()const { return m_currentAction; }
 	//몬스터행동계산
 	void									heartBeat();
-	// monster vector accessor
 	
+	//몬스터 경험치 리턴
 	WORD									getEXP() { return m_EXP; }
 };

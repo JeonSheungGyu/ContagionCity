@@ -51,7 +51,9 @@ void Object::updateNearList()
 				else {//몬스터일경우
 					if (Sector::isinView(obVector.position.x, obVector.position.z, 
 						monsters.at(t_id - MAX_USER)->getObjectVec().position.x, monsters.at(t_id - MAX_USER)->getObjectVec().position.z)) {
-						nearList.insert(t_id);
+						//몬스터가 살아있을 경우에만 추가
+						if (monsters.at(t_id - MAX_USER)->is_alive == true)
+							nearList.insert(t_id);
 					}
 				}
 			}

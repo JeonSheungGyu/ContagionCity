@@ -35,7 +35,7 @@ void Die::Execute(Monster* pMonster)
 	if (pMonster->getTargetProcess().getTarget() == nullptr)
 		return throw std::exception("Die::Execute monster target is nullptr\n");
 
-	//pMonster->getTargetProcess().getTarget()->plusExp(pMonster->getEXP());
+	pMonster->getTargetProcess().getTarget()->plusExp(pMonster->getEXP());
 	// pMonster->setAlive(true);
 }
 

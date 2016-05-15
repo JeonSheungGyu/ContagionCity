@@ -49,7 +49,7 @@ public:
 	void setSpeed(const float speed){ this->speed = speed; }
 	float getSpeed()const { return speed; }
 
-	void setHp(const WORD hp) { objectStatus.hp = hp; }
+	virtual void setHp(const WORD hp) { objectStatus.hp = hp; if (objectStatus.hp < 0) is_using = false; }
 	void minusHp(const WORD hp) { objectStatus.hp -= hp; }
 	const WORD getHp()const { return objectStatus.hp; }
 

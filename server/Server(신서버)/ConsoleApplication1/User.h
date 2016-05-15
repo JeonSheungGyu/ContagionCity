@@ -73,8 +73,20 @@ public:
 		viewList.updateViewList(nearList);
 	}
 
-	// action
+	//action
 	void					setAction(const BYTE ac) { action = ac; }
 	const BYTE				getAction()const { return action; }
 
+	//경험치 플러스
+	void plusExp(const WORD exp)
+	{
+		obStatus.exp += exp;
+
+		// 다음 레벨까지 필요한 경험치 충족
+		if (obStatus.exp >= obStatus.requestEXP) {
+			obStatus.lv += 1;
+			obStatus.exp = 0;
+			obStatus *= 2;
+		}
+	}
 };
