@@ -1,3 +1,0 @@
-﻿  LoginProgramDlg.cpp
-c:\users\garam\documents\github\contagioncity\contagioncity\client\loginprogram\loginprogram\loginprogramdlg.cpp(170): warning C4002: '_T' 매크로의 실제 매개 변수가 너무 많습니다.
-  LoginProgram.vcxproj -> C:\Users\Garam\Documents\GitHub\ContagionCity\ContagionCity\client\LoginProgram\Debug\LoginProgram.exe
