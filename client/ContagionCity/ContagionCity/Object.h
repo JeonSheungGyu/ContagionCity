@@ -83,8 +83,10 @@ public:
 private:
 	int m_nReferences;
 	
-
 public:
+	int m_hp;
+	int m_exp;
+
 	// 오브젝트의 타입 설정, 무엇인지 알 수 있어야한다.
 	int m_iType;
 	int m_iLayer;
@@ -101,18 +103,12 @@ public:
 
 	XMFLOAT4X4 m_mtxWorld;
 
-	XMFLOAT3 m_vMin, m_vMax;
-	XMFLOAT3 m_vVertices[8];
-
 	virtual void Animate( float fTimeElapsed );
 
 	XMFLOAT3 m_vMovingDirection;
 	float	 m_fMovingSpeed;
 	float	 m_fMovingRange;
 	bool	 m_bInChangeDirection;
-
-	XMFLOAT3 m_vRotationAxis;
-	float	 m_fRotationSpeed;
 
 	// 게임 객체는 텍스처를 가질 수 있다.
 	CTexture *m_pTexture;
@@ -126,11 +122,6 @@ public:
 	}
 	void SetMovingSpeed( float fSpeed ) { m_fMovingSpeed = fSpeed; }
 	void SetMovingRange( float fRange ) { m_fMovingRange = fRange; }
-
-	void SetRotationAxis( XMFLOAT3 vRotationAxis ) {
-		m_vRotationAxis = MathHelper::GetInstance( )->NormalizeFloat( m_vRotationAxis );
-	}
-	void SetRotationSpeed( float fSpeed ) { m_fRotationSpeed = fSpeed; }
 
 	void SetPosition( float x, float y, float z );
 	void SetPosition( XMFLOAT3 vPosition );

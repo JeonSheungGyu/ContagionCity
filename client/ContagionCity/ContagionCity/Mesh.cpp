@@ -153,9 +153,11 @@ void SkinnedData::Set( std::vector<Bone>& boneHierarchy,
 
 void SkinnedData::GetMatrixByTime( const int& clipName, float timePos, std::vector<XMFLOAT4X4>& finalTransforms )
 {
+	int startTime = GetTickCount( );
 	// 이 클립의 모든 뼈대를 주어진 시간에 맞게 보간
 	auto clip = mAnimations.find( clipName );
 	clip->second.Interpolate( timePos, finalTransforms );
+	int endTime = GetTickCount( ) - startTime;
 }
 
 void SkinnedData::GetFinalTransforms( const int& clipName, float timePos, std::vector<XMFLOAT4X4>& finalTransforms )
@@ -164,9 +166,11 @@ void SkinnedData::GetFinalTransforms( const int& clipName, float timePos, std::v
 
 	std::vector<XMFLOAT4X4> toParentTransforms( numBones );
 
+	int startTime = GetTickCount( );
 	// 이 클립의 모든 뼈대를 주어진 시간에 맞게 보간
 	auto clip = mAnimations.find( clipName );
 	clip->second.Interpolate( timePos, toParentTransforms );
+	int endTime = GetTickCount( ) - startTime;
 
 	// 뼈대 계층구조를 훑으면서 모든 뼈대를 뿌리공간으로 변환
 	std::vector<XMFLOAT4X4> toRootTransforms( numBones );
@@ -194,10 +198,8 @@ void SkinnedData::GetFinalTransforms( const int& clipName, float timePos, std::v
 		XMMATRIX offset = XMLoadFloat4x4( &mBoneOffsets[i] );
 		XMMATRIX toRoot = XMLoadFloat4x4( &toRootTransforms[i] );
 		XMStoreFloat4x4( &finalTransforms[i], XMMatrixMultiply( offset, toRoot ) );
-
-		// 변환행렬이 오른손 좌표계이므로 이를 왼손좌표계로 변경
-	//	finalTransforms[i] = MathHelper::GetInstance( )->Float4x4MulFloat4x4( finalTransforms[i], XMFLOAT4X4( 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ) );
 	}
+	endTime = GetTickCount( ) - startTime;
 }
 
 CMesh::CMesh( )
@@ -227,9 +229,6 @@ CMesh::CMesh( )
 
 CMesh::CMesh( ID3D11Device *pd3dDevice )
 {
-	//	m_vPositions = NULL;
-	//	m_vnIndices = NULL;
-
 	m_nBuffers = 0;
 	m_pd3dPositionBuffer = NULL;
 	m_ppd3dVertexBuffers = NULL;
@@ -465,8 +464,8 @@ void AABB::Update( XMFLOAT4X4 *pmtxTransform )
 	vVertices[5] = XMFLOAT3( m_vMin.x, m_vMax.y, m_vMax.z );
 	vVertices[6] = XMFLOAT3( m_vMax.x, m_vMax.y, m_vMax.z );
 	vVertices[7] = XMFLOAT3( m_vMax.x, m_vMax.y, m_vMin.z );
-	m_vMin = XMFLOAT3( +FLT_MAX, +FLT_MAX, +FLT_MAX );
-	m_vMax = XMFLOAT3( -FLT_MAX, -FLT_MAX, -FLT_MAX );
+	m_vMin = XMFLOAT3( +100000, +100000, +100000 );
+	m_vMax = XMFLOAT3( -100000, -100000, -100000 );
 
 	// 8개의 정점에서 x,y,z 좌표의 최소값 최대값을 구한다.
 	for (int i = 0; i < 8; i++)
@@ -652,6 +651,8 @@ CSkyBoxMesh::CSkyBoxMesh( ID3D11Device *pd3dDevice, float fWidth, float fHeight,
 	d3dDepthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
 	pd3dDevice->CreateDepthStencilState( &d3dDepthStencilDesc, &m_pd3dDepthStencilState );
 
+	CreateRasterizerState( pd3dDevice );
+
 	ID3D11SamplerState *pd3dSamplerState = NULL;
 	D3D11_SAMPLER_DESC d3dSamplerDesc;
 	::ZeroMemory( &d3dSamplerDesc, sizeof( D3D11_SAMPLER_DESC ) );
@@ -669,7 +670,7 @@ CSkyBoxMesh::CSkyBoxMesh( ID3D11Device *pd3dDevice, float fWidth, float fHeight,
 	pd3dSamplerState->Release( );
 	m_pMeshTexture->AddRef( );
 
-	OnChangeSkyBoxTextures( pd3dDevice, 1 );
+	OnChangeSkyBoxTextures( pd3dDevice, 3 );
 }
 
 CSkyBoxMesh::~CSkyBoxMesh( )
@@ -722,6 +723,7 @@ void CSkyBoxMesh::Render( ID3D11DeviceContext *pd3dDeviceContext )
 	pd3dDeviceContext->IASetVertexBuffers( m_nSlot, m_nBuffers, m_ppd3dVertexBuffers, m_pnVertexStrides, m_pnVertexOffsets );
 	pd3dDeviceContext->IASetIndexBuffer( m_pd3dIndexBuffer, m_dxgiIndexFormat, m_nIndexOffset );
 	pd3dDeviceContext->IASetPrimitiveTopology( m_d3dPrimitiveTopology );
+	pd3dDeviceContext->RSSetState( m_pd3dRasterizerState );
 
 	// 스카이 박스를 그리기 위한 샘플러 상태 객체와 깊이 스텐실 상태 객체를 설정
 	m_pMeshTexture->UpdateSamplerShaderVariable( pd3dDeviceContext, 0, 0 );
@@ -831,6 +833,7 @@ CObjectMesh::CObjectMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, int Texture
 	pd3dDevice->CreateSamplerState( &d3dSamplerDesc, &pd3dSamplerState );
 
 	m_pMeshTexture = new CTexture( TextureCount, TextureCount, 0, 0 );
+	m_nTextureCount = TextureCount;
 
 	for (int i = 0; i < TextureCount; i++)
 		m_pMeshTexture->SetSampler( i, pd3dSamplerState );
@@ -853,7 +856,11 @@ void CObjectMesh::Render( ID3D11DeviceContext *pd3dDeviceContext )
 	pd3dDeviceContext->IASetPrimitiveTopology( m_d3dPrimitiveTopology );
 	pd3dDeviceContext->RSSetState( m_pd3dRasterizerState );
 
-	m_pMeshTexture->UpdateTextureShaderVariable( pd3dDeviceContext, 0, 0 );
+	for (int i = 0; i < m_nTextureCount; i++)
+	{
+		m_pMeshTexture->UpdateTextureShaderVariable( pd3dDeviceContext, i, i );
+	}
+
 	pd3dDeviceContext->DrawIndexed( m_nIndices, 0, 0 );
 	pd3dDeviceContext->OMSetDepthStencilState( NULL, 1 );
 }
@@ -957,7 +964,7 @@ CAnimatedMesh::CAnimatedMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, int Tex
 
 	for (int i = 0; i < TextureCount; i++)
 		m_pMeshTexture->SetSampler( i, pd3dSamplerState );
-
+	m_nTextureCount = TextureCount;
 	pd3dSamplerState->Release( );
 	m_pMeshTexture->AddRef( );
 }
@@ -967,6 +974,18 @@ CAnimatedMesh::~CAnimatedMesh( )
 
 }
 
+void CAnimatedMesh::CreateRasterizerState( ID3D11Device *pd3dDevice )
+{
+	D3D11_RASTERIZER_DESC d3dRastersizerDesc;
+	::ZeroMemory( &d3dRastersizerDesc, sizeof( D3D11_RASTERIZER_DESC ) );
+	d3dRastersizerDesc.CullMode = D3D11_CULL_BACK;
+	// 솔리드와 와이어 설정할 수 있음
+	d3dRastersizerDesc.FrontCounterClockwise = FALSE;
+	//	d3dRastersizerDesc.FillMode = D3D11_FILL_WIREFRAME;
+	d3dRastersizerDesc.FillMode = D3D11_FILL_SOLID;
+	pd3dDevice->CreateRasterizerState( &d3dRastersizerDesc, &m_pd3dRasterizerState );
+}
+
 void CAnimatedMesh::Render( ID3D11DeviceContext *pd3dDeviceContext )
 {
 	pd3dDeviceContext->IASetVertexBuffers( m_nSlot, m_nBuffers, m_ppd3dVertexBuffers, m_pnVertexStrides, m_pnVertexOffsets );
@@ -974,7 +993,11 @@ void CAnimatedMesh::Render( ID3D11DeviceContext *pd3dDeviceContext )
 	pd3dDeviceContext->IASetPrimitiveTopology( m_d3dPrimitiveTopology );
 	pd3dDeviceContext->RSSetState( m_pd3dRasterizerState );
 
-	m_pMeshTexture->UpdateTextureShaderVariable( pd3dDeviceContext, 0, 0 );
+	for (int i = 0; i < m_nTextureCount; i++)
+	{
+		m_pMeshTexture->UpdateTextureShaderVariable( pd3dDeviceContext, i, i );
+	}
+
 	pd3dDeviceContext->DrawIndexed( m_nIndices, 0, 0 );
 	pd3dDeviceContext->OMSetDepthStencilState( NULL, 1 );
 }

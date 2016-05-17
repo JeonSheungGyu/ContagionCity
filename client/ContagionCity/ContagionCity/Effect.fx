@@ -172,8 +172,9 @@ VS_TEXTURED_COLOR_OUTPUT VSTexturedColor(VS_TEXTURED_COLOR_INPUT input)
 //각 픽셀에 대하여 텍스쳐 샘플링을 하기 위한 픽셀 쉐이더 함수이다.
 float4 PSTexturedColor(VS_TEXTURED_COLOR_OUTPUT input) : SV_Target
 {
-	float4 cColor = gtxtTexture.Sample(gSamplerState, input.texCoord);
+	float4 cColor = gtxtTexture.Sample( gSamplerState, input.texCoord );
 
+	clip( cColor.a - 0.1f );
 	return(cColor);
 }
 
@@ -199,12 +200,15 @@ float4 PSTexturedLightingColor( VS_TEXTURED_LIGHTING_COLOR_OUTPUT input ) : SV_T
 
 	float3 normal = gtxtNormalTexture.Sample( gSamplerState, input.texCoord ).rgb;
 	normal = 2.0f * normal - 1.0f;
-	float3 normalW = mul( normal, TBN );
+	float3 normalW = normal;
+		//	float3 normalW = mul( normal, TBN );
 
 		float4 cIllumination = Lighting( input.positionW, normalW );
 		float4 cColor = gtxtTexture.Sample( gSamplerState, input.texCoord ) * cIllumination;
 
-		return( cColor );
+		clip( cColor.a - 0.1f );
+
+	return( cColor );
 }
 
 SkinnedVertexOut SkinnedVS( SkinnedVertexIn vin )
@@ -251,11 +255,12 @@ float4 SkinnedPS( SkinnedVertexOut input ) : SV_Target
 
 	float3 normal = gtxtNormalTexture.Sample( gSamplerState, input.texCoord ).rgb;
 	normal = 2.0f * normal - 1.0f;
-	float3 normalW = mul( normal, TBN );
+	float3 normalW = normal;
+	//	float3 normalW = mul( normal, TBN );
 
-		float4 cIllumination = Lighting( input.positionW, normalW );
-		float4 cColor = gtxtTexture.Sample( gSamplerState, input.texCoord ) * cIllumination;
-
+	float4 cIllumination = Lighting( input.positionW, normalW );
+	float4 cColor = gtxtTexture.Sample( gSamplerState, input.texCoord ) * cIllumination;
+//	float4 cColor = gtxtNormalTexture.Sample( gSamplerState, input.texCoord );
 		return( cColor );
 }
 

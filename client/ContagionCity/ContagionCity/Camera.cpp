@@ -8,6 +8,7 @@ CCamera::CCamera( )
 
 	m_mtxView = MathHelper::GetInstance( )->GetMatrixIdentity( );
 	m_mtxProjection = MathHelper::GetInstance( )->GetMatrixIdentity( );
+	m_mtxOrtho = MathHelper::GetInstance( )->GetMatrixIdentity( );
 
 	m_pd3dcbCamera = NULL;
 }
@@ -26,6 +27,7 @@ CCamera::CCamera( CCamera *pCamera )
 		m_fRoll = pCamera->GetRoll( );
 		m_mtxView = pCamera->GetViewMatrix( );
 		m_mtxProjection = pCamera->GetProjectionMatrix( );
+		m_mtxOrtho = pCamera->GetOrthMatrix( );
 		m_d3dViewport = pCamera->GetViewport( );
 		m_vLookAtWorld = pCamera->GetLookAtPosition( );
 		m_vOffset = pCamera->GetOffset( );
@@ -52,6 +54,7 @@ CCamera::CCamera( CCamera *pCamera )
 		m_pPlayer = NULL;
 		m_mtxView = MathHelper::GetInstance( )->GetMatrixIdentity( );
 		m_mtxProjection = MathHelper::GetInstance( )->GetMatrixIdentity( );
+		m_mtxOrtho = MathHelper::GetInstance( )->GetMatrixIdentity( );
 		m_pd3dcbCamera = NULL;
 	}
 }
@@ -255,6 +258,12 @@ void CCamera::GenerateProjectionMatrix( float fNearPlaneDist, float fFarPlaneDis
 {
 	XMMATRIX temp = XMMatrixPerspectiveFovLH( (float)XMConvertToRadians( fFOVAngle ), fAspectRatio, fNearPlaneDist, fFarPlaneDist );
 	XMStoreFloat4x4( &m_mtxProjection, temp );
+
+	float screenWidth = CAppManager::GetInstance( )->m_pFrameWork->m_nWndClientWidth;
+	float screenHeight = CAppManager::GetInstance( )->m_pFrameWork->m_nWndClientHeight;
+
+	temp = XMMatrixOrthographicLH( screenWidth, screenHeight, 0.1f, 1000.0f );
+	XMStoreFloat4x4( &m_mtxOrtho, temp );
 }
 
 void CCamera::CreateShaderVariables( ID3D11Device *pd3dDevice )
@@ -279,6 +288,23 @@ void CCamera::UpdateShaderVariables( ID3D11DeviceContext *pd3dDeviceContext )
 	VS_CB_CAMERA *pcbViewProjection = (VS_CB_CAMERA*)d3dMappedResource.pData;
 	pcbViewProjection->m_mtxView = MathHelper::GetInstance( )->TransposeFloat4x4( m_mtxView );
 	pcbViewProjection->m_mtxProjection = MathHelper::GetInstance( )->TransposeFloat4x4( m_mtxProjection );
+	pd3dDeviceContext->Unmap( m_pd3dcbCamera, 0 );
+
+	// 상수 버퍼를 슬롯에 설정
+	pd3dDeviceContext->VSSetConstantBuffers( VS_SLOT_CAMERA, 1, &m_pd3dcbCamera );
+}
+
+void CCamera::UpdateShaderVariablesOrtho( ID3D11DeviceContext *pd3dDeviceContext )
+{
+	D3D11_MAPPED_SUBRESOURCE d3dMappedResource;
+	// 상수 버퍼의 메모리 주소를 가져와서 카메라 변환 행렬과 투영 변환 행렬을 복사
+	// 셰이더에서 행렬의 행과 열이 바뀌는 것에 주의
+	pd3dDeviceContext->Map( m_pd3dcbCamera, 0, D3D11_MAP_WRITE_DISCARD, 0, &d3dMappedResource );
+
+	// d3dMappedResource 상수 버퍼 주소를 가져옴
+	VS_CB_CAMERA *pcbViewProjection = (VS_CB_CAMERA*)d3dMappedResource.pData;
+	pcbViewProjection->m_mtxView = MathHelper::GetInstance( )->TransposeFloat4x4( m_mtxView );
+	pcbViewProjection->m_mtxProjection = MathHelper::GetInstance( )->TransposeFloat4x4( m_mtxOrtho );
 	pd3dDeviceContext->Unmap( m_pd3dcbCamera, 0 );
 
 	// 상수 버퍼를 슬롯에 설정
@@ -448,14 +474,14 @@ void CThirdPersonCamera::Update( XMFLOAT3& vLookAt, float fTimeElapsed )
 		if (fDistance >= 0)
 		{
 			m_vPosition = MathHelper::GetInstance( )->Float3PlusFloat3( m_vPosition, MathHelper::GetInstance()->Float3MulFloat( vDirection, fDistance) );
-			SetLookAt( vLookAt );
+			SetLookAt( vLookAt, m_pPlayer->GetUpVector( ) );
 		}
 	}
 }
 
-void CThirdPersonCamera::SetLookAt( XMFLOAT3& vLookAt )
+void CThirdPersonCamera::SetLookAt( XMFLOAT3& vLookAt, XMFLOAT3 vUp )
 {
-	XMFLOAT4X4 mtxLookAt = MathHelper::GetInstance( )->MatrixLookAtLH( m_vPosition, vLookAt, m_pPlayer->GetUpVector( ) );
+	XMFLOAT4X4 mtxLookAt = MathHelper::GetInstance( )->MatrixLookAtLH( m_vPosition, vLookAt, vUp );
 
 	m_vRight = XMFLOAT3( mtxLookAt._11, mtxLookAt._21, mtxLookAt._31 );
 	m_vUp = XMFLOAT3( mtxLookAt._12, mtxLookAt._22, mtxLookAt._32 );

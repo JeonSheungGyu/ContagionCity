@@ -123,14 +123,14 @@ public:
 
 struct CFbxVertex
 {
-	XMFLOAT3 m_weights = XMFLOAT3( 0.0f, 0.0f, 0.0f );						// 가중치
-	XMFLOAT4 m_boneIndices = XMFLOAT4( 0.0f, 0.0f, 0.0f, 0.0f );		// 이 정점에 영향을 주는 뼈대
-
 	XMFLOAT3 m_position;
 	XMFLOAT2 m_textureUV;
 	XMFLOAT3 m_normal;
 	XMFLOAT3 m_tangent;
 	XMFLOAT3 m_binormal;
+
+	XMFLOAT3 m_weights = XMFLOAT3( 0.0f, 0.0f, 0.0f );						// 가중치
+	XMFLOAT4 m_boneIndices = XMFLOAT4( 0.0f, 0.0f, 0.0f, 0.0f );		// 이 정점에 영향을 주는 뼈대
 };
 
 struct CFbxMesh
@@ -271,13 +271,14 @@ public:
 	// ClockWise는 와인딩오더 설정, TRUE 이면 반시계, FALSE이면 시계
 	// Fill Mode는 솔리드로 할것인지 와이어프레임으로 할것인지
 	virtual void ChangeRasterizerState( ID3D11Device* pd3dDevice, bool ClockWise, D3D11_CULL_MODE CullMode, D3D11_FILL_MODE FillMode );
+	void SetTextureCount( int count ) { m_nTextureCount = count; }
+	int GetTextureCount( ){ return m_nTextureCount; }
 
 protected:
 	// 텍스처 매핑을 하기 위하여 텍스처 좌표가 필요
 	ID3D11Buffer *m_pd3dTexCoordBuffer;
 	CTexture *m_pMeshTexture;
-
-	
+	int m_nTextureCount;
 };
 
 class CSkyBoxMesh : public CMeshTextured
@@ -324,8 +325,9 @@ public:
 	CAnimatedMesh( ID3D11Device *pd3dDevice, CFbxMesh vertex, int TextureCount );
 	~CAnimatedMesh( );
 
+	virtual void CreateRasterizerState( ID3D11Device *pd3dDevice );
 	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext );
-	SkinnedData GetSkinnedData( ){ return m_skindata; }
+	SkinnedData *GetSkinnedData( ){ return &m_skindata; }
 };
 
 class CMeshDiffused : public CMesh

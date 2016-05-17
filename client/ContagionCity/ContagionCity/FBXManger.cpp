@@ -58,8 +58,8 @@ bool FBXManager::LoadFBX( const char* pstrFileName, int Layer, int Type, int tex
 		va_end( ap);
 
 		// i를 0부터 시작하면 반드시 mesh가 먼저 시작되지만 i를 ChildCount 부터 감소시키면서 오면 반드시 skeleton이 먼저 시작된다
-	//	for (int i = ChildCount - 1; i >= 0; i--)
-		for (int i = 0; i < ChildCount; i++)
+		for (int i = ChildCount - 1; i >= 0; i--)
+	//	for (int i = 0; i < ChildCount; i++)
 		{
 			// 스키닝 데이터 로딩
 			FbxNode* pfbxChildNode = pfbxRootNode->GetChild( i );
@@ -69,6 +69,9 @@ bool FBXManager::LoadFBX( const char* pstrFileName, int Layer, int Type, int tex
 
 			FbxNodeAttribute::EType attributeType = nodeAttribute->GetAttributeType( );
 			FbxMesh* pMesh = (FbxMesh*)nodeAttribute;
+
+			if (tempBoneHierarachy.size() == 0)	
+				LoadBoneHierarachy( pfbxChildNode, &tempBoneHierarachy );
 
 			switch (attributeType)
 			{
@@ -81,7 +84,6 @@ bool FBXManager::LoadFBX( const char* pstrFileName, int Layer, int Type, int tex
 				}
 				case FbxNodeAttribute::eSkeleton:
 				{
-					LoadBoneHierarachy( pfbxChildNode, &tempBoneHierarachy );
 					tempAnimations = LoadBoneInfomation( pfbxChildNode, tempBoneHierarachy );
 					break;
 				}
@@ -274,6 +276,7 @@ void FBXManager::LoadInfluenceWeight( FbxMesh *pMesh, std::vector<CFbxVertex> *p
 				}
 			}
 		}
+
 	}	// end of deformer for
 }
 
@@ -287,7 +290,7 @@ std::map<int, AnimationClip> FBXManager::LoadBoneInfomation( FbxNode* pNode, std
 	animation.BoneAnimations.resize( BoneHierarchy.size( ) );
 	// 애니메이션클립을 찾는 행위
 	int numAnimations = m_pfbxScene->GetSrcObjectCount<FbxAnimStack>();
-	for (int animIndex = 0; animIndex < numAnimations; animIndex++)
+	for (int animIndex = 1; animIndex < numAnimations; animIndex++)
 	{
 		FbxAnimStack *animStack = ( FbxAnimStack* )this->m_pfbxScene->GetSrcObject<FbxAnimStack>(animIndex);
 		animName = animStack->GetName( );	// 이름
@@ -295,7 +298,7 @@ std::map<int, AnimationClip> FBXManager::LoadBoneInfomation( FbxNode* pNode, std
 		LoadKeyframesByTime( animStack, pNode, &( animation.BoneAnimations ), BoneHierarchy );
 
 		if (animation.BoneAnimations.size() != 0)
-			tempAnimations.insert( { animIndex, animation } );
+			tempAnimations.insert( { animIndex-1, animation } );
 	}	// end of animation for
 	return tempAnimations;
 }
@@ -320,43 +323,50 @@ void FBXManager::LoadKeyframesByTime( FbxAnimStack *pAnimStack, FbxNode *pNode, 
 	if (BoneIdx == -1)
 		return;
 
-	FbxAnimLayer *pAnimLayer = (FbxAnimLayer*)pAnimStack->GetMember( );
-	FbxAnimCurve *pfbxAnimCurve = pNode->LclRotation.GetCurve( pAnimLayer, "X" );
-
-	long long mtxSize = pfbxAnimCurve->KeyGetCount( );
-
-	if (mtxSize != 0)
+	int stacks = pAnimStack->GetMemberCount<FbxAnimLayer>( );
+	for (int i = 0; i < stacks; i++)
 	{
-		std::vector<Keyframe> _mtx( mtxSize );
-		BoneAnimation tempBoneAnim;
+		FbxAnimLayer *pfbxAnimLayer = pAnimStack->GetMember<FbxAnimLayer>( i );
+		FbxAnimCurve *pfbxAnimCurve = pNode->LclRotation.GetCurve( pfbxAnimLayer, "X" );
 
-		for (long long i = 0; i < mtxSize; i++)
+		if (!pfbxAnimCurve)
+			continue;
+		long long mtxSize = pfbxAnimCurve->KeyGetCount( );
+
+		if (mtxSize != 0)
 		{
-			FbxTime nTime = pfbxAnimCurve->KeyGetTime( i );
+			std::vector<Keyframe> _mtx( mtxSize );
+			BoneAnimation tempBoneAnim;
 
-			if (pNode)
-			{	
-				// 해당 본의 월드좌표계에서의 행렬
-				_mtx[i].TimePos = (float)nTime.GetSecondDouble( );		// 시간저장
+			float StartTime = (float)pfbxAnimCurve->KeyGetTime( 0 ).GetSecondDouble( );
+			for (long long i = 0; i < mtxSize; i++)
+			{
+				FbxTime nTime = pfbxAnimCurve->KeyGetTime( i );
 
-				FbxAMatrix aniMatrix = pNode->EvaluateLocalTransform( nTime );
-				FbxQuaternion Q = aniMatrix.GetQ( );
-				FbxVector4 S =  aniMatrix.GetS( );
-				FbxVector4 T =  aniMatrix.GetT( );
+				if (pNode)
+				{
+					// 해당 본의 월드좌표계에서의 행렬
+					_mtx[i].TimePos = (float)nTime.GetSecondDouble( ) - StartTime;		// 시간저장
 
-				_mtx[i].RotationQuat.x = Q[0]; _mtx[i].RotationQuat.y = Q[1]; _mtx[i].RotationQuat.z = Q[2]; _mtx[i].RotationQuat.w = Q[3];
-				_mtx[i].Scale.x = S[0]; _mtx[i].Scale.y = S[1]; _mtx[i].Scale.z = S[2];
-				_mtx[i].Translation.x = T[0]; _mtx[i].Translation.y = T[1]; _mtx[i].Translation.z = T[2];
+					FbxAMatrix aniMatrix = pNode->EvaluateLocalTransform( nTime );
+					FbxQuaternion Q = aniMatrix.GetQ( );
+					FbxVector4 S = aniMatrix.GetS( );
+					FbxVector4 T = aniMatrix.GetT( );
+
+					_mtx[i].RotationQuat.x = Q[0]; _mtx[i].RotationQuat.y = Q[1]; _mtx[i].RotationQuat.z = Q[2]; _mtx[i].RotationQuat.w = Q[3];
+					_mtx[i].Scale.x = S[0]; _mtx[i].Scale.y = S[1]; _mtx[i].Scale.z = S[2];
+					_mtx[i].Translation.x = T[0]; _mtx[i].Translation.y = T[1]; _mtx[i].Translation.z = T[2];
+				}
 			}
+
+			// 한 순간의 애니메이션 매트릭스
+			tempBoneAnim.Keyframes = _mtx;
+			tempBoneAnim.BoneName = pNode->GetName( );
+			tempBoneAnim.PerentBoneName = pNode->GetParent( )->GetName( );
+			tempBoneAnim.BoneIndex = BoneIdx;
+
+			( *pvAnimations )[BoneIdx] = tempBoneAnim;
 		}
-
-		// 한 순간의 애니메이션 매트릭스
-		tempBoneAnim.Keyframes = _mtx;
-		tempBoneAnim.BoneName = pNode->GetName( );
-		tempBoneAnim.PerentBoneName = pNode->GetParent( )->GetName( );
-		tempBoneAnim.BoneIndex = BoneIdx;
-
-		( *pvAnimations )[BoneIdx] = tempBoneAnim;
 	}
 
 	for (int i = 0; i < pNode->GetChildCount( ); i++)
@@ -372,7 +382,7 @@ void FBXManager::LoadFBXMeshData( FbxMesh* pMesh, std::vector<CFbxVertex> *pVert
 	LoadVertexAndIndexInfomation( pMesh, pVertices, pIndices );
 
 	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ normal 정보 가져오기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-//	LoadNormallnfomation( pMesh, pVertices );
+	LoadNormallnfomation( pMesh, pVertices );
 
 	//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ tangent 정보 가져오기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 //	LoadTangentInfomation( pMesh, pVertices );
@@ -381,17 +391,9 @@ void FBXManager::LoadFBXMeshData( FbxMesh* pMesh, std::vector<CFbxVertex> *pVert
 //	LoadBinormalInfomation( pMesh, pVertices );
 
 	//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ UV 좌표 가져오기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-//	std::vector<XMFLOAT2> tempUVs;
-//	LoadUVInformation( pMesh, &tempUVs );
+	LoadUVInformation( pMesh, pUVs );
 
-	//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 좌표값들 중복들 제거 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-//	pUVs->resize( pVertices->size( ) );
-//	for (int i = 0; i < pIndices->size( ); i++)
-//	{
-//		int idx = pIndices->data( )[i];
-//		pUVs->data( )[idx] = tempUVs[i];
-//	}	
-
+//	LoadMeshData( pMesh, pVertices, pIndices );
 	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ  가중치와 뼈대 정보가져오기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 	LoadInfluenceWeight( pMesh, pVertices, pBoneOffsets, BoneHierarchy );
 }
@@ -404,6 +406,11 @@ void FBXManager::SaveData( std::vector<CFbxVertex> Vertex, std::vector<UINT> Ind
 	tempMesh.m_pVertices.resize( Vertex.size( ) );
 	tempMesh.m_pVertices = Vertex;
 
+	for (int i = 0; i < tempMesh.m_pVertices.size( ); i++)
+	{
+		tempMesh.m_pVertices[i].m_textureUV.x = UVVector[i].x;
+		tempMesh.m_pVertices[i].m_textureUV.y = UVVector[i].y;
+	}
 	// vertex 개수
 	tempMesh.m_nVertexCount = Vertex.size( );
 	// 인덱스들의 모임
@@ -425,22 +432,28 @@ void FBXManager::SaveData( std::vector<CFbxVertex> Vertex, std::vector<UINT> Ind
 
 void FBXManager::LoadVertexAndIndexInfomation( FbxMesh* pMesh, std::vector<CFbxVertex> *pVertex, std::vector<UINT> *pIndex )
 {
-	FbxVector4* pVertices = pMesh->GetControlPoints( );
+	FbxVector4* pVertices = pMesh->GetControlPoints();
 
 	// 정점 좌표들을 저장할 공간
 	int polygonCount = pMesh->GetPolygonCount( );		// 폴리곤의 개수
 	int vertexCount = pMesh->GetControlPointsCount( );
-	//std::vector<CFbxVertex> IndexVertex;
 
 	//for (int polyCount = 0; polyCount < vertexCount; polyCount++)
 	//{
 	//	CFbxVertex tempVertex;
 	//	tempVertex.m_position = XMFLOAT3( pVertices[polyCount].mData[0], pVertices[polyCount].mData[1], pVertices[polyCount].mData[2] );
-	//	IndexVertex.push_back( tempVertex );
+	//	pVertex->push_back( tempVertex );
+	//}
+
+	//int iIndexCount = pMesh->GetPolygonVertexCount( );
+	////int* indices = new int[iIndexCount];
+	//int* indices = pMesh->GetPolygonVertices( );
+	//for (int idx = 0; idx < iIndexCount; idx++)
+	//{
+	//	pIndex->push_back( indices[idx] );
 	//}
 
 	int count = 0;
-
 	for (int j = 0; j < polygonCount; j++)
 	{
 		int iNumVertices = pMesh->GetPolygonSize( j );	// 폴리곤을 구성하는 정점의 개수
@@ -453,19 +466,61 @@ void FBXManager::LoadVertexAndIndexInfomation( FbxMesh* pMesh, std::vector<CFbxV
 		for (int k = 0; k < iNumVertices; k++)
 		{
 			int iControlPointIndex = pMesh->GetPolygonVertex( j, k );
+			pIndex->push_back( count++ );
 
 			CFbxVertex temp;
 			temp.m_position.x = (float)pVertices[iControlPointIndex].mData[0];
 			temp.m_position.y = (float)pVertices[iControlPointIndex].mData[1];
 			temp.m_position.z = (float)pVertices[iControlPointIndex].mData[2];
 
-	//		pVertex->push_back( temp );
-	//		pIndex->push_back( iControlPointIndex );
-			pIndex->push_back( count++ );
+			pVertex->push_back( temp );
 		}
 	}
 
-	LoadGeometry( pMesh, pVertex );
+//	LoadGeometry( pMesh, pVertex );
+}
+
+void FBXManager::LoadMeshData( FbxMesh* pMesh, std::vector<CFbxVertex> *pVertex, std::vector<UINT> *pIndex )
+{
+	// 정점 좌표들을 저장할 공간
+	std::vector<CFbxVertex> pPolygonVertex;
+
+	FbxVector4* pVertices = pMesh->GetControlPoints( );
+
+	int polygonCount = pMesh->GetPolygonCount( );		// 폴리곤의 개수
+	int vertexCount = pMesh->GetControlPointsCount( );
+
+	for (int polyCount = 0; polyCount < vertexCount; polyCount++)
+	{
+		CFbxVertex tempVertex;
+		tempVertex.m_position = XMFLOAT3( pVertices[polyCount].mData[0], pVertices[polyCount].mData[1], pVertices[polyCount].mData[2] );
+		pVertex->push_back( tempVertex );
+	}
+
+	int iIndexCount = pMesh->GetPolygonVertexCount( );
+	int* indices = pMesh->GetPolygonVertices( );
+	for (int idx = 0; idx < iIndexCount; idx++)
+	{
+		pIndex->push_back( indices[idx] );
+	}
+
+	LoadGeometry( pMesh, &pPolygonVertex );
+	
+	//폴리곤버텍스와 ControlPoint 병합하기
+	for (int i = 0; i < pVertex->size( ); i++)
+	{
+		XMFLOAT3 ControlPoint = pVertex->data()[i].m_position;
+		for (int j = 0; j < pPolygonVertex.size( ); j++)
+		{
+			XMFLOAT3 PolygonVertex = pPolygonVertex[j].m_position;
+
+			if (ControlPoint.x == PolygonVertex.x && ControlPoint.y == PolygonVertex.y && ControlPoint.z == PolygonVertex.z)
+			{
+				pVertex->data()[i] = pPolygonVertex[j];
+				break;
+			}
+		}
+	}
 }
 
 void FBXManager::LoadGeometry( FbxMesh* pMesh,  std::vector<CFbxVertex> *pVertex )
@@ -694,8 +749,8 @@ void FBXManager::LoadGeometry( FbxMesh* pMesh,  std::vector<CFbxVertex> *pVertex
 					default:
 						break;
 				}
-				vertex.m_textureUV.x = uv.mData[0];
-				vertex.m_textureUV.y = uv.mData[1];
+				vertex.m_textureUV.x = (float)uv.mData[0];
+				vertex.m_textureUV.y = 1.0f - (float) uv.mData[1];
 			}
 
 			++vertexID;
@@ -969,7 +1024,7 @@ void FBXManager::LoadUVInformation( FbxMesh* pMesh, std::vector<XMFLOAT2> *pVert
 
 						lUVValue = lUVElement->GetDirectArray( ).GetAt( lTextureUVIndex );
 
-						XMFLOAT2 temp( lUVValue.mData[0], lUVValue.mData[1] );
+						XMFLOAT2 temp( (float)lUVValue.mData[0], 1-(float)lUVValue.mData[1] );
 						pVertices->push_back( temp );
 
 						lPolyIndexCounter++;

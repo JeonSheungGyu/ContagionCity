@@ -3,6 +3,7 @@
 #include "Shader.h"
 #include "FbxManager.h"
 #include "Timer.h"
+#include "Trigger.h"
 
 using namespace std;
 
@@ -24,7 +25,7 @@ struct LIGHT
 	XMFLOAT3 m_vAttenuation;
 	float m_fFalloff;
 	float m_fTheta;
-	float m_fPi;
+	float m_fPhi;
 	float m_bEnable;
 	float padding;
 };
@@ -44,9 +45,14 @@ struct LIGHTS
 class CScene
 {
 protected:
+	XMFLOAT3 m_vPlayerStartPos;
+
 	// 씬은 셰이더들의 리스트이다
 	CShader **m_ppShaders;
 	int m_nShaders;
+	// 이펙터들
+	CShader **m_ppEffectShaders;
+	int m_nEffects;
 
 	// 빛 추가
 	LIGHTS *m_pLights;
@@ -60,6 +66,7 @@ protected:
 	// 게임 내 연산에 필요한 것들
 	CCamera *m_pCamera;
 	CPlayer *m_pPlayer;
+	std::vector<CTrigger> m_pTriggers;
 
 public:
 	CScene( );
@@ -86,6 +93,8 @@ public:
 	int getShaderCount( ){ return m_nShaders; }
 	CShader** getShaders( ){ return m_ppShaders; }
 
+	XMFLOAT3 getStartPos( ){ return m_vPlayerStartPos; }
+
 	// 피킹
 	bool Picking( int x, int y );	// 피킹된 물체가 있으면 true 반환
 	// 충돌체크
@@ -99,5 +108,6 @@ public:
 	// 피킹된 오브젝트와 피킹위치
 	CGameObject *pPickedObject;
 	XMFLOAT3 vPickPos;
+	int iChangeScene;
 };
 

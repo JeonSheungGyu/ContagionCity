@@ -6,11 +6,16 @@ CScene::CScene( )
 	m_ppShaders = NULL;
 	m_nShaders = 0;
 
+	m_ppEffectShaders = NULL;
+	m_nEffects = 0;
+
 	m_pCamera = NULL;
 
 	m_pLights = NULL;
 	m_pd3dcbLights = NULL;
 	vPickPos = XMFLOAT3( 0.0f, 0.0f, 0.0f );
+
+	iChangeScene = -1;
 }
 
 CScene::~CScene( )
@@ -20,32 +25,32 @@ CScene::~CScene( )
 
 void CScene::CreateShaderVariables( ID3D11Device *pd3dDevice )
 {
-	m_pLights = new LIGHTS;
-	::ZeroMemory( m_pLights, sizeof( LIGHTS ) );
-	// 월드 전체를 비추는 주변 조명을 설정
-	m_pLights->m_cGlobalAmbient = D3DXCOLOR( 0.1f, 0.1f, 0.1f, 1.0f );
-	m_pLights->m_FogColor = D3DXCOLOR( 0.7f, 0.7f, 0.7f, 1.0f );
-	m_pLights->m_FogStart = 100.0;
-	m_pLights->m_FogRange = 200.0;
+	//m_pLights = new LIGHTS;
+	//::ZeroMemory( m_pLights, sizeof( LIGHTS ) );
+	//// 월드 전체를 비추는 주변 조명을 설정
+	//m_pLights->m_cGlobalAmbient = D3DXCOLOR( 0.1f, 0.1f, 0.1f, 1.0f );
+	//m_pLights->m_FogColor = D3DXCOLOR( 0.7f, 0.7f, 0.7f, 1.0f );
+	//m_pLights->m_FogStart = 100.0;
+	//m_pLights->m_FogRange = 200.0;
 
-	// 태양
-	m_pLights->m_pLights[0].m_bEnable = true;
-	m_pLights->m_pLights[0].m_nType = DIRECTIONAL_LIGHT;
-	m_pLights->m_pLights[0].m_cAmbient = D3DXCOLOR( 0.2f, 0.2f, 0.2f, 1.0f );
-	m_pLights->m_pLights[0].m_cDiffuse = D3DXCOLOR( 0.4f, 0.4f, 0.4f, 1.0f );
-	m_pLights->m_pLights[0].m_cSpecular = D3DXCOLOR( 0.0f, 0.0f, 0.0f, 0.0f );
-	m_pLights->m_pLights[0].m_vDirection = XMFLOAT3( 0.0f, -1.0f, 0.0f );
+	//// 태양
+	//m_pLights->m_pLights[0].m_bEnable = true;
+	//m_pLights->m_pLights[0].m_nType = DIRECTIONAL_LIGHT;
+	//m_pLights->m_pLights[0].m_cAmbient = D3DXCOLOR( 0.2f, 0.2f, 0.2f, 1.0f );
+	//m_pLights->m_pLights[0].m_cDiffuse = D3DXCOLOR( 0.4f, 0.4f, 0.4f, 1.0f );
+	//m_pLights->m_pLights[0].m_cSpecular = D3DXCOLOR( 0.0f, 0.0f, 0.0f, 0.0f );
+	//m_pLights->m_pLights[0].m_vDirection = XMFLOAT3( 0.0f, -1.0f, 0.0f );
 
-	D3D11_BUFFER_DESC d3dBufferDesc;
-	::ZeroMemory( &d3dBufferDesc, sizeof( d3dBufferDesc ) );
-	d3dBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	d3dBufferDesc.ByteWidth = sizeof( LIGHTS );
-	d3dBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	d3dBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	D3D11_SUBRESOURCE_DATA d3dBufferData;
-	::ZeroMemory( &d3dBufferData, sizeof( D3D11_SUBRESOURCE_DATA ) );
-	d3dBufferData.pSysMem = m_pLights;
-	pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dcbLights );
+	//D3D11_BUFFER_DESC d3dBufferDesc;
+	//::ZeroMemory( &d3dBufferDesc, sizeof( d3dBufferDesc ) );
+	//d3dBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	//d3dBufferDesc.ByteWidth = sizeof( LIGHTS );
+	//d3dBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	//d3dBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	//D3D11_SUBRESOURCE_DATA d3dBufferData;
+	//::ZeroMemory( &d3dBufferData, sizeof( D3D11_SUBRESOURCE_DATA ) );
+	//d3dBufferData.pSysMem = m_pLights;
+	//pd3dDevice->CreateBuffer( &d3dBufferDesc, &d3dBufferData, &m_pd3dcbLights );
 }
 
 void CScene::ReleaseShaderVariables( )
@@ -56,8 +61,6 @@ void CScene::ReleaseShaderVariables( )
 
 void CScene::UpdateShaderVariable( ID3D11DeviceContext *pd3dDeviceContext, LIGHTS *pLights )
 {
-	XMFLOAT3 temp = m_pCamera->GetPosition( );
-	pLights->m_vCameraPosition = MathHelper::GetInstance( )->MakeFloat4( temp.x, temp.y, temp.z, 0.0f );
 	D3D11_MAPPED_SUBRESOURCE d3dMappedResource;
 	pd3dDeviceContext->Map( m_pd3dcbLights, 0, D3D11_MAP_WRITE_DISCARD, 0, &d3dMappedResource );
 	LIGHTS *pcbLights = (LIGHTS *)d3dMappedResource.pData;
@@ -68,83 +71,81 @@ void CScene::UpdateShaderVariable( ID3D11DeviceContext *pd3dDeviceContext, LIGHT
 
 void CScene::BuildObjects( ID3D11Device *pd3dDevice )
 {
-	// 사운드 로딩 및 출력
-	LoadingSoundResource( );
-	SoundManager::GetInstance( )->Play( BGM );
+	//// 사운드 로딩 및 출력
+	//LoadingSoundResource( );
+	//SoundManager::GetInstance( )->Play( BGM );
 
-	// 텍스처 맵핑에 사용할 샘플러 상태 객체를 생성
-	ID3D11SamplerState *pd3dSamplerState = NULL;
-	D3D11_SAMPLER_DESC d3dSamplerDesc;
-	::ZeroMemory( &d3dSamplerDesc, sizeof( D3D11_SAMPLER_DESC ) );
-	d3dSamplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	d3dSamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	d3dSamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	d3dSamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	d3dSamplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-	d3dSamplerDesc.MinLOD = 0;
-	d3dSamplerDesc.MaxLOD = 0;
-	pd3dDevice->CreateSamplerState( &d3dSamplerDesc, &pd3dSamplerState );
+	//// 텍스처 맵핑에 사용할 샘플러 상태 객체를 생성
+	//ID3D11SamplerState *pd3dSamplerState = NULL;
+	//D3D11_SAMPLER_DESC d3dSamplerDesc;
+	//::ZeroMemory( &d3dSamplerDesc, sizeof( D3D11_SAMPLER_DESC ) );
+	//d3dSamplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	//d3dSamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	//d3dSamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	//d3dSamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	//d3dSamplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	//d3dSamplerDesc.MinLOD = 0;
+	//d3dSamplerDesc.MaxLOD = 0;
+	//pd3dDevice->CreateSamplerState( &d3dSamplerDesc, &pd3dSamplerState );
 
-	// fbx loader를 통한 fbx로딩
-	LoadFBXs( );
-	std::vector<CFbxMesh> background;
-	std::vector<CFbxMesh> enemy;
-	std::vector<CFbxMesh> npc;
+	//// fbx loader를 통한 fbx로딩
+	//LoadFBXs( );
+	//std::vector<CFbxMesh> background;
+	//std::vector<CFbxMesh> enemy;
+	//std::vector<CFbxMesh> npc;
 
-	for (int i = 0; i < m_nFbxCount; i++)
-	{
-		CFbxMesh tempMesh = FBXManager::GetInstance( )->m_pMeshes[i];
-		int layer = tempMesh.m_iLayer;
-		switch (layer)
-		{
-			case ObjectLayer::LAYER_BACKGROUND:	
-			{
-				background.push_back( tempMesh );
-				break;
-			}
-			case ObjectLayer::LAYER_ENEMY:
-			{
-				enemy.push_back( tempMesh );
-				break;
-			}
-			case ObjectLayer::LAYER_NPC:
-			{
-				npc.push_back( tempMesh );
-				break;
-			}
-			default:
-				break;
-		}
-	}
-	FBXManager::GetInstance( )->ClearMeshes( );
+	//for (int i = 0; i < m_nFbxCount; i++)
+	//{
+	//	CFbxMesh tempMesh = FBXManager::GetInstance( )->m_pMeshes[i];
+	//	int layer = tempMesh.m_iLayer;
+	//	switch (layer)
+	//	{
+	//		case ObjectLayer::LAYER_BACKGROUND:
+	//		{
+	//			background.push_back( tempMesh );
+	//			break;
+	//		}
+	//		case ObjectLayer::LAYER_ENEMY:
+	//		{
+	//			enemy.push_back( tempMesh );
+	//			break;
+	//		}
+	//		case ObjectLayer::LAYER_NPC:
+	//		{
+	//			npc.push_back( tempMesh );
+	//			break;
+	//		}
+	//		default:
+	//			break;
+	//	}
+	//}
+	//FBXManager::GetInstance( )->ClearMeshes( );
 
-	// 현재 셰이더 개수에 fbx개수를 더한 뒤 셰이더를 생성하여 만듬
-	m_nShaders = 2;		// 0은 스카이박스 , 1은 배경, 2는 엔피시, 3은 적 
-	m_ppShaders = new CShader*[m_nShaders];
+	//// 현재 셰이더 개수에 fbx개수를 더한 뒤 셰이더를 생성하여 만듬
+	//m_nShaders = 2;		// 0은 스카이박스 , 1은 배경, 2는 엔피시, 3은 적 
+	//m_ppShaders = new CShader*[m_nShaders];
 
-	// 첫번째로 그릴 객체는 스카이박스
-	m_ppShaders[0] = new CSkyBoxShader( );
-	m_ppShaders[0]->CreateShader( pd3dDevice );
-	m_ppShaders[0]->BuildObjects( pd3dDevice );
+	//// 첫번째로 그릴 객체는 스카이박스
+	//m_ppShaders[0] = new CSkyBoxShader( );
+	//m_ppShaders[0]->CreateShader( pd3dDevice );
+	//m_ppShaders[0]->BuildObjects( pd3dDevice );
 
-	// 두번째는 배경
-	m_ppShaders[1] = new CBackgroundShader( );
-	m_ppShaders[1]->CreateShader( pd3dDevice );
-	( (CBackgroundShader*)m_ppShaders[1] )->BuildObjects( pd3dDevice, background );
+	//// 두번째는 배경
+	//m_ppShaders[1] = new CStage1BackgroundShader( );
+	//m_ppShaders[1]->CreateShader( pd3dDevice );
+	//( (CStage1BackgroundShader*)m_ppShaders[1] )->BuildObjects( pd3dDevice, background );
 
 
-
-	
-	CreateShaderVariables( pd3dDevice );
+	//CreateShaderVariables( pd3dDevice );
 }
 
 void CScene::LoadFBXs( )
 {
 	// fbx 파일 로딩
-	FBXManager::GetInstance( )->LoadFBX( "res/City_Base_0225.FBX", LAYER_BACKGROUND, BACK_GROUND, 2, _T( "./res/city_base_0314_texture.dds" ), _T( "./res/city_base_0314_normal.dds" ) );
-//u	FBXManager::GetInstance( )->LoadFBX( "res/city_wall_0411.FBX", LAYER_BACKGROUND, BACK_FENCE, 2, _T( "./res/city_base_0314_texture.dds" ), _T( "./res/city_base_0314_normal.dds" ) );
+//	FBXManager::GetInstance( )->LoadFBX( "res/City_Base_0225.FBX", LAYER_BACKGROUND, BACK_GROUND, 2, _T( "./res/city_base_0314_texture.dds" ), _T( "./res/city_base_0314_normal.dds" ) );
+//	FBXManager::GetInstance( )->LoadFBX( "res/city_wall_0411.FBX", LAYER_BACKGROUND, BACK_FENCE, 2, _T( "./res/city_base_0314_texture.dds" ), _T( "./res/city_base_0314_normal.dds" ) );
 
-	m_nFbxCount = FBXManager::GetInstance( )->m_pMeshes.size( );
+//	m_nFbxCount = FBXManager::GetInstance( )->m_pMeshes.size( );
 }
 
 void CScene::ReleaseObjects( )
@@ -157,6 +158,15 @@ void CScene::ReleaseObjects( )
 		if (m_ppShaders[i]) delete m_ppShaders[i];
 	}
 	if (m_ppShaders) delete[ ] m_ppShaders;
+
+	for (int i = 0; i < m_nEffects; i++)
+	{
+		if (m_ppEffectShaders[i]) m_ppEffectShaders[i]->ReleaseObject( );
+		if (m_ppEffectShaders[i]) delete m_ppEffectShaders[i];
+	}
+	if (m_ppEffectShaders) delete[ ] m_ppEffectShaders;
+
+	SoundManager::GetInstance( )->Stop( SOUND_BGM );
 }
 
 bool CScene::OnProcessingMouseMessage( HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam )
@@ -170,7 +180,7 @@ bool CScene::OnProcessingMouseMessage( HWND hWnd, UINT nMessageID, WPARAM wParam
 		case WM_RBUTTONDOWN:
 			SetCapture( hWnd );
 			GetCursorPos( &m_ptOldCursorPos );
-			Picking( LOWORD( lParam ), HIWORD( lParam ) );
+//			Picking( LOWORD( lParam ), HIWORD( lParam ) );
 			break;
 		case WM_LBUTTONUP:
 		case WM_RBUTTONUP:
@@ -215,7 +225,6 @@ bool CScene::ProcessInput( HWND hWnd, CGameTimer timer )
 		if (pKeyBuffer['S'] & 0xF0) dwDirection |= DIR_BACKWARD;
 		if (pKeyBuffer['A'] & 0xF0) dwDirection |= DIR_LEFT;
 		if (pKeyBuffer['D'] & 0xF0) dwDirection |= DIR_RIGHT;
-		if (pKeyBuffer['1'] & 0xF0) m_pCamera->Move( XMFLOAT3( 0.0f, 10.f, 10.0f ));
 	}
 	float cxDelta = 0.0f, cyDelta = 0.0f;
 	POINT ptCursorPos;
@@ -238,7 +247,13 @@ bool CScene::ProcessInput( HWND hWnd, CGameTimer timer )
 			/*cxDelta는 y-축의 회전을 나타내고 cyDelta는 x-축의 회전을 나타낸다.
 			오른쪽 마우스 버튼이 눌려진 경우 cxDelta는 z-축의 회전을 나타낸다.*/
 			// 마우스 클릭시 공격 애니메이션이 행해지도록 해야함
-			if (pKeyBuffer[VK_RBUTTON] & 0xF0){
+			if (pKeyBuffer[VK_LBUTTON] & 0xF0){
+				if (m_pPlayer->m_iAnimState != (int)AnimationState::ANIM_LATTACK1)
+				{
+					m_pPlayer->m_fTimePos = 0.0f;
+				//	SoundManager::GetInstance( )->Play( SOUND_ATTACK );
+					m_pPlayer->m_iAnimState = (int)AnimationState::ANIM_LATTACK1;
+				}
 				//m_pCamera->Move( XMFLOAT3( cyDelta, 0.0f, -cxDelta ) );
 	///			m_pCamera->Rotate(0.0f, cxDelta, 0.0f);
 //				m_pCamera->Update( XMFLOAT3( 0.0f, 0.0f, 0.0f ), timer.GetTimeElapsed( ) );
@@ -246,21 +261,47 @@ bool CScene::ProcessInput( HWND hWnd, CGameTimer timer )
 //			else
 //				m_pCamera->Rotate( cyDelta, cxDelta, 0.0f );
 
-			//if (pKeyBuffer[VK_LBUTTON] & 0xF0)
-			//{
-			//	//m_pPlayer->m_iAnimState = static_cast<int>( AnimationState::ANIM_LATTACK1 );
-			//	SoundManager::GetInstance( )->Play( ATTACK );
-			//}
+			if (pKeyBuffer[VK_RBUTTON] & 0xF0)
+			{
+				if (m_pPlayer->m_iAnimState != (int)AnimationState::ANIM_RATTACK1)
+				{
+					m_pPlayer->m_fTimePos = 0.0f;
+					m_pPlayer->m_iAnimState = (int)AnimationState::ANIM_RATTACK1;
+				}
+			}
 		}
 		/*플레이어를 dwDirection 방향으로 이동한다(실제로는 속도 벡터를 변경한다).
 		이동 거리는 시간에 비례하도록 한다. 플레이어의 이동 속력은 (50/초)로 가정한다.
 		만약 플레이어의 이동 속력이 있다면 그 값을 사용한다.*/
 		if (dwDirection)
 		{
+			if (m_pPlayer->m_iAnimState == (int)AnimationState::ANIM_IDLE || m_pPlayer->m_iAnimState == (int)AnimationState::ANIM_WALKING)
+			{
+				if (m_pPlayer->m_iAnimState != (int)AnimationState::ANIM_WALKING)
+				{
+					m_pPlayer->m_fTimePos = 0.0f;
+					m_pPlayer->m_iAnimState = (int)AnimationState::ANIM_WALKING;
+				}
+
+				if (!CollisionCheck( ))
+					m_pPlayer->Move( dwDirection, 50.0f * timer.GetTimeElapsed( ), false );
+				else		// 충돌한 경우
+				{
+					XMFLOAT3 playerForward = m_pPlayer->GetLookVector( );
+					playerForward = MathHelper::GetInstance( )->Float3MulFloat( playerForward, 5 );
+					m_pPlayer->Move( playerForward );
+				}
+			}
 			// 현재 플레이어의 AABB 박스의 y좌표 최소가 -0.5임. 따라서 0보다 작으므로 바닥과 겹침, 그로 인해 못움직임
 			// 충돌체크 자체는 제대로 되고 있으나 플레이어의 위치가 문제
-		//	if (!CollisionCheck( ))
-				m_pPlayer->Move( dwDirection, 50.0f * timer.GetTimeElapsed( ), false );
+		}
+		else
+		{
+			if (m_pPlayer->m_iAnimState == (int)AnimationState::ANIM_WALKING)
+			{
+				m_pPlayer->m_fTimePos = 0.0f;
+				m_pPlayer->m_iAnimState = (int)AnimationState::ANIM_IDLE;
+			}
 		}
 	}
 	//	if (!CollisionCheck( ))
@@ -293,6 +334,10 @@ void CScene::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera )
 	for (int i = 0; i < m_nShaders; i++)
 	{
 		m_ppShaders[i]->Render( pd3dDeviceContext, pCamera );
+	}
+	for (int i = 0; i < m_nEffects; i++)
+	{
+		m_ppEffectShaders[i]->Render( pd3dDeviceContext, pCamera );
 	}
 }
 
@@ -378,8 +423,16 @@ bool CScene::CollisionCheck( )
 		for (int j = 0; j <objCount; j++)
 		{
 			// 오브젝트와 일일히 검사, 하나라도 충돌하면 true를 리턴함
-			if (CollisionCheck( m_pPlayer, m_ppShaders[i]->getObjects( )[j] ) )
+			if (CollisionCheck( m_pPlayer, m_ppShaders[i]->getObjects( )[j] ))
 				return true;
+		}
+	}
+	for (int i = 0; i < m_pTriggers.size( ); i++)
+	{
+		if (CollisionCheck( m_pPlayer, (CGameObject*)&m_pTriggers[i] ))
+		{
+			if (MessageBox( CAppManager::GetInstance( )->m_pFrameWork->m_hWnd, _T( "던전으로 입장하시겠습니까?" ), _T( "임시" ), MB_YESNO ) == IDYES)
+				iChangeScene = m_pTriggers[i].potalStage;
 		}
 	}
 	// 하나도 충돌하지 않은 경우 false 리턴
@@ -391,27 +444,28 @@ bool CScene::CollisionCheck( CGameObject *pObj1, CGameObject *pObj2 )
 	// 충돌되면 true 반환
 	AABB playerBox = pObj1->m_bcMeshBoundingCube;
 	AABB objBox = pObj2->m_bcMeshBoundingCube;
-
+	playerBox.m_vMin.y += 50;
+	playerBox.m_vMax.y += 50;
 	// AABB를 해당 오브젝트에 맞게 변환		-> 물체를 생성할 때 위치를 잡고나면 update하지 않아도 되야 하는데 자꾸 초기화됨
 	playerBox.Update( &( pObj1->m_mtxWorld ) );
 	objBox.Update( &( pObj2->m_mtxWorld ) );
 
 	// AABB 출돌 검사
-	if (playerBox.m_vMax.x < objBox.m_vMin.x) return true;
-	if (playerBox.m_vMax.y < objBox.m_vMin.y) return true;
-	if (playerBox.m_vMax.z < objBox.m_vMin.z) return true;
-	if (playerBox.m_vMin.x > objBox.m_vMax.x) return true;
-	if (playerBox.m_vMin.y > objBox.m_vMax.y) return true;
-	if (playerBox.m_vMin.z > objBox.m_vMax.z) return true;
+	if (playerBox.m_vMax.x < objBox.m_vMin.x) return false;
+	if (playerBox.m_vMax.y < objBox.m_vMin.y) return false;
+	if (playerBox.m_vMax.z < objBox.m_vMin.z) return false;
+	if (playerBox.m_vMin.x > objBox.m_vMax.x) return false;
+	if (playerBox.m_vMin.y > objBox.m_vMax.y) return false;
+	if (playerBox.m_vMin.z > objBox.m_vMax.z) return false;
 
-	// 아무런 체크도 되지 않으면 충돌하지 않은 것
-	return false;
+	// 아무런 체크도 되지 않으면 충돌한 것
+	return true;
 }
 
 bool CScene::LoadingSoundResource( )
 {
-	SoundManager::GetInstance( )->Loading( "Sound/stage1bgm2.mp3", FMOD_LOOP_NORMAL, BGM );
-	SoundManager::GetInstance( )->Loading( "Sound/attack.wav", FMOD_DEFAULT, ATTACK );
+	SoundManager::GetInstance( )->Loading( "Sound/stage1bgm2.mp3", FMOD_LOOP_NORMAL, SOUND_BGM );
+	SoundManager::GetInstance( )->Loading( "Sound/attack.wav", FMOD_DEFAULT, SOUND_ATTACK );
 
 	return false;
 }

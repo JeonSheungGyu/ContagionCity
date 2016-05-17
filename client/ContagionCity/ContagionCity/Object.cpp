@@ -8,7 +8,7 @@ CMaterial::CMaterial( )
 
 	m_Material.m_cDiffuse = D3DXCOLOR( 1.0f, 1.0f, 1.0f, 1.0f );
 	m_Material.m_cAmbient = D3DXCOLOR( 1.0f, 1.0f, 1.0f, 1.0f );
-	m_Material.m_cSpecular = D3DXCOLOR( 1.0f, 1.0f, 1.0f, 10.0f );
+	m_Material.m_cSpecular = D3DXCOLOR( 1.0f, 1.0f, 1.0f, 20.0f );
 	m_Material.m_cEmissive = D3DXCOLOR( 0.0f, 0.0f, 0.0f, 1.0f );
 }
 
@@ -33,8 +33,10 @@ CGameObject::CGameObject( int nMeshes )
 	m_nReferences = 0;
 	m_pTexture = NULL;
 
-	m_fRotationSpeed = 0.0f;
 	m_fMovingSpeed = 0.0f;
+
+	m_hp = 0;
+	m_exp = 0;
 }
 
 CGameObject::~CGameObject( )
@@ -160,8 +162,6 @@ bool CGameObject::CheckRayIntersection( XMVECTOR *pvRayOrigin, XMVECTOR *pvRayDi
 
 void CGameObject::Animate( float fTimeElapsed )
 {
-	if (m_fRotationSpeed != 0.0f)
-		Rotate( &m_vRotationAxis, m_fRotationSpeed*fTimeElapsed );
 	if (m_fMovingSpeed != 0.0f)
 	{
 		XMFLOAT3 vPosition = GetPosition( );
@@ -418,9 +418,9 @@ void AnimatedObjectInfo::Animate( float fTimeElapsed )
 {
 	m_fTimePos += fTimeElapsed;
 	if (m_bVisible)
-		( (CAnimatedMesh *)GetMesh( ) )->GetSkinnedData( ).GetFinalTransforms( m_iAnimState, m_fTimePos, m_pmtxFinalTransforms );
+		( (CAnimatedMesh *)GetMesh( ) )->GetSkinnedData( )->GetFinalTransforms( m_iAnimState, m_fTimePos, m_pmtxFinalTransforms );
 
-	if (m_fTimePos > ( (CAnimatedMesh *)GetMesh( ) )->GetSkinnedData( ).GetClipEndTime( m_iAnimState ))
+	if (m_fTimePos > ( (CAnimatedMesh *)GetMesh( ) )->GetSkinnedData( )->GetClipEndTime( m_iAnimState ))
 		m_fTimePos = 0.0f;
 }
 
@@ -460,5 +460,5 @@ void AnimatedObjectInfo::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera
 
 void AnimatedObjectInfo::CreateShaderVariables( ID3D11Device *pd3dDevice )
 {
-	m_pmtxFinalTransforms = ( (CAnimatedMesh*)GetMesh( ) )->GetSkinnedData( ).mBoneOffsets;
+	m_pmtxFinalTransforms = ( (CAnimatedMesh*)GetMesh( ) )->GetSkinnedData( )->mBoneOffsets;
 }

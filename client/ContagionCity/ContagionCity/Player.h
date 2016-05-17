@@ -62,8 +62,9 @@ public:
 	d3dxvPosition 벡터에서 현재 플레이어의 위치 벡터를 빼면 현재 플레이어의 위치에서 d3dxvPosition 방향으로의 방향 벡터가 된다.
 	현재 플레이어의 위치에서 이 방향 벡터 만큼 이동한다.*/
 	void SetPosition( XMFLOAT3 vPosition ) {
-		//m_vPosition = vPosition;
-		Move( MathHelper::GetInstance( )->Float3MinusFloat3( vPosition, m_vPosition ), false );
+		m_vPosition = vPosition;
+		//Move( MathHelper::GetInstance( )->Float3MinusFloat3( vPosition, m_vPosition ), false );
+		CGameObject::SetPosition( vPosition );
 	}
 
 	const XMFLOAT3& GetVelocity( ) const { return m_vVelocity; }
@@ -99,5 +100,7 @@ public:
 	virtual void OnPrepareRender( );
 	// 플레이어의 카메라가 3인칭 카메라일 때 플레이어의 메시를 렌더링
 	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera );
+
+	float m_fSpeed;
 };
 

@@ -85,8 +85,10 @@ LIGHTEDCOLOR DirectionalLight(int i, float3 vNormal, float3 vToCamera)
 #endif
 			output.m_cSpecular = gMaterial.m_cSpecular * (gLights[i].m_cSpecular * fSpecularFactor);
 		}
+		// diffuse 계산
 		output.m_cDiffuse = gMaterial.m_cDiffuse * (gLights[i].m_cDiffuse * fDiffuseFactor);
 	}
+	// ambient 계산
 	output.m_cAmbient = gMaterial.m_cAmbient * gLights[i].m_cAmbient;
 	return(output);
 }
@@ -216,9 +218,9 @@ float4 Lighting(float3 vPosition, float3 vNormal)
 	//최종 색상의 알파값은 재질의 디퓨즈 색상의 알파값으로 설정한다.
 	cColor.a = gMaterial.m_cDiffuse.a;
 
-	float distToEye = length( vToCamera );
-	float fogLerp = saturate( ( distToEye - gFogStart ) / gFogRange );
-	cColor = lerp( cColor, gFogColor, fogLerp );
+	//float distToEye = length( vToCamera );
+	//float fogLerp = saturate( ( distToEye - gFogStart ) / gFogRange );
+	//cColor = lerp( cColor, gFogColor, fogLerp );
 
 	return(cColor);
 }

@@ -6,7 +6,7 @@ using namespace FMOD;
 #define MAX_SOUND_COUNT 40
 
 enum {
-	BGM, ATTACK,
+	SOUND_BGM, SOUND_ATTACK,
 };
 
 class SoundManager

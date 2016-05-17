@@ -25,6 +25,7 @@ CPlayer::CPlayer( CFbxMesh vertex, int nMeshes ) : AnimatedObjectInfo( vertex, n
 	m_pCameraUpdatedContext = NULL;
 
 	m_fTimePos = 0.0f;
+	m_fSpeed = 2.0f;
 }
 
 
@@ -36,14 +37,16 @@ CPlayer::~CPlayer( )
 
 void CPlayer::CreateShaderVariables( ID3D11Device *pd3dDevice )
 {
-	m_pmtxFinalTransforms = ( (CAnimatedMesh*)GetMesh( ) )->GetSkinnedData( ).mBoneOffsets;
+	m_pmtxFinalTransforms = ( (CAnimatedMesh*)GetMesh( ) )->GetSkinnedData( )->mBoneOffsets;
 }
 
 void CPlayer::UpdateShaderVariables( ID3D11DeviceContext *pd3dDeviceContext )
 {
-	if (m_pCamera) 
-		m_pCamera->UpdateShaderVariables( pd3dDeviceContext );
-
+	if (m_pCamera)
+		if (CAppManager::GetInstance( )->m_pFrameWork->m_iStageState != STAGE_LOGIN)
+			m_pCamera->UpdateShaderVariables( pd3dDeviceContext );
+		else
+			m_pCamera->UpdateShaderVariablesOrtho( pd3dDeviceContext );
 }
 
 /*플레이어의 위치를 변경하는 함수
@@ -59,10 +62,10 @@ void CPlayer::Move( DWORD dwDirection, float fDistance, bool bUpdateVelocity )
 		playerDirection = XMVector3Normalize( playerDirection ); 
 		if (dwDirection & DIR_FORWARD){
 			// 현재 플레이어가 보고 있는 방향과 XMFLOAT3(0.0f, 0.0f, -1.0f) 와 비교하여 방향을 설정함
-			vShift = MathHelper::GetInstance( )->Float3MinusFloat3( vShift, MathHelper::GetInstance( )->Float3MulFloat( m_vLook, fDistance ) );
+			vShift = MathHelper::GetInstance( )->Float3MinusFloat3( vShift, MathHelper::GetInstance( )->Float3MulFloat( m_vLook, fDistance * m_fSpeed ) );
 		}
 		if (dwDirection & DIR_BACKWARD){
-			vShift = MathHelper::GetInstance( )->Float3PlusFloat3( vShift, MathHelper::GetInstance( )->Float3MulFloat( m_vLook, fDistance ) );
+			vShift = MathHelper::GetInstance( )->Float3PlusFloat3( vShift, MathHelper::GetInstance( )->Float3MulFloat( m_vLook, fDistance * m_fSpeed ) );
 		}
 		if (dwDirection & DIR_RIGHT){
 				XMVECTOR rotatedir = MathHelper::GetInstance( )->Float3ToVector( XMFLOAT3( 0.0f, 1.0f, 0.0f ) )  * fDistance;
@@ -213,7 +216,7 @@ void CPlayer::Update( float fTimeElapsed, XMFLOAT3 DestPos  )
 		// 플레이어의 위치가 변경되었으므로 카메라의 상태를 갱신
 		m_pCamera->Update( m_vPosition, fTimeElapsed );
 		// 카메라가 3인칭 카메라이면 카메라가 변경된 플레이어를 바라보도록 한다.
-		m_pCamera->SetLookAt( m_vPosition );
+		m_pCamera->SetLookAt( m_vPosition, m_vUp);
 	}
 	// 카메라의 카메라 변환행렬을 다시 생성
 	m_pCamera->RegenerateViewMatrix( );
@@ -344,7 +347,7 @@ void CPlayer::ChangeCamera( ID3D11Device *pd3dDevice, DWORD nNewCameraMode, floa
 			SetMaxVelocityY( 50.0f );
 			m_pCamera = OnChangeCamera( pd3dDevice, THIRD_PERSON_CAMERA, nCurrentCameraMode );
 			m_pCamera->SetTimeLag( 0.5f );
-			m_pCamera->SetOffset( XMFLOAT3( 0.0f, 200.0f, -400.0f ) );
+			m_pCamera->SetOffset( XMFLOAT3( 0.0f, 100.0f, -310.0f ) );
 			m_pCamera->GenerateProjectionMatrix( 1.01f, 50000.0f, ASPECT_RATIO, 60.0f );
 			break;
 
@@ -376,10 +379,19 @@ void CPlayer::Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera )
 
 void CPlayer::Animate( float fTimeElapsed )
 {
-	m_fTimePos += fTimeElapsed;
-	if (m_bVisible)
-		( (CAnimatedMesh *)GetMesh( ) )->GetSkinnedData( ).GetFinalTransforms( m_iAnimState, m_fTimePos, m_pmtxFinalTransforms );
+	if (m_iAnimState == (int)AnimationState::ANIM_WALKING)
+		fTimeElapsed *= m_fSpeed;
 
-	if (m_fTimePos > ( (CAnimatedMesh *)GetMesh( ) )->GetSkinnedData( ).GetClipEndTime( m_iAnimState ))
+	m_fTimePos += fTimeElapsed;
+
+	if (m_bVisible)
+	{
+		( (CAnimatedMesh *)GetMesh( ) )->GetSkinnedData( )->GetFinalTransforms( m_iAnimState, m_fTimePos, m_pmtxFinalTransforms );
+	}
+
+	if (m_fTimePos > ( (CAnimatedMesh *)GetMesh( ) )->GetSkinnedData( )->GetClipEndTime( m_iAnimState ))
+	{
+		m_iAnimState = (int)AnimationState::ANIM_IDLE;
 		m_fTimePos = 0.0f;
+	}
 }

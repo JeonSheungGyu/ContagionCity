@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "GameFramework.h"
 #include "Stage1Scene.h"
+#include "VilligeScene.h"
+#include "LoginScene.h"
 
 CGameFramework::CGameFramework( )
 {
@@ -9,6 +11,13 @@ CGameFramework::CGameFramework( )
 	m_pDXGISwapChain = NULL;
 	m_pd3dRenderTargetView = NULL;
 	m_pd3dDeviceContext = NULL;
+
+	m_pDWriteFactory = NULL;
+	m_pTextFormat = NULL;
+
+	m_pD2DFactory = NULL;
+	m_pRT = NULL;
+	m_pBrush = NULL;
 
 	m_nWndClientWidth = FRAME_BUFFER_WIDTH;
 	m_nWndClientHeight = FRAME_BUFFER_HEIGHT;
@@ -19,6 +28,7 @@ CGameFramework::CGameFramework( )
 	m_pd3dDepthStencilBuffer = NULL;
 	m_pd3dDepthStencilView = NULL;
 	m_pPlayerShader = NULL;
+	m_iStageState = STAGE_LOGIN;
 }
 
 
@@ -36,6 +46,13 @@ bool CGameFramework::OnCreate( HINSTANCE hInstance, HWND hMainWnd )
 
 	// Direct3D 디바이스, 디바이스 컨텍스트, 스왑 체인 등을 생성하는 함수를 호출한다.
 	if (!CreateDirect3DDisplay( )) return false;
+
+	// DirectInput8 객체 생성
+	RECT rt;
+	GetClientRect( hMainWnd, &rt);
+	DirectInput::GetInstance( )->Init( hInstance, hMainWnd, rt.left - rt.right, rt.bottom - rt.top );
+
+	CAppManager::GetInstance( )->m_pFrameWork = this;
 
 	// 렌더링할 객체를 생성
 	BuildObjects( );
@@ -98,8 +115,9 @@ bool CGameFramework::CreateDirect3DDisplay( )
 
 	UINT dwCreateDeviceFlags = 0;
 #ifdef _DEBUG
-	dwCreateDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+	dwCreateDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG ;
 #endif
+	dwCreateDeviceFlags |= D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 
 	// 디바이스를 생성하기 위해 시도할 드라이버 순서
 	D3D_DRIVER_TYPE d3dDriverTypes[ ] =
@@ -125,7 +143,7 @@ bool CGameFramework::CreateDirect3DDisplay( )
 	dxgiSwapChainDesc.BufferCount = 1;
 	dxgiSwapChainDesc.BufferDesc.Width = m_nWndClientWidth;
 	dxgiSwapChainDesc.BufferDesc.Height = m_nWndClientHeight;
-	dxgiSwapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	dxgiSwapChainDesc.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
 	dxgiSwapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
 	dxgiSwapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
 	dxgiSwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
@@ -153,7 +171,107 @@ bool CGameFramework::CreateDirect3DDisplay( )
 	// 렌더 타깃 뷰를 생성하는 함수를 호출
 	if (!CreateRenderTargetDepthStencilView( )) return false;
 
+	if (!CreateDirect2D( )) return false;
 	return true;
+}
+
+bool CGameFramework::CreateDirect2D( )
+{
+	// d2dFactory 생성
+	HRESULT hr = D2D1CreateFactory( D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_pD2DFactory );
+
+	// IDWriteFactory 생성
+	if (SUCCEEDED( hr ))
+	{
+		hr = DWriteCreateFactory( DWRITE_FACTORY_TYPE_SHARED, __uuidof( IDWriteFactory ), reinterpret_cast<IUnknown**>( &m_pDWriteFactory ) );
+	}
+
+	// 글자 포맷 생성
+	if (SUCCEEDED( hr ))
+	{
+		hr = m_pDWriteFactory->CreateTextFormat(
+			L"돌림",                // Font family name.
+			NULL,                       // Font collection (NULL sets it to use the system font collection).
+			DWRITE_FONT_WEIGHT_REGULAR,
+			DWRITE_FONT_STYLE_NORMAL,
+			DWRITE_FONT_STRETCH_NORMAL,
+			15.0f,
+			L"ko-KR",
+			&m_pTextFormat
+			);
+	}
+	if (SUCCEEDED( hr ))
+	{
+		FLOAT dpiX;
+		FLOAT dpiY;
+		m_pD2DFactory->GetDesktopDpi( &dpiX, &dpiY );
+
+		D2D1_RENDER_TARGET_PROPERTIES props =
+			D2D1::RenderTargetProperties(
+			D2D1_RENDER_TARGET_TYPE_DEFAULT,
+			D2D1::PixelFormat( DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED ),
+			dpiX,
+			dpiY
+			);
+
+		IDXGISurface *pBackBuffer;
+		m_pDXGISwapChain->GetBuffer( 0, IID_PPV_ARGS( &pBackBuffer ) );
+		// 렌더타깃 생성
+		hr = m_pD2DFactory->CreateDxgiSurfaceRenderTarget(
+			pBackBuffer,
+			(const D2D1_RENDER_TARGET_PROPERTIES *)&props,
+			&m_pBackBufferRT
+			);
+		if (SUCCEEDED( hr ))
+		{
+			m_pBackBufferRT->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::White ), &m_pBrush );
+		}
+	}
+	if (SUCCEEDED( hr ))
+		return true;
+	else
+		return false;
+}
+
+void CGameFramework::RenderText( RECT renderRect, int color, std::string text )
+{
+	D2D1_SIZE_F targetSize = m_pBackBufferRT->GetSize( );
+
+	m_pBackBufferRT->BeginDraw( );
+
+	m_pBrush->SetTransform(
+		D2D1::Matrix3x2F::Scale( targetSize )
+		);
+
+	m_pBrush->SetColor( D2D1::ColorF( color ) );
+
+	D2D1_RECT_F rect = D2D1::RectF(
+		renderRect.left,
+		renderRect.top,
+		renderRect.right,
+		renderRect.bottom
+		);
+
+	wchar_t* szText = StringTowchar_t( text );
+
+	m_pBackBufferRT->DrawTextW(
+		szText,
+		wcslen( szText ),
+		m_pTextFormat,
+		rect,
+		m_pBrush );
+
+	m_pBackBufferRT->EndDraw( );
+}
+
+wchar_t* CGameFramework::StringTowchar_t( std::string& s )
+{
+	const char* all = s.c_str( );
+	int len = 1 + strlen( all );
+	wchar_t* t = new wchar_t[len];
+	if (NULL == t) throw std::bad_alloc( );
+	mbstowcs( t, all, len );
+	return t;
 }
 
 void CGameFramework::OnProcessingMouseMessage( HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam )
@@ -179,8 +297,7 @@ LRESULT CALLBACK CGameFramework::OnProcessingWindowMessage( HWND hWnd, UINT nMes
 
 			if (m_pd3dRenderTargetView) m_pd3dRenderTargetView->Release( );
 			if (m_pd3dDepthStencilBuffer) m_pd3dDepthStencilBuffer->Release( );
-			if (m_pd3dDepthStencilView) 
-				m_pd3dDepthStencilView->Release( );
+			if (m_pd3dDepthStencilView) m_pd3dDepthStencilView->Release( );
 
 			m_pDXGISwapChain->ResizeBuffers( 1, 0, 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0 );
 
@@ -224,8 +341,9 @@ void CGameFramework::BuildObjects( )
 {
 	CShader::CreateShaderVariables( m_pd3dDevice );
 	CIlluminatedShader::CreateShaderVariables( m_pd3dDevice );
+	m_pLoadingTexture = new CTexture2DShader( m_pd3dDevice, _T( "res/Loading.jpg" ), m_nWndClientWidth/2,m_nWndClientHeight/2 );
 
-	m_pScene = new CStage1Scene( );
+	m_pScene = new CLoginScene( );
 	m_pScene->BuildObjects( m_pd3dDevice );
 
 	MakePlayer( m_pd3dDevice );
@@ -233,6 +351,7 @@ void CGameFramework::BuildObjects( )
 	m_pCamera = m_pPlayer->GetCamera( );
 	m_pCamera->SetViewport( m_pd3dDeviceContext, 0, 0, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT, 0.0f, 1.0f );
 	m_pCamera->GenerateViewMatrix( );
+	m_pCamera->SetOffset( XMFLOAT3(0.0f, 0.0f, -10.0f) );
 
 	m_pScene->SetCamera( m_pCamera );
 	m_pScene->SetPlayer( m_pPlayer );
@@ -240,7 +359,13 @@ void CGameFramework::BuildObjects( )
 
 void CGameFramework::MakePlayer( ID3D11Device* pd3dDevice )
 {
-	FBXManager::GetInstance( )->LoadFBX( "res/animation example.FBX", LAYER_PLAYER, PLAYER_MAN, 1, _T( "./SkyBox/SkyBox_Top_1.jpg") );
+	FBXManager::GetInstance( )->LoadFBX( "res/hero/Hero_sword_animation2.FBX", LAYER_PLAYER, PLAYER_MAN, 2
+		, _T( "res/hero/hero_texture.dds" ), _T( "res/hero/hero_NormalsMap.dds" ) );
+//	FBXManager::GetInstance( )->LoadFBX( "res/hero/Sword.FBX", LAYER_PLAYER, PLAYER_WEAPON , 1 , _T( "res/hero/sword_texture.dds" ) );
+
+	//FBXManager::GetInstance( )->LoadFBX( "res/hero/Girl_Npc_Animation_mod.FBX", LAYER_PLAYER, PLAYER_MAN, 2
+	//	, _T( "res/hero/hero_texture.dds" ), _T("res/hero/hero_NormalsMap.dds"));
+
 	std::vector<CFbxMesh> tempMesh = FBXManager::GetInstance( )->m_pMeshes;
 	FBXManager::GetInstance( )->ClearMeshes( );
 
@@ -248,7 +373,7 @@ void CGameFramework::MakePlayer( ID3D11Device* pd3dDevice )
 	m_pPlayerShader->CreateShader( m_pd3dDevice );
 	m_pPlayerShader->BuildObjects( m_pd3dDevice, tempMesh );
 	m_pPlayer = m_pPlayerShader->GetPlayer( );
-	m_pPlayer->Rotate( 45, 23, 39 );
+	m_pPlayer->SetPosition( m_pScene->getStartPos( ) );
 }
 
 void CGameFramework::ReleaseObjects( )
@@ -261,6 +386,15 @@ void CGameFramework::ReleaseObjects( )
 
 	if (m_pPlayerShader) m_pPlayerShader->ReleaseObject( );
 	if (m_pPlayerShader) delete m_pPlayerShader;
+
+	if (m_pBrush)
+		m_pBrush->Release( );
+	if (m_pTextFormat)
+		m_pTextFormat->Release( );
+	if (m_pD2DFactory)
+		m_pD2DFactory->Release( );
+	if (m_pDWriteFactory)
+		m_pDWriteFactory->Release( );
 }
 
 void CGameFramework::ProcessInput( )
@@ -273,31 +407,110 @@ void CGameFramework::AnimateObjects( )
 {
 	if (m_pScene)
 		m_pScene->AnimateObjects( m_GameTimer.GetTimeElapsed( ) );
-	if (m_pPlayer)
-		m_pPlayer->Animate( m_GameTimer.GetTimeElapsed( ) );
+
+	if (m_iStageState != STAGE_LOGIN)
+		if (m_pPlayer)
+			m_pPlayer->Animate( m_GameTimer.GetTimeElapsed( ) );
 }
 
 void CGameFramework::FrameAdvance( )
 {
+	// 시간변화
 	m_GameTimer.Tick( );
+	// 입력 체크
+	DirectInput::GetInstance( )->Frame( );
 
+	// 입력 처리
 	ProcessInput( );
 
+	// 씬변화
+	if (m_pScene->iChangeScene != -1) ChangeScene( m_pd3dDevice, m_pScene->iChangeScene );
+
+	// 객체 애니메이트
 	AnimateObjects( );
 
-	float fClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f };
+	// 후면 버퍼 초기화
+	float fClearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	if (m_pd3dRenderTargetView) m_pd3dDeviceContext->ClearRenderTargetView( m_pd3dRenderTargetView, fClearColor );
 	if (m_pd3dDepthStencilView) m_pd3dDeviceContext->ClearDepthStencilView( m_pd3dDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0 );
 
+	// 렌더링을 위한 준비
 	if (m_pPlayer) m_pPlayer->UpdateShaderVariables( m_pd3dDeviceContext );
 
 	CCamera *pCamera = ( m_pPlayer ) ? m_pPlayer->GetCamera( ) : NULL;
-	if (m_pScene) m_pScene->Render( m_pd3dDeviceContext, pCamera );
 
-	if (m_pPlayerShader) m_pPlayerShader->Render( m_pd3dDeviceContext, pCamera );
+	// 씬 그리기
+	if (m_pScene) 
+		if(m_iStageState == STAGE_LOGIN)
+			((CLoginScene*)m_pScene)->Render( m_pd3dDeviceContext, pCamera );
+		else
+			m_pScene->Render( m_pd3dDeviceContext, pCamera );
 
+	// 플레이어 그리기
+	if (m_iStageState != STAGE_LOGIN)
+		if (m_pPlayerShader) m_pPlayerShader->Render( m_pd3dDeviceContext, pCamera );
+
+	// 플리핑
 	m_pDXGISwapChain->Present( 0, 0 );
 
+	// 프레임 저장 후 출력
 	m_GameTimer.GetFrameRate( m_pszBuffer + 13, 50 );
 	::SetWindowText( m_hWnd, m_pszBuffer );
+}
+
+void CGameFramework::ChangeScene( ID3D11Device* pd3dDevice, int iState )
+{
+	// 후면 버퍼 초기화
+	float fClearColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	if (m_pd3dRenderTargetView) m_pd3dDeviceContext->ClearRenderTargetView( m_pd3dRenderTargetView, fClearColor );
+	if (m_pd3dDepthStencilView) m_pd3dDeviceContext->ClearDepthStencilView( m_pd3dDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0 );
+
+	// 카메라 변화 및 로딩텍스처 그리기
+	m_iStageState = STAGE_LOGIN;
+	m_pCamera->SetOffset( XMFLOAT3( 0.0f, 0.0f, -1.0f ) );
+	if (m_pPlayer) m_pPlayer->UpdateShaderVariables( m_pd3dDeviceContext );
+
+	XMFLOAT3 LoadingTexturePos = MathHelper::GetInstance( )->Float3MulFloat( m_pCamera->GetLookVector( ), 5 );
+	m_pLoadingTexture->MakeTransformToCamera( m_pCamera, m_pPlayer->GetPosition() );
+	m_pLoadingTexture->Render( m_pd3dDeviceContext, m_pCamera );
+	
+	// 플리핑
+	m_pDXGISwapChain->Present( 0, 0 );
+
+	// 새로운 씬 생성 및 초기화
+	CScene *pScene = NULL;
+
+	switch (iState)
+	{
+		case STAGE_LOGIN:
+			pScene = new CLoginScene( );
+			m_iStageState = STAGE_LOGIN;
+			m_pCamera->SetOffset( XMFLOAT3( 0.0f, 0.0f, -1.0f ) );
+			break;
+		case STAGE_VILLIGE:
+			pScene = new VilligeScene( );
+			m_iStageState = STAGE_VILLIGE;
+			m_pCamera->SetOffset( XMFLOAT3( 0.0f, 200.0f, -510.0f ) );
+			break;
+		case STAGE_1:
+			pScene = new CStage1Scene( );
+			m_iStageState = STAGE_1;
+			m_pCamera->SetOffset( XMFLOAT3( 0.0f, 200.0f, -510.0f ) );
+			break;
+	}
+
+	pScene->BuildObjects( pd3dDevice );
+	pScene->SetPlayer( m_pPlayer );
+	pScene->SetCamera( m_pCamera );
+
+	// 기존 씬의 객체들 제거
+	if (m_pScene)
+		m_pScene->ReleaseObjects( );
+	delete m_pScene;
+
+	// 씬 변화
+	m_pScene = pScene;
+	// 플레이어 위치를 해당 씬에서의 초기 위치로 세팅
+	XMFLOAT3 startPos = m_pScene->getStartPos( );
+	m_pPlayer->SetPosition( startPos );
 }

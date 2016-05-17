@@ -98,6 +98,8 @@ public:
 class CPlayerShader : public CAnimatedObjShader
 {
 public:
+	int m_rightHandIdx;
+
 	CPlayerShader( );
 	virtual ~CPlayerShader( );
 
@@ -142,16 +144,28 @@ public:
 };
 
 // ∂•πŸ¥⁄¿ª ∑ª¥ı∏µ«œ±‚ ¿ß«— ºŒ¿Ã¥ı ≈¨∑°Ω∫
-class CBackgroundShader : public CTexturedShader
+class CStage1BackgroundShader : public CTexturedShader
 {
 public:
-	CBackgroundShader( );
-	virtual ~CBackgroundShader( );
+	CStage1BackgroundShader( );
+	virtual ~CStage1BackgroundShader( );
 
 	virtual void CreateShader( ID3D11Device *pd3dDevice );
 	virtual void BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbxMesh> vertex );
 	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera = NULL );
 };
+
+class CVilligeBackgroundShader : public CTexturedShader
+{
+public:
+	CVilligeBackgroundShader( );
+	virtual ~CVilligeBackgroundShader( );
+
+	virtual void CreateShader( ID3D11Device *pd3dDevice );
+	virtual void BuildObjects( ID3D11Device *pd3dDevice, std::vector<CFbxMesh> vertex );
+	virtual void Render( ID3D11DeviceContext *pd3dDeviceContext, CCamera *pCamera = NULL );
+};
+
 
 class CIlluminatedShader : public CShader
 {

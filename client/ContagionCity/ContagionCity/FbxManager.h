@@ -42,4 +42,8 @@ private:
 	void LoadInfluenceWeight( FbxMesh *pMesh, std::vector<CFbxVertex> *pVertices, std::vector<XMFLOAT4X4> *pBoneOffsets, std::vector<Bone> BoneHierarchy );
 	void LoadBoneHierarachy( FbxNode *pNode, std::vector<Bone> *pBoneHierarchy );
 	void LoadKeyframesByTime( FbxAnimStack *pAnimStack, FbxNode *pNode, std::vector<BoneAnimation>* pvAnimations, std::vector<Bone> BoneHierarchy );
+
+
+	void LoadMeshData( FbxMesh* pMesh, std::vector<CFbxVertex> *pVertex, std::vector<UINT> *pIndex );
+
 };

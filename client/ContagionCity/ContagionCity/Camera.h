@@ -25,6 +25,7 @@ protected:
 	// 카메라 변환 행렬과 투영 변환 행렬을 나타내는 멤버 변수
 	XMFLOAT4X4 m_mtxView;
 	XMFLOAT4X4 m_mtxProjection;
+	XMFLOAT4X4 m_mtxOrtho;
 
 	// 뷰포트를 나타내는 멤버 변수
 	D3D11_VIEWPORT m_d3dViewport;
@@ -84,6 +85,7 @@ public:
 	// 상수버퍼를 생성하고 내용을 갱신하는 함수
 	void CreateShaderVariables( ID3D11Device *pd3dDevice );
 	void UpdateShaderVariables( ID3D11DeviceContext *pd3dDeviceContext );
+	void UpdateShaderVariablesOrtho( ID3D11DeviceContext *pd3dDeviceContext );
 
 	void SetMode( DWORD nMode ) { m_nMode = nMode; }
 	DWORD GetMode( ) { return m_nMode; }
@@ -92,7 +94,8 @@ public:
 
 	XMFLOAT4X4 GetViewMatrix( ) { return m_mtxView; }
 	XMFLOAT4X4 GetProjectionMatrix( ) { return m_mtxProjection; }
-	
+	XMFLOAT4X4 GetOrthMatrix( ) { return m_mtxOrtho; }
+
 	ID3D11Buffer* GetCameraConstantBuffer( ) { return m_pd3dcbCamera; }
 	void SetPosition( XMFLOAT3 vPosition ) { m_vPosition = vPosition; }
 	XMFLOAT3& GetPosition( ){ return m_vPosition; }
@@ -121,7 +124,7 @@ public:
 	// 카메라의 이동, 회전에 따라 카메라의 정보를 갱신하는 가상함수
 	virtual void Update( XMFLOAT3& vLookAt, float fTimeElapsed ) {}
 	// 3인칭 카메라에서 카메라가 바라보는 지점을 설정하는 가상함수, 플레이어를 바라보고 있는다
-	virtual void SetLookAt( XMFLOAT3& vLookAt ) {}
+	virtual void SetLookAt( XMFLOAT3& vLookAt, XMFLOAT3 vUp ) {}
 
 }; 
 
@@ -157,6 +160,6 @@ public:
 	virtual ~CThirdPersonCamera( ) { }
 
 	virtual void Update( XMFLOAT3& vLookAt, float fTimeElapsed );
-	virtual void SetLookAt( XMFLOAT3& vLookAt );
+	virtual void SetLookAt( XMFLOAT3& vLookAt, XMFLOAT3 vUp );
 	virtual void Rotate( float fPitch = 0.0f, float fYaw = 0.0f, float fRoll = 0.0f );
 };

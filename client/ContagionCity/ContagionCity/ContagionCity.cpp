@@ -21,6 +21,8 @@ CGameFramework gGameFramework;
 MathHelper* MathHelper::Instance = NULL;
 FBXManager* FBXManager::Instance = NULL;
 SoundManager* SoundManager::Instance = NULL;
+CAppManager* CAppManager::Instance = NULL;
+DirectInput* DirectInput::instance = NULL;
 
 // 이 코드 모듈에 들어 있는 함수의 정방향 선언입니다.
 ATOM				MyRegisterClass(HINSTANCE hInstance);

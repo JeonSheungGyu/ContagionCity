@@ -46,6 +46,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>D:\SetupDirectory\FMOD\FMOD Programmers API Windows\api\inc;D:\SetupDirectory\FBX\2015.1\include;D:\SetupDirectory\SDK\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\SetupDirectory\FBX\2015.1\lib\vs2013\x86\release;D:\SetupDirectory\FMOD\FMOD Programmers API Windows\api\lib;D:\SetupDirectory\SDK\Lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -58,8 +60,8 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalOptions>"d3d11.lib" "d3dx11.lib" "d3dx11d.lib" "d3dcompiler.lib" "d3dx9.lib" "d3dx9d.lib" "dxerr.lib" "dxguid.lib" "dxgi.lib" "winmm.lib" %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>libfbxsdk.lib;libfbxsdk-md.lib;libfbxsdk-mt.lib;wininet.lib;fmodex_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>"d3d11.lib" "d3dx11.lib" "d3dx11d.lib" "d3dcompiler.lib" "d3dx9.lib" "d3dx9d.lib" "dxerr.lib" "dxguid.lib" "dxgi.lib" "winmm.lib" "ws2_32.lib" %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>libfbxsdk.lib;libfbxsdk-md.lib;libfbxsdk-mt.lib;wininet.lib;fmodex_vc.lib;d2d1.lib;dwrite.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>LIBMCT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <AdditionalLibraryDirectories>D:\SetupDirectory\FBX\2015.1\lib\vs2013\x86\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
@@ -71,30 +73,40 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;FBXDSK_NEW_API;FBXSDK_SHARED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>libfbxsdk.lib;wininet.lib;fmodex_vc.lib;d2d1.lib;dwrite.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>LIBMCT</IgnoreSpecificDefaultLibraries>
+      <AdditionalLibraryDirectories>D:\SetupDirectory\FBX\2015.1\lib\vs2013\x86\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>"d3d11.lib" "d3dx11.lib" "d3dx11d.lib" "d3dcompiler.lib" "d3dx9.lib" "d3dx9d.lib" "dxerr.lib" "dxguid.lib" "dxgi.lib" "winmm.lib"  "ws2_32.lib" %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AppManager.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="ContagionCity.h" />
+    <ClInclude Include="DirectInput.h" />
+    <ClInclude Include="EnemyObject.h" />
     <ClInclude Include="FbxManager.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="GameFramework.h" />
+    <ClInclude Include="LoginScene.h" />
     <ClInclude Include="MathHelper.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MyFunction.h" />
+    <ClInclude Include="NPCShader.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="Protocol.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Shader.h" />
@@ -102,17 +114,25 @@
     <ClInclude Include="Stage1Scene.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="Texture2D.h" />
     <ClInclude Include="Timer.h" />
+    <ClInclude Include="Trigger.h" />
+    <ClInclude Include="VilligeScene.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AppManager.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="ContagionCity.cpp" />
+    <ClCompile Include="DirectInput.cpp" />
+    <ClCompile Include="EnemyObject.cpp" />
     <ClCompile Include="FBXManger.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="GameFramework.cpp" />
+    <ClCompile Include="LoginScene.cpp" />
     <ClCompile Include="MathHelper.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="NPCShader.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Scene.cpp" />
@@ -123,7 +143,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Texture2D.cpp" />
     <ClCompile Include="Timer.cpp" />
+    <ClCompile Include="Trigger.cpp" />
+    <ClCompile Include="VilligeScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ContagionCity.rc" />

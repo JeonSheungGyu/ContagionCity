@@ -21,7 +21,7 @@ void SoundManager::Init( )
 
 void SoundManager::Loading( )
 {
-	r = m_pFmod->createSound( "Sound/backgroundBgm.mp3", FMOD_LOOP_NORMAL, NULL, &m_pSound[BGM] );
+	r = m_pFmod->createSound( "Sound/backgroundBgm.mp3", FMOD_LOOP_NORMAL, NULL, &m_pSound[SOUND_BGM] );
 	ErrorCheck( r );
 }
 
