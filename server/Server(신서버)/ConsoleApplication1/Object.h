@@ -52,14 +52,14 @@ public:
 	Object() : collisionSphere(XMFLOAT3(0,0,0), COLLISIONSPHERE) {
 		id = -1;
 		sector = nullptr;
-		speed = 8;
+		speed = 40;
 		nearList.clear();
 		nearSectors.clear();
 	}
 	Object( DWORD t_id, XMFLOAT3 pos) : id(t_id), collisionSphere(pos, COLLISIONSPHERE) {
 		obVector.position = pos;
 		sector = nullptr;
-		speed = 8;
+		speed = 40;
 		nearList.clear();
 		nearSectors.clear();
 	}
@@ -67,7 +67,7 @@ public:
 		obVector.reset();
 		id = -1;
 		sector = nullptr;
-		speed = 8;
+		speed = 40;
 		nearList.clear();
 		nearSectors.clear();
 	}

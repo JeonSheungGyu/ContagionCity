@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "State_Wander.h"
 
-const int WANDER_RAGNE = RECTSIZE;
+const int WANDER_RAGNE = RECTSIZE*3;
 const int CRASH_RANGE = RECTSIZE*6;
 
 using namespace DirectX;
@@ -10,6 +10,7 @@ Wander* Wander::wInstance = nullptr;
 std::mutex Wander::pMutex;
 
 extern User users[MAX_USER];
+void add_timer(DWORD id, DWORD type, DWORD duration);
 
 Wander* Wander::Instance()
 {
@@ -97,7 +98,13 @@ void Wander::Execute(Monster* pMonster)
 
 		pMonster->setDir(XMFLOAT3(XMVectorGetX(dir), 0, XMVectorGetZ(dir)));
 		pMonster->setDist(dist);
-		pMonster->setPos(XMFLOAT3(((DWORD)x / RECTSIZE)*RECTSIZE, 0, ((DWORD)z / RECTSIZE)*RECTSIZE));
+
+		//1초이하로 걸리면 EVENT로 그 시간에 연산하도록 추가한다.
+		DWORD duration = (dist / pMonster->getSpeed()) * 1000;
+		if (duration < 1000) {
+			add_timer(pMonster->getID(), OP_NPC_MOVE, duration);
+		}
+		//pMonster->setPos(XMFLOAT3(((DWORD)x / RECTSIZE)*RECTSIZE, 0, ((DWORD)z / RECTSIZE)*RECTSIZE));
 	}
 	catch (std::exception& e) {
 		printf("Wander::Execute %s", e.what());

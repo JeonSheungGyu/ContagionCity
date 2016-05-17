@@ -159,7 +159,8 @@ void add_timer(DWORD id, DWORD type, DWORD duration) {
 	temp.id = id;
 	temp.type = type;
 	temp.duration = duration;
-	temp.startTime = std::chrono::system_clock::now();
+	temp.startTime = clock();
+	temp.endTime = temp.startTime + duration; //실행될 시간
 
 	EnterCriticalSection(&qCS);
 	timer_queue.push(temp);
@@ -173,13 +174,13 @@ void process_event(EVENT k) {
 		Monster *monster = monsters.at(k.id - MAX_USER);
 		ZeroMemory(&monster->m_overlapped, sizeof(monster->m_overlapped));
 		monster->m_overlapped.operation = k.type;
+		monster->m_overlapped.duration = k.duration;
 		PostQueuedCompletionStatus(hCompletionPort, 1, monster->getID(), (LPOVERLAPPED)&monster->m_overlapped);
 	}
 }
 void TimerThread()
 {
-	std::chrono::system_clock::time_point currTime;
-	std::chrono::milliseconds mill;
+	clock_t currTime;
 	do {
 		Sleep(1);
 		do {
@@ -188,12 +189,12 @@ void TimerThread()
 				
 				EVENT k = timer_queue.top();
 				LeaveCriticalSection(&qCS);
-
-				currTime = std::chrono::system_clock::now();
-				mill = std::chrono::duration_cast<std::chrono::milliseconds>(currTime - k.startTime);
-				
-				if (k.duration > mill.count())
+			
+				currTime = clock();
+				//실행될 시간과 비교
+				if (k.endTime > currTime)
 					break;
+
 				EnterCriticalSection(&qCS);
 				timer_queue.pop();
 				LeaveCriticalSection(&qCS);
@@ -480,10 +481,17 @@ unsigned int __stdcall CompletionThread(LPVOID pComPort)
 			//두스레드가 하나의 몬스터를 처리할 경우가 생긴다..... concurrency control이 이게 아닌가보다 교수님 질문.
 			EnterCriticalSection(&monster->cs);
 			//printf("%d 시작", key);
-			//몬스터 움직이기
-			monster->heartBeat();
+			//몬스터 위치 업데이트
+			//1초보다 빨리 업데이트 ( 만약에 계속 직진하는 경우면 2초까지도 괜찮을듯 테스하기 )
+			if ( my_overlap->duration > 0 ) 
+				monster->ObjectDeadReckoning(my_overlap->duration);
+			else
+				monster->ObjectDeadReckoning(1000);
+
 			//몬스터 존 업데이트
 			zone.SectorUpdateOfMonster(monster->getID());
+			//몬스터 FSM,
+			monster->heartBeat();
 			LeaveCriticalSection(&monster->cs);
 			//printf("%d 끝\n", key);
 		}else if (OP_NPC_MOVE == my_overlap->operation)

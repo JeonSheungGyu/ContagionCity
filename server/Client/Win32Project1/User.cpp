@@ -12,9 +12,10 @@ void User::move()
 	//¿Ãµø¿Ã ¥Ÿµ«∏È ∏ÿ√·¥Ÿ.
 	if (is_move)
 	{
-		position.x += direction.x*speed;
-		position.y += direction.y*speed;
-		dist -= speed;
+		position.x += direction.x*(speed / 33);
+		position.y += direction.y*(speed / 33);
+
+		dist -= (speed / 33);
 		
 		if (dist <= 0) is_move = false;
 	}

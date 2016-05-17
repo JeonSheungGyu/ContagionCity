@@ -224,13 +224,19 @@ void PacketMaker::MonsterChase(Object* player, const unsigned short id)
 		packet.id = id;
 		packet.type = SC_MONSTER_CHASE;
 		packet.size = sizeof(sc_packet_monster_chase);
-		packet.dx = monster->getPos().x;
-		packet.dy = monster->getPos().y;
-		packet.dz = monster->getPos().z;
+		//위치보정을 위해 위치 전송
+		packet.x = monster->getPos().x;
+		packet.y = monster->getPos().y;
+		packet.z = monster->getPos().z;
+		//움직일 방향
+		packet.dx = monster->getDir().x;
+		packet.dy = monster->getDir().y;
+		packet.dz = monster->getDir().z;
 		packet.dist = monster->getDist();
 	
 		SendPacket(player->getID(), reinterpret_cast<unsigned char *>(&packet));
-		printf("Send [%d] about  [%d] SC_MONSTER_CHASE \n", player->getID(), monster->getID());
+		printf("Send [%d] about  [%d] SC_MONSTER_CHASE pos( %f, %f, %f) \n", player->getID(),
+			monster->getID(), monster->getPos().x, monster->getPos().y, monster->getPos().z);
 	}
 	catch (exception& e) {
 		printf("PacketMaker::MonsterChase : %s", e.what());

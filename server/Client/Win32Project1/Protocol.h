@@ -67,8 +67,8 @@ struct sc_packet_put_object
 	FLOAT z;
 	FLOAT speed;
 	WORD lv;
-	WORD hp;
-	WORD ap;
+	int hp;
+	int ap;
 	WORD damage;
 	WORD defense;
 	WORD exp;
@@ -110,6 +110,9 @@ struct sc_packet_monster_chase
 	FLOAT dx;
 	FLOAT dy;
 	FLOAT dz;
+	FLOAT x;
+	FLOAT y;
+	FLOAT z;
 	FLOAT dist;
 };
 
@@ -129,7 +132,7 @@ struct sc_packet_combat
 	//시전자
 	WORD id;
 	BYTE combatCollision;
-	std::pair<WORD, WORD> InfoList[10];
+	std::pair<WORD, int> InfoList[10];
 	BYTE  ListSize;
 	FLOAT x;
 	FLOAT z;
@@ -186,7 +189,7 @@ struct CombatData
 	//누가공격을 시전하였는지
 	WORD id;
 	BYTE combatCollision;
-	std::pair<WORD, WORD> InfoList[10];
+	std::pair<WORD, int> InfoList[10];
 	BYTE  ListSize;
 	FLOAT x;
 	FLOAT z;

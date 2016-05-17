@@ -17,7 +17,7 @@ extern std::vector<Monster*> monsters;
 
 
 // 캐릭터 주위 CRASH_RANGE 거리만큼 원 공격
-void CombatCollision::CircleAround(const WORD id, vector<pair<WORD, WORD>>& InfoList, const FLOAT x, const FLOAT z)
+void CombatCollision::CircleAround(const WORD id, vector<pair<WORD, int>>& InfoList, const FLOAT x, const FLOAT z)
 {
 	assert(id >= 0);
 
@@ -54,7 +54,7 @@ void CombatCollision::CircleAround(const WORD id, vector<pair<WORD, WORD>>& Info
 }
 
 // 검 반경 (원) 안에 들어온 몬스터 중에 플레이어 앞에 있는 (내적)있는 몬스터
-void CombatCollision::CircleFront(const WORD id, vector<pair<WORD, WORD>>& InfoList, const FLOAT x, const FLOAT z)
+void CombatCollision::CircleFront(const WORD id, vector<pair<WORD, int>>& InfoList, const FLOAT x, const FLOAT z)
 {
 	assert(id >= 0);
 
@@ -98,7 +98,7 @@ void CombatCollision::CircleFront(const WORD id, vector<pair<WORD, WORD>>& InfoL
 }
 
 // 플레이어 좌표를 시작으로 14 거리만큼 일직선 스킬공격
-void CombatCollision::Eraser(const WORD id, vector<pair<WORD, WORD>>& InfoList, const FLOAT x, const FLOAT z)
+void CombatCollision::Eraser(const WORD id, vector<pair<WORD, int>>& InfoList, const FLOAT x, const FLOAT z)
 {
 	assert(id >= 0);
 
@@ -132,7 +132,7 @@ void CombatCollision::Eraser(const WORD id, vector<pair<WORD, WORD>>& InfoList, 
 
 
 // x,z 위치에 원 충돌체크
-void CombatCollision::PointCircle(const WORD id, vector<pair<WORD, WORD>>& InfoList, const FLOAT x, const FLOAT z)
+void CombatCollision::PointCircle(const WORD id, vector<pair<WORD, int>>& InfoList, const FLOAT x, const FLOAT z)
 {
 	assert(id >= 0);
 

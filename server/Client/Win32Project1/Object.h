@@ -27,7 +27,7 @@ protected:
 public:
 	std::atomic<bool> is_move = false;
 	std::atomic<bool> is_using = false;
-	Object() :position(XMFLOAT2(0,0)), direction(XMFLOAT2(0,0)), speed(20), is_using(false) {};
+	Object() :position(XMFLOAT2(0,0)), direction(XMFLOAT2(0,0)), speed(40), is_using(false) {};
 	Object(const XMFLOAT2& pos, const XMFLOAT2& dir, const float sp)
 		:position(pos), direction(dir), speed(sp), is_using(false)
 	{}
@@ -49,7 +49,10 @@ public:
 	void setSpeed(const float speed){ this->speed = speed; }
 	float getSpeed()const { return speed; }
 
-	virtual void setHp(const WORD hp) { objectStatus.hp = hp; if (objectStatus.hp < 0) is_using = false; }
+	virtual void setHp(const int hp) { 
+		objectStatus.hp = hp; 
+		if (objectStatus.hp < 0) is_using = false; 
+	}
 	void minusHp(const WORD hp) { objectStatus.hp -= hp; }
 	const WORD getHp()const { return objectStatus.hp; }
 

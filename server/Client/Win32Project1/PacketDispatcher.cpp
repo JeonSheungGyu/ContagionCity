@@ -168,10 +168,10 @@ void PacketDispatcher::MonsterChase(char* buf)
 	//cout << "MonsterChase" << endl;
 	sc_packet_monster_chase packet;
 	memcpy(reinterpret_cast<char*>(&packet), buf, *buf);
-	//monsters[packet.id - MAX_USER].setPos(XMFLOAT2(packet.dx, packet.dz));
-	monsters[packet.id - MAX_USER].setPos(XMFLOAT2(packet.dx, packet.dz));
+	//monsters[packet.id - MAX_USER].setPos(XMFLOAT2(packet.x, packet.z));
+	monsters[packet.id - MAX_USER].setDir(XMFLOAT2(packet.dx, packet.dz));
 	monsters[packet.id - MAX_USER].setDist(packet.dist);
-	monsters[packet.id - MAX_USER].is_move = false;
+	monsters[packet.id - MAX_USER].is_move = true;
 }
 
 
@@ -179,7 +179,6 @@ void PacketDispatcher::MonsterDie(char* buf)
 {
 	sc_packet_monster_die packet;
 	memcpy(reinterpret_cast<char*>(&packet), buf, *buf);
-
 	monsters[packet.mon_id - MAX_USER].is_using = false;
 	users[packet.player_id].plusEXP(packet.EXP);
 }

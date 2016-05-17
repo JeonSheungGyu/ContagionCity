@@ -8,6 +8,8 @@ std::mutex Chase::pMutex;
 
 const int OBJECT_INTERVAL = RECTSIZE;
 
+void add_timer(DWORD id, DWORD type, DWORD duration);
+
 Chase* Chase::Instance()
 {
 	std::lock_guard<std::mutex> guard(pMutex);
@@ -49,7 +51,13 @@ void Chase::Execute(Monster* pMonster)
 
 	pMonster->setDir(XMFLOAT3(XMVectorGetX(dir), 0, XMVectorGetZ(dir)));
 	pMonster->setDist(dist);
-	pMonster->setPos(XMFLOAT3(tPos.x, tPos.y, tPos.z));
+
+	//1초이하로 걸리면 EVENT로 그 시간에 연산하도록 추가한다.
+	DWORD duration = (dist / pMonster->getSpeed())*1000;
+	if ( duration < 1000) {
+		add_timer(pMonster->getID(), OP_NPC_MOVE, duration);
+	}
+	//pMonster->setPos(XMFLOAT3(tPos.x, tPos.y, tPos.z));
 }
 
 

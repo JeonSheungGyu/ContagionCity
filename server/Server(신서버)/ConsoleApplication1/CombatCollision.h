@@ -13,7 +13,7 @@ enum
 // 함수포인터 구조체
 struct CollisionFuncArray
 {
-	using FuncType = void(*)(const WORD, std::vector< std::pair<WORD, WORD>>&, const FLOAT, const FLOAT);
+	using FuncType = void(*)(const WORD, std::vector< std::pair<WORD, int>>&, const FLOAT, const FLOAT);
 	FuncType Func;
 	CollisionFuncArray() { Func = nullptr; }
 };
@@ -22,16 +22,16 @@ class CombatCollision
 {
 public:
 	// 캐릭터 주변
-	static void CircleAround(const WORD id, std::vector< std::pair<WORD, WORD>>& InfoList, const FLOAT x, const FLOAT z);
+	static void CircleAround(const WORD id, std::vector< std::pair<WORD, int>>& InfoList, const FLOAT x, const FLOAT z);
 
 	// 캐릭터 앞
-	static void CircleFront(const WORD id, std::vector< std::pair<WORD, WORD>>& InfoList, const FLOAT x, const FLOAT z);
+	static void CircleFront(const WORD id, std::vector< std::pair<WORD, int>>& InfoList, const FLOAT x, const FLOAT z);
 
 	// 일직선
-	static void Eraser(const WORD id, std::vector< std::pair<WORD, WORD>>& InfoList, const FLOAT x, const FLOAT z);
+	static void Eraser(const WORD id, std::vector< std::pair<WORD, int>>& InfoList, const FLOAT x, const FLOAT z);
 
 	// 지정된 포인트
-	static void PointCircle(const WORD id, std::vector< std::pair<WORD, WORD>>& InfoList, const FLOAT x, const FLOAT z);
+	static void PointCircle(const WORD id, std::vector< std::pair<WORD, int>>& InfoList, const FLOAT x, const FLOAT z);
 
 	//RayCast
 	static BOOL RayCast(const XMFLOAT3& Pos, const XMFLOAT3& Dir, FLOAT dist, const BoundingSphere object)

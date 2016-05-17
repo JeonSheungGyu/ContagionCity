@@ -93,7 +93,7 @@ void PacketDispatcher::Combat(char* ptr, const unsigned short id)
 	sc_packet_combat sPacket;
 	memcpy(&rPacket, ptr, *ptr);
 	auto &player = users[id];
-	std::vector<std::pair<WORD, WORD>> InfoList;
+	std::vector<std::pair<WORD, int>> InfoList;
 
 	// action 충돌체크 종류
 	CollisionProcess[rPacket.combatCollision].Func(id, InfoList, rPacket.x, rPacket.z);

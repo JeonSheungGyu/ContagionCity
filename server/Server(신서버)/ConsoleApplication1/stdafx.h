@@ -50,7 +50,8 @@ typedef struct // 소켓의버퍼정보를구조체화.
 	WSABUF wsabuf;
 	unsigned char iocp_buffer[BUFSIZE];
 	int operation;
-
+	//DB_EVENT duration 정보
+	DWORD duration; // after
 	//DB로드정보
 	DWORD db_type;
 	ObjectStatus status;
@@ -76,8 +77,9 @@ typedef struct EVENT {
 	DWORD id;
 	DWORD type;
 	DWORD duration; // after
-	std::chrono::system_clock::time_point startTime;
+	clock_t startTime;
+	clock_t endTime;
 
-	bool operator < (const EVENT& e) const { return  startTime < e.startTime; }
+	bool operator < (const EVENT& e) const { return  e.endTime < endTime; }
 }EVENT;
 
