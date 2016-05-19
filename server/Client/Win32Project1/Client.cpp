@@ -16,6 +16,7 @@ std::vector<User> users(MAX_USER);
 std::vector<Monster> monsters(MAX_NPC);
 
 DWORD WINAPI ThFunc(LPVOID lpParam);
+DWORD WINAPI UpdateThread(LPVOID lpParam); // 포지션 업데이트
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 int recvn(SOCKET s, char *buf, int len, int flags);
 void ErrorHandling(char *msg);
@@ -199,19 +200,27 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 		case VK_LEFT:
 			dir = LEFT;
-			PacketSender::instance().PlayerMove(dir);
+			users[myID].setDir(XMFLOAT2(-1, 0));
+			users[myID].setDist(users[myID].getSpeed() / 33);
+			users[myID].is_move = true;
 			break;
 		case VK_RIGHT:
 			dir = RIGHT;
-			PacketSender::instance().PlayerMove(dir);
+			users[myID].setDir(XMFLOAT2(1, 0));
+			users[myID].setDist(users[myID].getSpeed() / 33);
+			users[myID].is_move = true;
 			break;
 		case VK_UP:
 			dir = UP;
-			PacketSender::instance().PlayerMove(dir);
+			users[myID].setDir(XMFLOAT2(0, -1));
+			users[myID].setDist(users[myID].getSpeed() / 33);
+			users[myID].is_move = true;
 			break;
 		case VK_DOWN:
 			dir = DOWN;
-			PacketSender::instance().PlayerMove(dir);
+			users[myID].setDir(XMFLOAT2(0, 1));
+			users[myID].setDist(users[myID].getSpeed() / 33);
+			users[myID].is_move = true;
 			break;
 		default:
 			return 0;
@@ -350,7 +359,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 
 	
-		wsprintf(str, TEXT("좌표 ( %d, %d ) "), users[myID].getPos().x/RECTSIZE, users[myID].getPos().y/ RECTSIZE);
+		wsprintf(str, TEXT("좌표 ( %d, %d ) "),(DWORD)(users[myID].getPos().x/RECTSIZE), (DWORD)(users[myID].getPos().y / RECTSIZE));
 		TextOut(hMemDC, winRect.right - 200, winRect.bottom-100, str, lstrlen(str));
 
 
@@ -383,8 +392,7 @@ BYTE LoginPermit() {
 	WSADATA wsaData;
 	SOCKADDR_IN recvAddr;
 	char packet[BUFSIZE];
-	User* lpClientData;
-	Monster* lpMonster;
+
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) /* Load Winsock 2.2 DLL */
 		ErrorHandling("WSAStartup() error!");
 
@@ -408,16 +416,18 @@ BYTE LoginPermit() {
 
 	closesocket(hSocket);
 	WSACleanup();
-	
+
 	return PacketDispatcher::PermisionLogin(packet);
 }
 DWORD WINAPI ThFunc(LPVOID lpParam)
 {
 	WSADATA wsaData;
 	SOCKADDR_IN recvAddr;
+	HANDLE hThread;
+	DWORD dwThreadID;
+
 	char packet[BUFSIZE];
-	User* lpClientData;
-	Monster* lpMonster;
+
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) /* Load Winsock 2.2 DLL */
 		ErrorHandling("WSAStartup() error!");
 
@@ -452,6 +462,10 @@ DWORD WINAPI ThFunc(LPVOID lpParam)
 				memcpy(&put_packet, packet, packet[0]);
 				myID = put_packet.id;
 				isSet = true;
+
+				//위치 업데이트 스레드
+				hThread = CreateThread(NULL, 0, UpdateThread, NULL, 0, &dwThreadID);
+				CloseHandle(hThread);
 			}
 		}
 		funcDispatcher[*(packet + 1)].Func(packet);
@@ -492,4 +506,26 @@ int recvn(SOCKET s, char *buf, int len, int flags) {
 	}
 
 	return (len - left);
+}
+DWORD WINAPI UpdateThread(LPVOID lpParam)
+{
+	auto& owner = users[myID];
+	auto oldPos = owner.getPos();
+	auto start_time = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<long long, std::milli> count;
+	while (1) {
+		if (count.count() > UPDATE_TIME)
+		{
+			if (oldPos.x == owner.getPos().x && oldPos.y == owner.getPos().y) {
+				Sleep(UPDATE_TIME);
+			}
+			else {
+				oldPos = owner.getPos();
+				PacketSender::instance().PlayerMove();
+				start_time = std::chrono::high_resolution_clock::now();
+				Sleep(UPDATE_TIME);
+			}
+		}
+		count = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start_time);
+	}
 }

@@ -107,12 +107,9 @@ struct sc_packet_monster_chase
 	BYTE size;
 	BYTE type;
 	WORD id;
-	FLOAT dx;
-	FLOAT dy;
-	FLOAT dz;
-	FLOAT x;
-	FLOAT y;
-	FLOAT z;
+	FLOAT tx;
+	FLOAT ty;
+	FLOAT tz;
 	FLOAT dist;
 };
 
@@ -144,12 +141,20 @@ struct cs_packet_object_move
 {
 	BYTE size;
 	BYTE type;
-	BYTE dir;
+	WORD id;
+	FLOAT tx;
+	FLOAT ty;
+	FLOAT tz;
 	FLOAT x;
 	FLOAT y;
 	FLOAT z;
+	FLOAT dx;
+	FLOAT dy;
+	FLOAT dz;
+	FLOAT dist;
 	BYTE is_whirl;
 };
+
 
 struct cs_packet_combat
 {

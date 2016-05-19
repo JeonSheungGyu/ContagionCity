@@ -20,7 +20,8 @@ void Monster::heartBeat() {
 	if (sector == nullptr) return;
 
 	//거리에 따른 액션변화
-	if (!m_target.TargetIsNull()) m_target.CalculateDistWithTarget(this);
+	if (m_target.TargetIsNull()) m_target.FindTarget(this); 
+	else m_target.CalculateDistWithTarget(this);
 
 	// 액션에 따른 State 변환
 	if (m_preAction != m_currentAction) {
@@ -44,7 +45,7 @@ void Monster::heartBeat() {
 
 	try {
 		m_pStateMachine->Update();	// 현재 FSM에 따라 행동
-		setCollisionSpherePos(getPos()); // 충돌체도 업데이트 (원)
+	
 
 		std::set<int> old_view;
 		std::set<int> new_view;

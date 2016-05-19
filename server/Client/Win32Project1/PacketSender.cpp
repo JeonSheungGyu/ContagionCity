@@ -61,21 +61,22 @@ void PacketSender::requestLogin( char *id, char *password )
 //}
 //
 //
-void PacketSender::PlayerMove(BYTE dir)
+void PacketSender::PlayerMove()
 {
 	cs_packet_object_move move_packet;
 	char buf[BUFSIZE];
-
+	//현재위치와 이동방향 전달
 	move_packet.type = CS_MOVE_OBJECT;
 	move_packet.size = sizeof(move_packet);
-	move_packet.dir = dir;
 	move_packet.x = users[myID].getPos().x;
 	move_packet.y = 0;
 	move_packet.z = users[myID].getPos().y;
-	
+	move_packet.dx = users[myID].getDir().x;
+	move_packet.dy = 0;
+	move_packet.dz = users[myID].getDir().y;
+
 	send(hSocket, reinterpret_cast<char*>(&move_packet), move_packet.size, 0);
 }
-
 //// 플레이어가 스킬 or 기본공격 시 호출
 //// 매개변수: 플레이어가 어떤 키를 눌렀는지 action BYTE값
 void PacketSender::PlayerCombat(const char combatCollision, const float x, const float y)

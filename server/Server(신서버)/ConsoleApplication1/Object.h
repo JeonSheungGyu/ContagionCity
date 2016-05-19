@@ -32,6 +32,7 @@ protected:
 	//이동
 	ObjectVector							obVector;
 	float									speed;
+	XMFLOAT3								targetPos; //이동타겟위치
 	//상태
 	ObjectStatus							obStatus;
 	//시야
@@ -63,8 +64,10 @@ public:
 		nearList.clear();
 		nearSectors.clear();
 	}
+
 	void reset() {
 		obVector.reset();
+		obStatus.reset();
 		id = -1;
 		sector = nullptr;
 		speed = 40;
@@ -106,11 +109,13 @@ public:
 	const std::set<Sector*>&	getNearSectors() { return nearSectors; }
 	void updateNearList();
 
-
+	//oldPos
 	const XMFLOAT3							getOldPos()const { return obVector.oldPos; }
 	void									setOldPos(const XMFLOAT3 pos) { obVector.oldPos = pos; }
 
-
+	// targetPos
+	const XMFLOAT3&			getTargetPos() { return targetPos; }
+	void					setTargetPos(const XMFLOAT3& tp) { targetPos = tp; }
 
 	//데드레커닝
 	void					setDeadReckoning(const bool tf) { is_DeadReckoning = tf; }

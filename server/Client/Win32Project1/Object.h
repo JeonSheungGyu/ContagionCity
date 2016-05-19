@@ -54,7 +54,7 @@ public:
 		if (objectStatus.hp < 0) is_using = false; 
 	}
 	void minusHp(const WORD hp) { objectStatus.hp -= hp; }
-	const WORD getHp()const { return objectStatus.hp; }
+	const int getHp()const { return objectStatus.hp; }
 
 
 	ObjectStatus& getStatus(){ return objectStatus; }

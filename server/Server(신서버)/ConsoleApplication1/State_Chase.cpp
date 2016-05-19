@@ -47,15 +47,22 @@ void Chase::Execute(Monster* pMonster)
 	(tPos.z > mPos.z) ? tPos.z -= OBJECT_INTERVAL : tPos.z += OBJECT_INTERVAL;
 
 	FLOAT dist = sqrt((tPos.x - mPos.x)*(tPos.x - mPos.x) + (tPos.z - mPos.z)*(tPos.z - mPos.z));
-	//dist += OBJECT_INTERVAL;
+	//타겟위치 계산 완료
 
+	//dist += OBJECT_INTERVAL;
+	//서버 몬스터 이동에 사용
 	pMonster->setDir(XMFLOAT3(XMVectorGetX(dir), 0, XMVectorGetZ(dir)));
 	pMonster->setDist(dist);
-
-	//1초이하로 걸리면 EVENT로 그 시간에 연산하도록 추가한다.
+	pMonster->setDeadReckoning(true);
+	//클라이언트 몬스터 이동에 사용
+	pMonster->setTargetPos(XMFLOAT3(tPos.x, tPos.y, tPos.z));
+	//다음 업데이트
 	DWORD duration = (dist / pMonster->getSpeed())*1000;
 	if ( duration < 1000) {
 		add_timer(pMonster->getID(), OP_NPC_MOVE, duration);
+	}
+	else {
+		add_timer(pMonster->getID(), OP_NPC_MOVE, 1000);
 	}
 	//pMonster->setPos(XMFLOAT3(tPos.x, tPos.y, tPos.z));
 }

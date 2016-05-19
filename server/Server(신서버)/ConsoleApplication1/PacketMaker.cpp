@@ -154,8 +154,6 @@ void PacketMaker::RemoveObject(Object* owner, const DWORD id)
 }
 
 
-
-
 void PacketMaker::MoveObject(Object* owner, const DWORD id)
 {
 	assert(id >= 0);
@@ -174,6 +172,7 @@ void PacketMaker::MoveObject(Object* owner, const DWORD id)
 		move_packet.tx = object->getPos().x;
 		move_packet.ty = object->getPos().y;
 		move_packet.tz = object->getPos().z;
+
 
 		SendPacket(owner->getID(), reinterpret_cast<unsigned char *>(&move_packet));
 		printf("Send [%d] about  [%d] SC_POS pos( %f, %f, %f) \n", owner->getID(),
@@ -224,18 +223,14 @@ void PacketMaker::MonsterChase(Object* player, const unsigned short id)
 		packet.id = id;
 		packet.type = SC_MONSTER_CHASE;
 		packet.size = sizeof(sc_packet_monster_chase);
-		//위치보정을 위해 위치 전송
-		packet.x = monster->getPos().x;
-		packet.y = monster->getPos().y;
-		packet.z = monster->getPos().z;
-		//움직일 방향
-		packet.dx = monster->getDir().x;
-		packet.dy = monster->getDir().y;
-		packet.dz = monster->getDir().z;
+		//타겟
+		packet.tx = monster->getTargetPos().x;
+		packet.ty = monster->getTargetPos().y;
+		packet.tz = monster->getTargetPos().z;
 		packet.dist = monster->getDist();
 	
 		SendPacket(player->getID(), reinterpret_cast<unsigned char *>(&packet));
-		printf("Send [%d] about  [%d] SC_MONSTER_CHASE pos( %f, %f, %f) \n", player->getID(),
+		printf("Send [%d] about  [%d] SC_MONSTER_CHASE targetPos( %f, %f, %f) \n", player->getID(),
 			monster->getID(), monster->getPos().x, monster->getPos().y, monster->getPos().z);
 	}
 	catch (exception& e) {

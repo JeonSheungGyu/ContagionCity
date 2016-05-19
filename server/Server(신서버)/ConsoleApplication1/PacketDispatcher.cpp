@@ -40,7 +40,6 @@ void SendPacket(int id, unsigned char *packet);
 
 void PacketDispatcher::ObjectMove(char* ptr, const unsigned short id)
 {
-	//cout << "PacketDispatcher::ObjectMove Send Move ID:" << id << endl;
 	cs_packet_object_move rPacket;
 	sc_packet_move_object sPacket;
 	memcpy(&rPacket, ptr, *ptr);
@@ -56,29 +55,21 @@ void PacketDispatcher::ObjectMove(char* ptr, const unsigned short id)
 		//클라이언트로부터 수신한 유저 위치로 보정
 		//player.setPos(XMFLOAT3(rPacket.x, rPacket.y, rPacket.z));
 
-		int x = player.getPos().x;
-		int z = player.getPos().z;
-
-		switch (rPacket.dir)
-		{
-		case UP: z -= RECTSIZE; break;
-		case DOWN: z += RECTSIZE; break;
-		case LEFT: x -= RECTSIZE; break;
-		case RIGHT: x += RECTSIZE; break;
-		default: printf("Unknown type packet received!\n");
-			while (true);
-		}
-		if (z < 0) z = 0;
-		if (z >= WORLDSIZE) z = WORLDSIZE - RECTSIZE;
-		if (x < 0) x = 0;
-		if (x >= WORLDSIZE) x = WORLDSIZE - RECTSIZE;
-
-		XMVECTOR dir = XMVector3Normalize(XMLoadFloat3(&XMFLOAT3(x - player.getPos().x, 0, z - player.getPos().z)));
-		player.setDir(XMFLOAT3( XMVectorGetX(dir), 0, XMVectorGetZ(dir)));
-		player.setPos(XMFLOAT3(x, 0, z));
+		/*	
+		int x = rPacket.x;
+		int z = rPacket.z;
+		*/
+		//위치갱신
+		player.setPos(XMFLOAT3(rPacket.x, 0, rPacket.z));
+		//방향설정
+		player.setDir(XMFLOAT3(rPacket.dx, 0, rPacket.dz));
 		player.setCollisionSpherePos(player.getPos()); // 충돌체 업데이트
-		PacketMaker::instance().MoveObject(reinterpret_cast<Object*>(&player), player.getID());
+		//player.setDeadReckoning(true); // 데드레커닝가동
+		//PacketMaker::instance().MoveObject(reinterpret_cast<Object*>(&player), player.getID());
 		updatePlayerView(player.getID());
+
+		printf("[%d] SC_POS pos( %f, %f, %f) \n",
+			player.getID(), player.getPos().x, player.getPos().y, player.getPos().z);
 	}
 	catch (std::exception& e) {
 		printf("PacketDispatcher::ObjectMove :", e.what());

@@ -151,7 +151,6 @@ void DataBaseThread()
 std::priority_queue<EVENT, std::vector<EVENT>, std::less<EVENT> > timer_queue;
 CRITICAL_SECTION qCS;
 std::thread *timer_thread;
-std::thread *monster_thread;
 
 void add_timer(DWORD id, DWORD type, DWORD duration) {
 	
@@ -207,25 +206,6 @@ void TimerThread()
 		} while (true);
 	} while (true);
 }
-void MonsterEventThread()
-{
-	std::chrono::system_clock::time_point startTime, endTime;
-	while (true)
-	{
-		startTime = std::chrono::system_clock::now();
-		std::chrono::milliseconds mill;
-		for (auto& monster : monsters)
-		{
-			add_timer(monster->getID(), OP_NPC_MOVE, 0);
-		}
-		endTime = std::chrono::system_clock::now();
-		mill = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
-		
-
-		if (MONSTER_DURATION > mill.count())
-			Sleep(MONSTER_DURATION - mill.count());
-	}
-}
 
 //게임 초기화, 릴리즈, 오브젝트 할당
 void allocateObject()
@@ -238,13 +218,14 @@ void allocateObject()
 	DWORD x = 0, z = 0;
 	int count = 0;
 
-	// monster 할당
+	// monster 할당 및 실행
 	for (int i = MAX_USER; i < MAX_USER + MAX_NPC; ++i)
 	{
 		x = ((int)(mx(gen) / RECTSIZE))*RECTSIZE;
 		z = ((int)(mz(gen) / RECTSIZE))*RECTSIZE;
 		monsters.push_back(new Monster(i, XMFLOAT3(x,0,z)));
 		zone.SectorUpdateOfMonster(i);
+		add_timer(i, OP_NPC_MOVE, 1000);
 	}
 }
 
@@ -259,31 +240,22 @@ void InitFunc()
 	CollisionProcess[CC_Eraser].Func = CombatCollision::Eraser;
 	CollisionProcess[CC_PointCircle].Func = CombatCollision::PointCircle;
 }
-
 void initializeGame() {
 	//큐 크리티컬섹션 초기화
 	InitializeCriticalSection(&qCS);
 	//타이머 스레드
 	timer_thread = new std::thread{TimerThread};
-	monster_thread = new std::thread{ MonsterEventThread };
 	db_thread = new std::thread{ DataBaseThread };
 
 	InitFunc();
 }
-
-
 void releaseGame() {
 	DeleteCriticalSection(&qCS);
 	timer_thread->join();
-	monster_thread->join();
 	db_thread->join();
 	delete timer_thread;
-	delete monster_thread;
 	delete db_thread;
 }
-
-
-
 
 int main(int argc, char** argv)
 {
@@ -316,9 +288,8 @@ int main(int argc, char** argv)
 
 
 	//게임배치 및 초기화
-	allocateObject();
 	initializeGame();
-
+	allocateObject();
 	//2. Completion Port 에서 입출력 완료를 대기하는 쓰레드를 CPU 개수만큼 생성.
 	for (i = 0; i<SystemInfo.dwNumberOfProcessors; i++)
 		_beginthreadex(NULL, 0, CompletionThread, (LPVOID)hCompletionPort, 0, NULL);
@@ -415,9 +386,7 @@ unsigned int __stdcall CompletionThread(LPVOID pComPort)
 			if (!DeadReckoning::Instance().is_process) {
 				DeadReckoning::Instance().is_process = true;
 				DeadReckoning::Instance().Execute();
-			}
-
-				
+			}		
 			else continue;
 
 			continue;
@@ -482,15 +451,14 @@ unsigned int __stdcall CompletionThread(LPVOID pComPort)
 			EnterCriticalSection(&monster->cs);
 			//printf("%d 시작", key);
 			//몬스터 위치 업데이트
-			//1초보다 빨리 업데이트 ( 만약에 계속 직진하는 경우면 2초까지도 괜찮을듯 테스하기 )
-			if ( my_overlap->duration > 0 ) 
+			//위치 이동할게 있으면 이동
+			if (key == 69)
+				printf("핫빗");
+			if (monster->getDeadReckoning())
 				monster->ObjectDeadReckoning(my_overlap->duration);
-			else
-				monster->ObjectDeadReckoning(1000);
-
-			//몬스터 존 업데이트
 			zone.SectorUpdateOfMonster(monster->getID());
-			//몬스터 FSM,
+			monster->setCollisionSpherePos(monster->getPos()); // 충돌체도 업데이트 (원)
+			//몬스터 FSM
 			monster->heartBeat();
 			LeaveCriticalSection(&monster->cs);
 			//printf("%d 끝\n", key);

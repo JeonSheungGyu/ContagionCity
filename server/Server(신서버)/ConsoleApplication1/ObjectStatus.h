@@ -13,7 +13,15 @@ struct ObjectStatus
 	DWORD requestEXP; // 필요한 경험치
 
 	ObjectStatus() : lv(1), hp(100), ap(100), damage(10), defense(20), exp(0), requestEXP(100) {}
-
+	void reset() {
+		lv = 1;
+		hp = 100;
+		ap = 100;
+		damage = 10;
+		defense = 20;
+		exp = 0;
+		requestEXP = 100;
+	}
 	ObjectStatus& operator*(const WORD up)
 	{
 		hp *= up;

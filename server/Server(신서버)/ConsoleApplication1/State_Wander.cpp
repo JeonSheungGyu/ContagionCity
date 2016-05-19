@@ -1,8 +1,7 @@
 #include "stdafx.h"
 #include "State_Wander.h"
 
-const int WANDER_RAGNE = RECTSIZE*3;
-const int CRASH_RANGE = RECTSIZE*6;
+const int WANDER_RAGNE = RECTSIZE*4;
 
 using namespace DirectX;
 
@@ -43,37 +42,6 @@ void Wander::Enter(Monster* pMonster)
 void Wander::Execute(Monster* pMonster)
 {
 	assert(pMonster && "<Wander::Execute>: trying to work to a null state");
-	//타겟이 널이면 타겟팅을한다.
-	if (pMonster->getTargetProcess().TargetIsNull()) {
-		try {
-
-			BoundingSphere crashRange(pMonster->getPos(), CRASH_RANGE);	// 몬스터기준반경 구만들기
-
-			for (const auto& t_id : pMonster->getNearList())
-			{
-				if (t_id < MAX_USER) {
-					if (users[t_id].isConnected() == false)continue;
-					if (crashRange.Intersects(users[t_id].getCollisionSphere())) {
-						// 데미지계산 후 해당 몬스터 HP minus
-						/*damage = calculator(player->getState().AP, monsters.at(ID - MAX_USER)->getState().DP,
-						player->getState().ElementType, monsters.at(ID - MAX_USER)->getState().ElementType);*/
-						//damage = player->getState().AP / 5;
-
-						//monsters.at(ID - MAX_USER)->minusHP(damage);
-						//InfoList.push_back(make_pair(ID, monsters.at(ID - MAX_USER)->getState().hp));
-						pMonster->getTargetProcess().setTarget(&users[t_id]);
-						return;
-					}
-					else continue;
-				}
-			}
-		}
-		catch (std::exception& e) {
-			printf("Wander::Execute %s", e.what());
-		}
-	}
-
-	assert(pMonster && "<Wander::Execute>: trying to work to a null state");
 
 	std::random_device rnd;
 	std::uniform_real_distribution<float> tx(pMonster->getPos().x - WANDER_RAGNE, pMonster->getPos().x + WANDER_RAGNE);
@@ -98,11 +66,17 @@ void Wander::Execute(Monster* pMonster)
 
 		pMonster->setDir(XMFLOAT3(XMVectorGetX(dir), 0, XMVectorGetZ(dir)));
 		pMonster->setDist(dist);
+		pMonster->setDeadReckoning(true);
+		//클라이언트 몬스터 이동에 사용
+		pMonster->setTargetPos(XMFLOAT3(x, 0, z));
 
 		//1초이하로 걸리면 EVENT로 그 시간에 연산하도록 추가한다.
 		DWORD duration = (dist / pMonster->getSpeed()) * 1000;
 		if (duration < 1000) {
 			add_timer(pMonster->getID(), OP_NPC_MOVE, duration);
+		}
+		else {
+			add_timer(pMonster->getID(), OP_NPC_MOVE, 1000);
 		}
 		//pMonster->setPos(XMFLOAT3(((DWORD)x / RECTSIZE)*RECTSIZE, 0, ((DWORD)z / RECTSIZE)*RECTSIZE));
 	}

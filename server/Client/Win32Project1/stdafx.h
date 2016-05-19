@@ -6,6 +6,8 @@
 #include <DirectXMath.h>
 #include <DirectXCollision.h>
 #include <atomic>
+#include <iostream>
+#include <chrono>
 #include "resource.h"
 
 //서버 환경
@@ -13,7 +15,7 @@
 #define LOGIN_SERVER_PORT	6026
 #define SERVERPORT			6027
 
-
+#define UPDATE_TIME 100
 #define BUFSIZE 1024
 #define RECTSIZE 40
 #define INTERVAL 4

@@ -31,7 +31,8 @@ void PacketDispatcher::PutObject(char* buf)
 		user.setID(packet.id);
 		user.setPos(XMFLOAT2(packet.x, packet.z));
 		user.setStatus(ObjectStatus(packet.lv,packet.hp, packet.ap, packet.damage, packet.defense, packet.exp,packet.request_exp));
-		user.setSpeed(packet.speed);
+		//user.setSpeed(packet.speed);
+		user.setSpeed(240);
 		user.setDir(XMFLOAT2(0,0));
 		user.is_using = true;
 	} 
@@ -132,7 +133,6 @@ void PacketDispatcher::MoveObject(char* buf)
 	//}
 }
 
-
 void PacketDispatcher::ObjectCombat(char* buf)
 {
 	sc_packet_combat packet;
@@ -146,7 +146,6 @@ void PacketDispatcher::ObjectCombat(char* buf)
 	}
 }
 
-
 void PacketDispatcher::MonsterAttack(char* buf)
 {
 	sc_packet_monster_attack packet;
@@ -155,25 +154,39 @@ void PacketDispatcher::MonsterAttack(char* buf)
 	// packet.id로 애니메이션 
 
 	// monster -> player 공격
-	users[packet.target_id].minusHp(packet.damage);
+	//if (users[packet.target_id].getHp() > 0 )
+		users[packet.target_id].minusHp(packet.damage);
 
 	
 	//cout << "[몬스터 -> 플레이어 공격] Player ID: " << packet.target_id
 	//	<< " HP: " << GameEngine::getUser()[packet.target_id].getHp() << endl;
 }
 
-
 void PacketDispatcher::MonsterChase(char* buf)
 {
 	//cout << "MonsterChase" << endl;
 	sc_packet_monster_chase packet;
 	memcpy(reinterpret_cast<char*>(&packet), buf, *buf);
-	//monsters[packet.id - MAX_USER].setPos(XMFLOAT2(packet.x, packet.z));
-	monsters[packet.id - MAX_USER].setDir(XMFLOAT2(packet.dx, packet.dz));
-	monsters[packet.id - MAX_USER].setDist(packet.dist);
-	monsters[packet.id - MAX_USER].is_move = true;
-}
 
+	auto& monster = monsters.at(packet.id - MAX_USER);
+
+	// 방향벡터
+	XMVECTOR dir = XMVector3Normalize(XMLoadFloat3(&XMFLOAT3(
+		packet.tx - monster.getPos().x,
+		packet.ty - 0,
+		packet.tz - monster.getPos().y)));
+
+	// 목표와 현재 플레이어 위치간의 거리
+	float dist = sqrt((packet.tx - monster.getPos().x)*
+		(packet.tx - monster.getPos().x) +
+		(packet.tz - monster.getPos().y)*
+		(packet.tz - monster.getPos().y));
+
+	// 플레이어 위치와 방향벡터 갱신
+	monster.setDir(XMFLOAT2(XMVectorGetX(dir), XMVectorGetZ(dir)));
+	monster.setDist(dist);
+	monster.is_move = true;
+}
 
 void PacketDispatcher::MonsterDie(char* buf)
 {
