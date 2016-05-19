@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Protocol.h"
 #include "User.h"
+#include "Monster.h"
 #include "UserViewList.h"
 #include "PacketMaker.h"
 
@@ -9,6 +10,8 @@ using namespace std;
 const int AVAILABLE_NUMBER = 64;
 
 extern User users[MAX_USER];
+extern std::vector<Monster*> monsters;
+void add_timer(DWORD id, DWORD type, DWORD duration);
 
 UserViewList::UserViewList(User *owner)
 {
@@ -142,6 +145,13 @@ void UserViewList::updateViewList(const set<DWORD>& nearList)
 				printf("ViewList::updateViewList 1 %s", e.what());
 				eraseUserInTmp(id);
 				continue;
+			}
+		}
+		else {
+			//MONSTER 일 경우 움직이게 한다.
+			if (!monsters.at(id - MAX_USER)->is_active) {
+				monsters.at(id - MAX_USER)->is_active = true;
+				add_timer(id, OP_NPC_MOVE, 0);
 			}
 		}
 	}

@@ -32,7 +32,8 @@ protected:
 	//이동
 	ObjectVector							obVector;
 	float									speed;
-	XMFLOAT3								targetPos; //이동타겟위치
+	XMFLOAT3								targetPos; // 이동타겟위치
+	XMFLOAT3								regenPos;  // 리젠 위치
 	//상태
 	ObjectStatus							obStatus;
 	//시야
@@ -59,6 +60,7 @@ public:
 	}
 	Object( DWORD t_id, XMFLOAT3 pos) : id(t_id), collisionSphere(pos, COLLISIONSPHERE) {
 		obVector.position = pos;
+		regenPos = pos;
 		sector = nullptr;
 		speed = 40;
 		nearList.clear();
@@ -109,6 +111,7 @@ public:
 	const std::set<Sector*>&	getNearSectors() { return nearSectors; }
 	void updateNearList();
 
+
 	//oldPos
 	const XMFLOAT3							getOldPos()const { return obVector.oldPos; }
 	void									setOldPos(const XMFLOAT3 pos) { obVector.oldPos = pos; }
@@ -116,6 +119,9 @@ public:
 	// targetPos
 	const XMFLOAT3&			getTargetPos() { return targetPos; }
 	void					setTargetPos(const XMFLOAT3& tp) { targetPos = tp; }
+	// regenPos
+	const XMFLOAT3&			getRegenPos() { return regenPos; }
+	void					setRegenPos(const XMFLOAT3& rp) { regenPos = rp; }
 
 	//데드레커닝
 	void					setDeadReckoning(const bool tf) { is_DeadReckoning = tf; }

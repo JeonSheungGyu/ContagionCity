@@ -18,8 +18,7 @@ public:
 	WORD									m_EXP;
 public:
 	std::atomic<bool> is_alive;
-
-
+	std::atomic<bool> is_active;
 	//생성자
 	Monster(DWORD id, XMFLOAT3 pos);
 	// StateMachine accessor
@@ -31,7 +30,8 @@ public:
 	BYTE									getAction()const { return m_currentAction; }
 	//몬스터행동계산
 	void									heartBeat();
-	
+	//유저여부
+	bool									isNearUser();
 	//몬스터 경험치 리턴
 	WORD									getEXP() { return m_EXP; }
 };

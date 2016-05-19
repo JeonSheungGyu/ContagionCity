@@ -57,3 +57,17 @@ bool Sector::isinView(float x1, float y1, float x2, float y2)
 
 	return abs(x) < VIEWRANGE && abs(y) < VIEWRANGE;
 }
+
+bool Sector::isinMonsterView(float x1, float y1, float x2, float y2)
+{
+	//assert(pos1.x >= 0 && pos1.y >= 0 && pos1.z >= 0 && pos2.x >= 0 && pos2.y >= 0 && pos2.z >= 0);
+	int x = x1 - x2;
+	int y = y1 - y2;
+
+	return abs(x) < MONSTER_VIEWRANGE && abs(y) < MONSTER_VIEWRANGE;
+}
+
+
+
+
+

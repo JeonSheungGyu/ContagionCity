@@ -1,0 +1,155 @@
+﻿  Server.cpp
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Sector.h(16): warning C4227: 오래된 구문을 사용했습니다. 참조의 한정자가 무시됩니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Object.h(53): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Object.h(60): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\TargetProcess.h(5): warning C4244: '초기화 중': 'double'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\RequestToDB.h(20): error C2664: 'SQLRETURN SQLBindParameter(SQLHSTMT,SQLUSMALLINT,SQLSMALLINT,SQLSMALLINT,SQLSMALLINT,SQLULEN,SQLSMALLINT,SQLPOINTER,SQLLEN,SQLLEN *)': 인수 10을(를) 'SQLINTEGER *'에서 'SQLLEN *'(으)로 변환할 수 없습니다.
+  c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\RequestToDB.h(20): note: 가리킨 형식이 관련이 없습니다. 변환하려면 reinterpret_cast, C 스타일 캐스트 또는 함수 스타일 캐스트가 필요합니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\RequestToDB.h(25): error C2664: 'SQLRETURN SQLBindCol(SQLHSTMT,SQLUSMALLINT,SQLSMALLINT,SQLPOINTER,SQLLEN,SQLLEN *)': 인수 6을(를) 'SQLINTEGER *'에서 'SQLLEN *'(으)로 변환할 수 없습니다.
+  c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\RequestToDB.h(25): note: 가리킨 형식이 관련이 없습니다. 변환하려면 reinterpret_cast, C 스타일 캐스트 또는 함수 스타일 캐스트가 필요합니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\RequestToDB.h(26): error C2664: 'SQLRETURN SQLBindCol(SQLHSTMT,SQLUSMALLINT,SQLSMALLINT,SQLPOINTER,SQLLEN,SQLLEN *)': 인수 6을(를) 'SQLINTEGER *'에서 'SQLLEN *'(으)로 변환할 수 없습니다.
+  c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\RequestToDB.h(26): note: 가리킨 형식이 관련이 없습니다. 변환하려면 reinterpret_cast, C 스타일 캐스트 또는 함수 스타일 캐스트가 필요합니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\RequestToDB.h(27): error C2664: 'SQLRETURN SQLBindCol(SQLHSTMT,SQLUSMALLINT,SQLSMALLINT,SQLPOINTER,SQLLEN,SQLLEN *)': 인수 6을(를) 'SQLINTEGER *'에서 'SQLLEN *'(으)로 변환할 수 없습니다.
+  c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\RequestToDB.h(27): note: 가리킨 형식이 관련이 없습니다. 변환하려면 reinterpret_cast, C 스타일 캐스트 또는 함수 스타일 캐스트가 필요합니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\RequestToDB.h(28): error C2664: 'SQLRETURN SQLBindCol(SQLHSTMT,SQLUSMALLINT,SQLSMALLINT,SQLPOINTER,SQLLEN,SQLLEN *)': 인수 6을(를) 'SQLINTEGER *'에서 'SQLLEN *'(으)로 변환할 수 없습니다.
+  c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\RequestToDB.h(28): note: 가리킨 형식이 관련이 없습니다. 변환하려면 reinterpret_cast, C 스타일 캐스트 또는 함수 스타일 캐스트가 필요합니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\RequestToDB.h(29): error C2664: 'SQLRETURN SQLBindCol(SQLHSTMT,SQLUSMALLINT,SQLSMALLINT,SQLPOINTER,SQLLEN,SQLLEN *)': 인수 6을(를) 'SQLINTEGER *'에서 'SQLLEN *'(으)로 변환할 수 없습니다.
+  c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\RequestToDB.h(29): note: 가리킨 형식이 관련이 없습니다. 변환하려면 reinterpret_cast, C 스타일 캐스트 또는 함수 스타일 캐스트가 필요합니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\RequestToDB.h(30): error C2664: 'SQLRETURN SQLBindCol(SQLHSTMT,SQLUSMALLINT,SQLSMALLINT,SQLPOINTER,SQLLEN,SQLLEN *)': 인수 6을(를) 'SQLINTEGER *'에서 'SQLLEN *'(으)로 변환할 수 없습니다.
+  c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\RequestToDB.h(30): note: 가리킨 형식이 관련이 없습니다. 변환하려면 reinterpret_cast, C 스타일 캐스트 또는 함수 스타일 캐스트가 필요합니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\RequestToDB.h(31): error C2664: 'SQLRETURN SQLBindCol(SQLHSTMT,SQLUSMALLINT,SQLSMALLINT,SQLPOINTER,SQLLEN,SQLLEN *)': 인수 6을(를) 'SQLINTEGER *'에서 'SQLLEN *'(으)로 변환할 수 없습니다.
+  c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\RequestToDB.h(31): note: 가리킨 형식이 관련이 없습니다. 변환하려면 reinterpret_cast, C 스타일 캐스트 또는 함수 스타일 캐스트가 필요합니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\RequestToDB.h(32): error C2664: 'SQLRETURN SQLBindCol(SQLHSTMT,SQLUSMALLINT,SQLSMALLINT,SQLPOINTER,SQLLEN,SQLLEN *)': 인수 6을(를) 'SQLINTEGER *'에서 'SQLLEN *'(으)로 변환할 수 없습니다.
+  c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\RequestToDB.h(32): note: 가리킨 형식이 관련이 없습니다. 변환하려면 reinterpret_cast, C 스타일 캐스트 또는 함수 스타일 캐스트가 필요합니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\RequestToDB.h(33): error C2664: 'SQLRETURN SQLBindCol(SQLHSTMT,SQLUSMALLINT,SQLSMALLINT,SQLPOINTER,SQLLEN,SQLLEN *)': 인수 6을(를) 'SQLINTEGER *'에서 'SQLLEN *'(으)로 변환할 수 없습니다.
+  c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\RequestToDB.h(33): note: 가리킨 형식이 관련이 없습니다. 변환하려면 reinterpret_cast, C 스타일 캐스트 또는 함수 스타일 캐스트가 필요합니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\RequestToDB.h(34): error C2664: 'SQLRETURN SQLBindCol(SQLHSTMT,SQLUSMALLINT,SQLSMALLINT,SQLPOINTER,SQLLEN,SQLLEN *)': 인수 6을(를) 'SQLINTEGER *'에서 'SQLLEN *'(으)로 변환할 수 없습니다.
+  c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\RequestToDB.h(34): note: 가리킨 형식이 관련이 없습니다. 변환하려면 reinterpret_cast, C 스타일 캐스트 또는 함수 스타일 캐스트가 필요합니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\RequestToDB.h(35): error C2664: 'SQLRETURN SQLBindCol(SQLHSTMT,SQLUSMALLINT,SQLSMALLINT,SQLPOINTER,SQLLEN,SQLLEN *)': 인수 6을(를) 'SQLINTEGER *'에서 'SQLLEN *'(으)로 변환할 수 없습니다.
+  c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\RequestToDB.h(35): note: 가리킨 형식이 관련이 없습니다. 변환하려면 reinterpret_cast, C 스타일 캐스트 또는 함수 스타일 캐스트가 필요합니다.
+Server.cpp(293): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+Server.cpp(339): warning C4311: '형식 캐스팅': 'User *'에서 'DWORD'(으)로 포인터가 잘립니다.
+Server.cpp(339): warning C4302: '형식 캐스팅': 'User *'에서 'DWORD'(으)로 잘립니다.
+Server.cpp(375): error C2664: 'BOOL GetQueuedCompletionStatus(HANDLE,LPDWORD,PULONG_PTR,LPOVERLAPPED *,DWORD)': 인수 3을(를) 'LPDWORD'에서 'PULONG_PTR'(으)로 변환할 수 없습니다.
+  Server.cpp(375): note: 가리킨 형식이 관련이 없습니다. 변환하려면 reinterpret_cast, C 스타일 캐스트 또는 함수 스타일 캐스트가 필요합니다.
+Server.cpp(396): warning C4312: 'reinterpret_cast': 'DWORD'에서 더 큰 'User *'(으)로의 변환입니다.
+Server.cpp(411): warning C4312: 'reinterpret_cast': 'DWORD'에서 더 큰 'User *'(으)로의 변환입니다.
+  Sector.cpp
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Sector.h(16): warning C4227: 오래된 구문을 사용했습니다. 참조의 한정자가 무시됩니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Object.h(53): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Object.h(60): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+Sector.cpp(55): warning C4244: '초기화 중': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+Sector.cpp(56): warning C4244: '초기화 중': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  Zone.cpp
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Sector.h(16): warning C4227: 오래된 구문을 사용했습니다. 참조의 한정자가 무시됩니다.
+  UserViewList.cpp
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Sector.h(16): warning C4227: 오래된 구문을 사용했습니다. 참조의 한정자가 무시됩니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Object.h(53): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Object.h(60): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+UserViewList.cpp(206): warning C4244: '인수': 'const DWORD'에서 'const unsigned short'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  SyncObject.cpp
+  Object.cpp
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Sector.h(16): warning C4227: 오래된 구문을 사용했습니다. 참조의 한정자가 무시됩니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Object.h(53): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Object.h(60): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\TargetProcess.h(5): warning C4244: '초기화 중': 'double'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  PacketMaker.cpp
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Sector.h(16): warning C4227: 오래된 구문을 사용했습니다. 참조의 한정자가 무시됩니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Object.h(53): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Object.h(60): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\TargetProcess.h(5): warning C4244: '초기화 중': 'double'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+PacketMaker.cpp(52): warning C4244: '=': 'const DWORD'에서 'WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+PacketMaker.cpp(55): warning C4244: '=': 'const DWORD'에서 'WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+PacketMaker.cpp(56): warning C4244: '=': 'const DWORD'에서 'WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+PacketMaker.cpp(57): warning C4244: '=': 'const DWORD'에서 'WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+PacketMaker.cpp(58): warning C4244: '=': 'const DWORD'에서 'WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+PacketMaker.cpp(88): warning C4244: '=': 'const DWORD'에서 'WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+PacketMaker.cpp(91): warning C4244: '=': 'const DWORD'에서 'WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+PacketMaker.cpp(92): warning C4244: '=': 'const DWORD'에서 'WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+PacketMaker.cpp(93): warning C4244: '=': 'const DWORD'에서 'WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+PacketMaker.cpp(94): warning C4244: '=': 'const DWORD'에서 'WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+PacketMaker.cpp(104): warning C4244: '=': 'const DWORD'에서 'WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+PacketMaker.cpp(107): warning C4244: '=': 'const DWORD'에서 'WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+PacketMaker.cpp(108): warning C4244: '=': 'const DWORD'에서 'WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+PacketMaker.cpp(109): warning C4244: '=': 'const DWORD'에서 'WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+PacketMaker.cpp(114): warning C4244: '=': 'DWORD'에서 'WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+PacketMaker.cpp(142): warning C4244: '=': 'DWORD'에서 'WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+PacketMaker.cpp(169): warning C4244: '=': 'DWORD'에서 'WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+PacketMaker.cpp(202): warning C4244: '=': 'DWORD'에서 'WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+PacketMaker.cpp(203): warning C4244: '=': 'const DWORD'에서 'WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+PacketMaker.cpp(254): warning C4244: '=': 'DWORD'에서 'WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  State_Chase.cpp
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Sector.h(16): warning C4227: 오래된 구문을 사용했습니다. 참조의 한정자가 무시됩니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Object.h(53): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Object.h(60): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\TargetProcess.h(5): warning C4244: '초기화 중': 'double'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+State_Chase.cpp(60): warning C4244: '초기화 중': 'FLOAT'에서 'DWORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  State_Combat.cpp
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Sector.h(16): warning C4227: 오래된 구문을 사용했습니다. 참조의 한정자가 무시됩니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Object.h(53): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Object.h(60): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\TargetProcess.h(5): warning C4244: '초기화 중': 'double'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  State_Wander.cpp
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Sector.h(16): warning C4227: 오래된 구문을 사용했습니다. 참조의 한정자가 무시됩니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Object.h(53): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Object.h(60): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\TargetProcess.h(5): warning C4244: '초기화 중': 'double'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+State_Wander.cpp(78): warning C4244: '초기화 중': 'float'에서 'DWORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  State_Die.cpp
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Sector.h(16): warning C4227: 오래된 구문을 사용했습니다. 참조의 한정자가 무시됩니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Object.h(53): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Object.h(60): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\TargetProcess.h(5): warning C4244: '초기화 중': 'double'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+State_Die.cpp(44): warning C4474: 'printf' : 서식 문자열에 전달된 인수가 너무 많습니다.
+  State_Die.cpp(44): note: 자리 표시자 및 해당 매개 변수에는 variadic 인수가 0개 필요하지만 1개가 제공되었습니다.
+  Monster.cpp
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Sector.h(16): warning C4227: 오래된 구문을 사용했습니다. 참조의 한정자가 무시됩니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Object.h(53): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Object.h(60): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\TargetProcess.h(5): warning C4244: '초기화 중': 'double'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+Monster.cpp(79): warning C4244: '인수': 'DWORD'에서 'const unsigned short'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+Monster.cpp(82): warning C4244: '인수': 'DWORD'에서 'const unsigned short'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+Monster.cpp(85): warning C4244: '인수': 'DWORD'에서 'const unsigned short'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\TargetProcess.h(86): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\TargetProcess.h(81): note: 클래스 템플릿 멤버 함수 'void TargetProcess<User,Monster>::FindTarget(Owner *)'을(를) 컴파일하고 있습니다.
+          with
+          [
+              Owner=Monster
+          ]
+  Monster.cpp(23): note: 컴파일 중인 함수 템플릿 인스턴스화 'void TargetProcess<User,Monster>::FindTarget(Owner *)'에 대한 참조를 확인하십시오.
+          with
+          [
+              Owner=Monster
+          ]
+  c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Monster.h(12): note: 컴파일 중인 클래스 템플릿 인스턴스화 'TargetProcess<User,Monster>'에 대한 참조를 확인하십시오.
+  CombatCollision.cpp
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Sector.h(16): warning C4227: 오래된 구문을 사용했습니다. 참조의 한정자가 무시됩니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Object.h(53): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Object.h(60): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\TargetProcess.h(5): warning C4244: '초기화 중': 'double'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+CombatCollision.cpp(27): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+CombatCollision.cpp(38): warning C4244: '=': 'DWORD'에서 'WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+CombatCollision.cpp(65): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+CombatCollision.cpp(82): warning C4244: '=': 'DWORD'에서 'WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+CombatCollision.cpp(117): warning C4244: '=': 'DWORD'에서 'WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+CombatCollision.cpp(142): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+CombatCollision.cpp(152): warning C4244: '=': 'DWORD'에서 'WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\utility(158): warning C4244: '초기화 중': 'unsigned long'에서 'WORD'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  CombatCollision.cpp(42): note: 컴파일 중인 함수 템플릿 인스턴스화 'std::pair<WORD,int>::pair<unsigned long,int,void>(std::pair<unsigned long,int> &&) noexcept'에 대한 참조를 확인하십시오.
+  CombatCollision.cpp(42): note: 컴파일 중인 함수 템플릿 인스턴스화 'std::pair<WORD,int>::pair<unsigned long,int,void>(std::pair<unsigned long,int> &&) noexcept'에 대한 참조를 확인하십시오.
+  PacketDispatcher.cpp
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Sector.h(16): warning C4227: 오래된 구문을 사용했습니다. 참조의 한정자가 무시됩니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Object.h(53): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Object.h(60): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+PacketDispatcher.cpp(75): warning C4474: 'printf' : 서식 문자열에 전달된 인수가 너무 많습니다.
+  PacketDispatcher.cpp(75): note: 자리 표시자 및 해당 매개 변수에는 variadic 인수가 0개 필요하지만 1개가 제공되었습니다.
+PacketDispatcher.cpp(44): warning C4101: 'sPacket' :참조되지 않은 지역 변수입니다.
+PacketDispatcher.cpp(95): warning C4267: '=': 'size_t'에서 'BYTE'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+PacketDispatcher.cpp(103): warning C4244: '인수': 'DWORD'에서 'const unsigned short'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  DeadReckoning.cpp
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Sector.h(16): warning C4227: 오래된 구문을 사용했습니다. 참조의 한정자가 무시됩니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Object.h(53): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\Object.h(60): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+DeadReckoning.cpp(49): warning C4244: '인수': '__int64'에서 'const float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+DeadReckoning.cpp(54): warning C4474: 'printf' : 서식 문자열에 전달된 인수가 너무 많습니다.
+  DeadReckoning.cpp(54): note: 자리 표시자 및 해당 매개 변수에는 variadic 인수가 0개 필요하지만 1개가 제공되었습니다.

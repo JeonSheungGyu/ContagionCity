@@ -19,6 +19,6 @@ public:
 	}
 	
 	static bool				isinView( float x1, float y1, float x2, float y2);
-
+	static bool				isinMonsterView(float x1, float y1, float x2, float y2);
 	static CRITICAL_SECTION sCS;
 };

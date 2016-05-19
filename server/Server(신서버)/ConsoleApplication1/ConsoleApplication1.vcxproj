@@ -123,9 +123,13 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>C:\Users\Sheunggyu\Desktop\tbb44_20160128oss_win_0\tbb44_20160128oss\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\Sheunggyu\Desktop\tbb44_20160128oss_win_0\tbb44_20160128oss\lib\ia32\vc14;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>C:\Users\Sheunggyu\Desktop\tbb44_20160128oss_win_0\tbb44_20160128oss\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\Sheunggyu\Desktop\tbb44_20160128oss_win_0\tbb44_20160128oss\lib\intel64\vc14;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -172,6 +176,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

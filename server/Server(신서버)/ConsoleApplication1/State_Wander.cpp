@@ -46,10 +46,14 @@ void Wander::Execute(Monster* pMonster)
 	std::random_device rnd;
 	std::uniform_real_distribution<float> tx(pMonster->getPos().x - WANDER_RAGNE, pMonster->getPos().x + WANDER_RAGNE);
 	std::uniform_real_distribution<float> tz(pMonster->getPos().z - WANDER_RAGNE, pMonster->getPos().z + WANDER_RAGNE);
-
-	float x = tx(rnd);	float z = tz(rnd);
-	// 중간발표 맵 크기
-	if (x < 0 || x>WORLDSIZE || z < 0 || z>WORLDSIZE) return;
+	float x, z;
+	while (true) {
+		x = tx(rnd);	
+		z = tz(rnd);
+		if (x < 0 || x>WORLDSIZE || z < 0 || z>WORLDSIZE) continue;
+		else break;
+	}
+	
 
 
 	try {

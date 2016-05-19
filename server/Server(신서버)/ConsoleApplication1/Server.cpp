@@ -166,7 +166,6 @@ void add_timer(DWORD id, DWORD type, DWORD duration) {
 	LeaveCriticalSection(&qCS);
 }
 void process_event(EVENT k) {
-	
 	if (k.id < MAX_USER)
 		Object *object = &users[k.id];
 	else {
@@ -225,7 +224,7 @@ void allocateObject()
 		z = ((int)(mz(gen) / RECTSIZE))*RECTSIZE;
 		monsters.push_back(new Monster(i, XMFLOAT3(x,0,z)));
 		zone.SectorUpdateOfMonster(i);
-		add_timer(i, OP_NPC_MOVE, 1000);
+		//add_timer(i, OP_NPC_MOVE, 1000);
 	}
 }
 
@@ -448,19 +447,17 @@ unsigned int __stdcall CompletionThread(LPVOID pComPort)
 		else if ( OP_NPC_MOVE == my_overlap->operation) {
 			Monster *monster = monsters.at(key - MAX_USER);
 			//두스레드가 하나의 몬스터를 처리할 경우가 생긴다..... concurrency control이 이게 아닌가보다 교수님 질문.
-			EnterCriticalSection(&monster->cs);
+			//EnterCriticalSection(&monster->cs);
 			//printf("%d 시작", key);
 			//몬스터 위치 업데이트
 			//위치 이동할게 있으면 이동
-			if (key == 69)
-				printf("핫빗");
 			if (monster->getDeadReckoning())
 				monster->ObjectDeadReckoning(my_overlap->duration);
 			zone.SectorUpdateOfMonster(monster->getID());
 			monster->setCollisionSpherePos(monster->getPos()); // 충돌체도 업데이트 (원)
 			//몬스터 FSM
 			monster->heartBeat();
-			LeaveCriticalSection(&monster->cs);
+			//LeaveCriticalSection(&monster->cs);
 			//printf("%d 끝\n", key);
 		}else if (OP_NPC_MOVE == my_overlap->operation)
 		{

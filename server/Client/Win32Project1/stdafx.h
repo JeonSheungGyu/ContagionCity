@@ -20,8 +20,8 @@
 #define RECTSIZE 40
 #define INTERVAL 4
 #define MAX_USER 10
-#define MAX_NPC 1000
-
+#define MAX_NPC 300000
+#define VIEWRANGE RECTSIZE*8
 #define PACKET_TYPE			10
 
 //공격종류
