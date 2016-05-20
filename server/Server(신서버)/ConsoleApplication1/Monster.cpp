@@ -9,7 +9,7 @@ extern User users[MAX_USER];
 
 
 Monster::Monster(DWORD id, XMFLOAT3 pos) : Object(id, pos), m_currentAction(wander), m_preAction(wander),
-	is_alive(true), is_active(false), m_pStateMachine(new StateMachine<Monster>(this)) {
+	is_alive(true), is_active(false), InActiveTime(0), m_pStateMachine(new StateMachine<Monster>(this)) {
 	// FSM 현재상태 초기화
 	m_pStateMachine->SetCurrentState(Wander::Instance());
 }
@@ -70,6 +70,12 @@ void Monster::heartBeat() {
 					new_view.insert(id);
 			}
 		}
+		//몬스터시야에 유저가 없으면 움직임을 멈춘다.
+		if (new_view.size() == 0) {
+			this->is_active = false;
+			this->InActiveTime = clock();
+			//this->obVector.position = this->regenPos;
+		}
 		for (auto& player_id : old_view)
 		{
 			size_t isDeleted = new_view.erase(player_id);
@@ -102,11 +108,7 @@ void Monster::heartBeat() {
 			PacketMaker::instance().PutObject(reinterpret_cast<Object*>(&users[new_player_id]), id);
 		}
 
-		//몬스터시야에 유저가 없으면 움직임을 멈춘다.
-		if (!isNearUser()) {
-			this->is_active = false;
-			//this->obVector.position = this->regenPos;
-		}
+
 		setOldPos(this->getPos());
 	}
 	catch (std::exception& e) {

@@ -2,22 +2,41 @@
 #include "Monster.h"
 #include "User.h"
 #include "PacketDispatcher.h"
-
+#include "Server.h"
 
 extern std::vector<User> users;
 extern std::vector<Monster> monsters;
 
 using namespace DirectX;
-
-
-//로그인 퍼밋처리
-BYTE PacketDispatcher::PermisionLogin(char* buf)
+// 로그인서버 <-> 클라이언트
+void PacketDispatcher::PermisionLogin(char* buf)
 {
 	lc_packet_permit_login packet;
 	memcpy(reinterpret_cast<char*>(&packet), buf, *buf);
-
-	return packet.permit_check;
+	
+	Server::login_success = packet.permit_check;
 }
+// 게임서버 <-> 클라이언트
+void PacketDispatcher::Login(char* buf)
+{
+	sc_packet_login packet;
+	memcpy(reinterpret_cast<char*>(&packet), buf, *(buf));
+
+	Server::setClientID(packet.id);
+
+	auto& user = users[packet.id];
+
+	user.setID(packet.id);
+	user.setPos(XMFLOAT2(packet.x, packet.z));
+	user.setStatus(ObjectStatus(packet.lv, packet.hp, packet.ap, packet.damage, packet.defense, packet.exp, packet.request_exp));
+	user.setSpeed(packet.speed);
+	user.is_using = true;
+
+
+	//위치업데이트
+	Server::updateThread = new thread{ Server::UpdateThread };
+}
+
 // 플레이어 or 몬스터 추가 ( 시야범위 안 )
 void PacketDispatcher::PutObject(char* buf)
 {
@@ -31,8 +50,8 @@ void PacketDispatcher::PutObject(char* buf)
 		user.setID(packet.id);
 		user.setPos(XMFLOAT2(packet.x, packet.z));
 		user.setStatus(ObjectStatus(packet.lv,packet.hp, packet.ap, packet.damage, packet.defense, packet.exp,packet.request_exp));
-		//user.setSpeed(packet.speed);
-		user.setSpeed(240);
+		user.setSpeed(packet.speed);
+		//user.setSpeed(240);
 		user.setDir(XMFLOAT2(0,0));
 		user.is_using = true;
 	} 
@@ -58,26 +77,6 @@ void PacketDispatcher::RemoveObject(char* buf)
 	else monsters[packet.id - MAX_USER].is_using = false;
 }
 
-/*
-void PacketDispatcher::Login(char* buf)
-{
-	sc_packet_login packet;
-	memcpy(reinterpret_cast<char*>(&packet), buf, *(buf));
-
-	GameEngine::setClientID(packet.id);
-	auto& user = GameEngine::getUser()[packet.id];
-
-	user.setID(packet.id);
-	user.setPos(XMFLOAT2(packet.x, packet.z));
-	user.setState(State(packet.lv,packet.hp, packet.mp, packet.ap, packet.dp, packet.exp,packet.request_exp, packet.ElementType));
-	user.setSpeed(packet.speed);
-	user.initTextureAndRect();
-	user.is_using = true;
-
-	PlayState::updateThread = new thread{ PlayState::requestUpdate };
-}
-
-*/
 void PacketDispatcher::MoveObject(char* buf)
 {
 	sc_packet_move_object packet;

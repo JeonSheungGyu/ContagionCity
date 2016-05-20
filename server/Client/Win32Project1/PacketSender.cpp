@@ -1,13 +1,12 @@
 #include "PacketSender.h"
 #include "Protocol.h"
 #include "User.h"
+#include "Server.h"
 
 std::mutex PacketSender::sMutex;
 PacketSender* PacketSender::sInstance = nullptr;
 
-extern SOCKET hSocket;
 extern std::vector<User> users;
-extern DWORD myID;
 
 PacketSender& PacketSender::instance()
 {
@@ -17,8 +16,6 @@ PacketSender& PacketSender::instance()
 
 	return *sInstance;
 }
-
-
 PacketSender::~PacketSender()
 {
 	delete sInstance;
@@ -34,7 +31,7 @@ void PacketSender::requestLogin( char *id, char *password )
 	strncpy(packet.id, id, ID_LEN);
 	strncpy(packet.password, password, ID_LEN);
 
-	send(hSocket, reinterpret_cast<char*>(&packet), packet.size, 0);
+	send(Server::getSock(), reinterpret_cast<char*>(&packet), packet.size, 0);
 }
 //
 //void PacketSender::positionUpdate()
@@ -68,14 +65,14 @@ void PacketSender::PlayerMove()
 	//현재위치와 이동방향 전달
 	move_packet.type = CS_MOVE_OBJECT;
 	move_packet.size = sizeof(move_packet);
-	move_packet.x = users[myID].getPos().x;
+	move_packet.x = users[Server::getClientID()].getPos().x;
 	move_packet.y = 0;
-	move_packet.z = users[myID].getPos().y;
-	move_packet.dx = users[myID].getDir().x;
+	move_packet.z = users[Server::getClientID()].getPos().y;
+	move_packet.dx = users[Server::getClientID()].getDir().x;
 	move_packet.dy = 0;
-	move_packet.dz = users[myID].getDir().y;
+	move_packet.dz = users[Server::getClientID()].getDir().y;
 
-	send(hSocket, reinterpret_cast<char*>(&move_packet), move_packet.size, 0);
+	send(Server::getSock(), reinterpret_cast<char*>(&move_packet), move_packet.size, 0);
 }
 //// 플레이어가 스킬 or 기본공격 시 호출
 //// 매개변수: 플레이어가 어떤 키를 눌렀는지 action BYTE값
@@ -84,14 +81,14 @@ void PacketSender::PlayerCombat(const char combatCollision, const float x, const
 	assert(combatCollision >= 0);
 	cs_packet_combat packet;
 
-	packet.id = myID;
+	packet.id = Server::getClientID();
 	packet.combatCollision = combatCollision;
 	packet.x = x;
 	packet.z = y;
 	packet.type = CS_COMBAT_OBJECT;
 	packet.size = sizeof(packet);
 
-	send(hSocket, reinterpret_cast<char*>(&packet), packet.size, 0);
+	send(Server::getSock(), reinterpret_cast<char*>(&packet), packet.size, 0);
 }
 
 

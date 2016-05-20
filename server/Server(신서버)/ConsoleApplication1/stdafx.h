@@ -22,12 +22,10 @@
 #include <DirectXMath.h>
 #include "ObjectStatus.h"
 
-
-
 #define BUFSIZE 1024
 
 #define MAX_USER 10
-#define MAX_NPC 300000
+#define MAX_NPC 10000
 
 #define RECTSIZE 40
 #define INTERVAL 4

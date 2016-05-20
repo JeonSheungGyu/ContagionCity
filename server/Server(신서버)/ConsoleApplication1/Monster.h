@@ -17,8 +17,9 @@ public:
 	BYTE									m_currentAction, m_preAction;
 	WORD									m_EXP;
 public:
-	std::atomic<bool> is_alive;
-	std::atomic<bool> is_active;
+	std::atomic<bool>	is_alive;
+	std::atomic<bool>	is_active;
+	DWORD				InActiveTime;
 	//»ý¼ºÀÚ
 	Monster(DWORD id, XMFLOAT3 pos);
 	// StateMachine accessor

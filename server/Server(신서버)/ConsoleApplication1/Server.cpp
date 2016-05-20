@@ -324,6 +324,7 @@ int main(int argc, char** argv)
 				users[i].setID(i);
 				users[i].setConnected(true);
 				users[i].getSession().hClntSock = hClntSock;
+				users[i].setSpeed(300);
 				memcpy(&(users[i].getSession().clntAddr), &clntAddr, addrLen);
 				id = i;
 				break;
@@ -338,8 +339,7 @@ int main(int argc, char** argv)
 		printf("connect from [%d]\n", users[id].getID());
 		CreateIoCompletionPort((HANDLE)hClntSock, hCompletionPort, (DWORD)&users[id], 0);
 		
-
-		PacketMaker::instance().PutObject(reinterpret_cast<Object*>(&users[id]), users[id].getID());
+		PacketMaker::instance().Login(users[id].getID());
 		updatePlayerView(users[id].getID());
 
 
@@ -448,7 +448,7 @@ unsigned int __stdcall CompletionThread(LPVOID pComPort)
 			Monster *monster = monsters.at(key - MAX_USER);
 			//두스레드가 하나의 몬스터를 처리할 경우가 생긴다..... concurrency control이 이게 아닌가보다 교수님 질문.
 			//EnterCriticalSection(&monster->cs);
-			//printf("%d 시작", key);
+			printf("%d 시작", key);
 			//몬스터 위치 업데이트
 			//위치 이동할게 있으면 이동
 			if (monster->getDeadReckoning())

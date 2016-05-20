@@ -152,6 +152,7 @@
     <ClCompile Include="PacketDispatcher.cpp" />
     <ClCompile Include="User.cpp" />
     <ClCompile Include="PacketSender.cpp" />
+    <ClCompile Include="Server.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Monster.h" />
@@ -163,6 +164,7 @@
     <ClInclude Include="User.h" />
     <ClInclude Include="ObjectStatus.h" />
     <ClInclude Include="PacketSender.h" />
+    <ClInclude Include="Server.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />

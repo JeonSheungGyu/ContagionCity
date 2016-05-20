@@ -5,8 +5,8 @@ class PacketDispatcher
 {
 public:
 	//로그인 ( 따로사용 )
-	static BYTE PermisionLogin(char* buf);
-	//static void Login(char* buf);
+	static void PermisionLogin(char* buf);
+	static void Login(char* buf);
 
 
 	static void PutObject(char* buf);
