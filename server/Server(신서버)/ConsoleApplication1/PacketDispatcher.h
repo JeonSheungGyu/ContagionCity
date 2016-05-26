@@ -23,7 +23,7 @@ public:
 
 	//static void DummyUpdate(char* ptr, const unsigned short id);
 
-	//static void RequestLogin(char* ptr, const unsigned short id);
+	static void RequestLogin(char* ptr, const unsigned short id);
 
 	//static void CharInit(char*ptr, const unsigned short id);
 

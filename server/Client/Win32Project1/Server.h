@@ -19,7 +19,7 @@ class Server
 {
 private:
 	static WSADATA		wsa;
-	static WORD			clientID;
+	static int			clientID;
 	static char			SERVERIP[20];
 	static char			UserID[20];
 
@@ -45,8 +45,8 @@ public:
 
 	// accessor
 	static SOCKET& getSock() { return sock; }
-	static void setClientID(const WORD id) { clientID = id; }
-	static WORD getClientID() { return clientID; }
-
+	static void setClientID(const int id) { clientID = id; }
+	static int getClientID() { return clientID; }
+	static bool isLogin() { return clientID != -1; }
 
 };

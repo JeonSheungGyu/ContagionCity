@@ -9,7 +9,7 @@ using namespace std::chrono;
 
 WSADATA Server::wsa;
 SOCKET  Server::sock;
-WORD	Server::clientID=-1;
+int	Server::clientID=-1;
 thread*  Server::receiveThread;
 thread*  Server::updateThread;
 FuncProcess Server::Dispatcher[PACKET_TYPE];

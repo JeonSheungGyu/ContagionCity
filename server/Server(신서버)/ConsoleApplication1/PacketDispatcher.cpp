@@ -17,6 +17,8 @@ void updatePlayerView(DWORD id);
 extern CollisionFuncArray CollisionProcess[COLLISION_FUNC_TYPE];
 void SendPacket(int id, unsigned char *packet);
 
+extern tbb::concurrent_queue<DB_QUERY> DB_Queue;
+
 //// 플레이어가 1초마다 보내는 위치 갱신요청 처리
 //// 중간발표 끝나고 정리할때 삭제하기
 //void PacketDispatcher::PositionUpdate(char* ptr, const unsigned short id)
@@ -145,16 +147,22 @@ void PacketDispatcher::Combat(char* ptr, const unsigned short id)
 //	}
 //}
 
+void PacketDispatcher::RequestLogin(char* ptr, const unsigned short id)
+{
+	cs_packet_request_login rPacket;
 
-//void PacketDispatcher::RequestLogin(char* ptr, const unsigned short id)
-//{
-//
-//	cs_packet_request_login rPacket;
-//
-//	memcpy(reinterpret_cast<char*>(&rPacket), ptr, *ptr);
-//
-//	PacketMaker::instance().Login(rPacket.id);
-//}
+	memcpy(reinterpret_cast<char*>(&rPacket), ptr, *ptr);
+	//ID를 설정한다.
+	users[id].setUserID(rPacket.id);
+
+	DB_QUERY q;
+	q.ID = id;
+	q.type = DB_QUERY::REQUEST_STATE;
+	DB_Queue.push(q);
+
+
+}
+
 //
 //// 파티관련 처리
 //void PacketDispatcher::PartyInit(char* ptr, const unsigned short id)

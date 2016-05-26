@@ -1,11 +1,22 @@
 ﻿C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.CppBuild.targets(392,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (ConsoleApplication1.vcxproj, GameServer.vcxproj).  This can lead to incorrect clean and rebuild behavior.
   Server.cpp
 c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\sector.h(16): warning C4227: 오래된 구문을 사용했습니다. 참조의 한정자가 무시됩니다.
-c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\object.h(53): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\object.h(60): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\object.h(54): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\object.h(61): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
 c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\targetprocess.h(5): warning C4244: '초기화 중': 'double'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\requesttodb.h(55): warning C4101: 'etype' :참조되지 않은 지역 변수입니다.
-c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\requesttodb.h(56): warning C4101: 'speed' :참조되지 않은 지역 변수입니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\requesttodb.h(58): warning C4101: 'etype' :참조되지 않은 지역 변수입니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\requesttodb.h(59): warning C4101: 'speed' :참조되지 않은 지역 변수입니다.
 c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\server.cpp(294): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
-c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\server.cpp(372): warning C4101: 'flags' :참조되지 않은 지역 변수입니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\server.cpp(366): warning C4101: 'flags' :참조되지 않은 지역 변수입니다.
+  PacketDispatcher.cpp
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\sector.h(16): warning C4227: 오래된 구문을 사용했습니다. 참조의 한정자가 무시됩니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\object.h(54): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\object.h(61): warning C4244: '인수': 'const int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\packetdispatcher.cpp(77): warning C4474: 'printf' : 서식 문자열에 전달된 인수가 너무 많습니다.
+  c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\packetdispatcher.cpp(77): note: 자리 표시자 및 해당 매개 변수에는 variadic 인수가 0개 필요하지만 1개가 제공되었습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\packetdispatcher.cpp(46): warning C4101: 'sPacket' :참조되지 않은 지역 변수입니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\packetdispatcher.cpp(97): warning C4267: '=': 'size_t'에서 'BYTE'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\packetdispatcher.cpp(98): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+c:\users\sheunggyu\desktop\contagioncity\server\server(신서버)\consoleapplication1\packetdispatcher.cpp(105): warning C4244: '인수': 'DWORD'에서 'const unsigned short'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  코드를 생성하고 있습니다...
   ConsoleApplication1.vcxproj -> C:\Users\Sheunggyu\Desktop\ContagionCity\server\Server(신서버)\Debug\ConsoleApplication.exe

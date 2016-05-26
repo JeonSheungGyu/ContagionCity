@@ -5,14 +5,19 @@
 #include "User.h"
 #include <atomic>
 
+enum ObjectType_ENEMY { ENEMY_ZOMBIE_MAN = 20, ENEMY_ZOMBIE_WOMAN, ENEMY_BOSS, };
+
+
 class Monster : public Object//소켓정보를구조체화.
 {
 public:
+	//몬스터타입
+	WORD									m_MonType;
 	//action
 	TargetProcess<User, Monster>			m_target;
 	StateMachine<Monster>*					m_pStateMachine;
 	
-
+	
 	Overlap_ex								m_overlapped;
 	BYTE									m_currentAction, m_preAction;
 	WORD									m_EXP;

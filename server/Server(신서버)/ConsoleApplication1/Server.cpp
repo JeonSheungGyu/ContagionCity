@@ -47,6 +47,7 @@ void updatePlayerView( DWORD id)
 	user->updateNearList();
 	printf("user viewList Update\n");
 	user->updateViewList();
+	printf("시야 오브젝트 수 :%d\n", user->getNearList().size());
 }
 
 //패킷처리
@@ -103,8 +104,8 @@ void DataBaseThread()
 		SQLSetConnectAttr(hdbc, SQL_LOGIN_TIMEOUT, (SQLPOINTER)5, 0);
 
 	// Connect to data source
-	retcode = SQLConnect(hdbc, (SQLWCHAR*)L"ContagionCity", SQL_NTS, (SQLWCHAR*)L"",
-		SQL_NTS, (SQLWCHAR*)L"", SQL_NTS);
+	retcode = SQLConnect(hdbc, (SQLWCHAR*)L"ContagionCityMS", SQL_NTS, (SQLWCHAR*)L"sa",
+		SQL_NTS, (SQLWCHAR*)L"1q2w3e4r@@", SQL_NTS);
 
 
 	//// TestCode
@@ -151,7 +152,6 @@ void DataBaseThread()
 std::priority_queue<EVENT, std::vector<EVENT>, std::less<EVENT> > timer_queue;
 CRITICAL_SECTION qCS;
 std::thread *timer_thread;
-
 void add_timer(DWORD id, DWORD type, DWORD duration) {
 	
 	EVENT temp;
@@ -233,6 +233,7 @@ void InitFunc()
 	// 패킷처리 함수
 	PacketDispatcher[CS_MOVE_OBJECT].Func = PacketDispatcher::ObjectMove;	// 클라이언트 갱신요청
 	PacketDispatcher[CS_COMBAT_OBJECT].Func = PacketDispatcher::Combat;	
+	PacketDispatcher[CS_REQUEST_LOGIN].Func = PacketDispatcher::RequestLogin;
 
 	CollisionProcess[CC_CircleAround].Func = CombatCollision::CircleAround;
 	CollisionProcess[CC_CircleFront].Func = CombatCollision::CircleFront;
@@ -324,7 +325,6 @@ int main(int argc, char** argv)
 				users[i].setID(i);
 				users[i].setConnected(true);
 				users[i].getSession().hClntSock = hClntSock;
-				users[i].setSpeed(300);
 				memcpy(&(users[i].getSession().clntAddr), &clntAddr, addrLen);
 				id = i;
 				break;
@@ -335,13 +335,8 @@ int main(int argc, char** argv)
 			continue;
 		}
 
-
 		printf("connect from [%d]\n", users[id].getID());
 		CreateIoCompletionPort((HANDLE)hClntSock, hCompletionPort, (DWORD)&users[id], 0);
-		
-		PacketMaker::instance().Login(users[id].getID());
-		updatePlayerView(users[id].getID());
-
 
 		Flags = 0;
 
@@ -448,7 +443,7 @@ unsigned int __stdcall CompletionThread(LPVOID pComPort)
 			Monster *monster = monsters.at(key - MAX_USER);
 			//두스레드가 하나의 몬스터를 처리할 경우가 생긴다..... concurrency control이 이게 아닌가보다 교수님 질문.
 			//EnterCriticalSection(&monster->cs);
-			printf("%d 시작", key);
+			//printf("%d 시작", key);
 			//몬스터 위치 업데이트
 			//위치 이동할게 있으면 이동
 			if (monster->getDeadReckoning())
@@ -459,7 +454,7 @@ unsigned int __stdcall CompletionThread(LPVOID pComPort)
 			monster->heartBeat();
 			//LeaveCriticalSection(&monster->cs);
 			//printf("%d 끝\n", key);
-		}else if (OP_NPC_MOVE == my_overlap->operation)
+		}else if (OP_DB_EVENT == my_overlap->operation)
 		{
 			//DB에서 받아온 데이터 처리
 			switch (my_overlap->db_type)
