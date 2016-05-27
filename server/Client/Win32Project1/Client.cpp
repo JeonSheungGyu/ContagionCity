@@ -96,8 +96,6 @@ LRESULT CALLBACK DlgProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			//게임서버접속
 			closesocket(Server::sock);
 			Server::GameServerConnection();
-			//게임서버에유저정보요청
-			PacketSender::instance().requestLogin2(id);
 
 			EndDialog(hDlg, IDCANCEL);
 			hDlg = NULL;
@@ -120,6 +118,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	HBRUSH myBrush, oldBrush, wBrush, bBrush;
 	HDC hdc, hMemDC; // HDC를 하나더 선언해준다. HDC는 '그리는 작업' 이다.
 	HBITMAP hBitmap, OldBitmap; // HBITMAP은 대략 종이를 의미한다. 종이 2장 선언
+	BYTE dir;
 	static BOOL bMove = FALSE;
 	int check = 0;
 	RECT winRect;
@@ -152,21 +151,25 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		switch (wParam)
 		{
 		case VK_LEFT:
+			dir = LEFT;
 			users[Server::getClientID()].setDir(XMFLOAT2(-1, 0));
 			users[Server::getClientID()].setDist(users[Server::getClientID()].getSpeed() / 33);
 			users[Server::getClientID()].is_move = true;
 			break;
 		case VK_RIGHT:
+			dir = RIGHT;
 			users[Server::getClientID()].setDir(XMFLOAT2(1, 0));
 			users[Server::getClientID()].setDist(users[Server::getClientID()].getSpeed() / 33);
 			users[Server::getClientID()].is_move = true;
 			break;
 		case VK_UP:
+			dir = UP;
 			users[Server::getClientID()].setDir(XMFLOAT2(0, -1));
 			users[Server::getClientID()].setDist(users[Server::getClientID()].getSpeed() / 33);
 			users[Server::getClientID()].is_move = true;
 			break;
 		case VK_DOWN:
+			dir = DOWN;
 			users[Server::getClientID()].setDir(XMFLOAT2(0, 1));
 			users[Server::getClientID()].setDist(users[Server::getClientID()].getSpeed() / 33);
 			users[Server::getClientID()].is_move = true;
@@ -204,15 +207,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_PAINT:
 		hdc = BeginPaint(hwnd, &ps);
 
-		//로그인정보 못받아옴
-		if (!Server::isLogin())
-			return 0;
-
 
 		//좌표계변환
-		xPos = users[Server::getClientID()].getPos().x - RECTSIZE * 8;
-		yPos = users[Server::getClientID()].getPos().y - RECTSIZE * 8;
-
+		if (Server::getClientID() != -1) {
+			xPos = users[Server::getClientID()].getPos().x - RECTSIZE * 8;
+			yPos = users[Server::getClientID()].getPos().y - RECTSIZE * 8;
+		}
 		
 
 		hMemDC = CreateCompatibleDC(hdc); // hMemDC 에 기존 DC (hdc)에 맞게 새 DC 생성

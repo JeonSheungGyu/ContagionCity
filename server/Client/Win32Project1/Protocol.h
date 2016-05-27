@@ -8,22 +8,28 @@
 #define LC_PERMISION_LOGIN		1
 
 
-//클라이언트 -> 서버
+//프로토콜
 #define CS_MOVE_OBJECT			0
 #define CS_COMBAT_OBJECT		1
 #define CS_CHAT					2
-#define CS_REQUEST_LOGIN		3
 
+enum {
+	UP,
+	DOWN,
+	LEFT,
+	RIGHT
+};
 
-//서버 -> 클라이언트
 #define SC_LOGIN				0
 #define SC_MOVE_OBJECT          1
 #define SC_PUT_OBJECT			2
 #define SC_REMOVE_OBJECT		3
 #define SC_CHAT					4
+
 #define SC_MONSTER_CHASE		5
 #define SC_MONSTER_ATTACK		6
 #define SC_MONSTER_DIE			7
+
 #define SC_COMBAT_OBJECT		8
 
 // Login_Server -> Client
@@ -85,6 +91,8 @@ struct sc_packet_move_object
 	FLOAT ty;
 	FLOAT tz;
 };
+
+
 struct sc_packet_monster_attack
 {
 	BYTE size;
@@ -93,6 +101,7 @@ struct sc_packet_monster_attack
 	WORD target_id;
 	WORD damage;
 };
+
 struct sc_packet_monster_chase
 {
 	BYTE size;
@@ -103,6 +112,7 @@ struct sc_packet_monster_chase
 	FLOAT tz;
 	FLOAT dist;
 };
+
 struct sc_packet_monster_die
 {
 	BYTE size;
@@ -111,6 +121,7 @@ struct sc_packet_monster_die
 	WORD player_id;
 	WORD EXP;
 };
+
 struct sc_packet_combat
 {
 	BYTE size;
@@ -125,12 +136,6 @@ struct sc_packet_combat
 };
 
 //Client -> Server
-struct cs_packet_request_login
-{
-	BYTE size;
-	BYTE type;
-	char id[ID_LEN];
-};
 
 struct cs_packet_object_move
 {
@@ -149,6 +154,7 @@ struct cs_packet_object_move
 	FLOAT dist;
 	BYTE is_whirl;
 };
+
 
 struct cs_packet_combat
 {
@@ -180,6 +186,7 @@ struct lc_packet_permit_login
 
 
 //기타
+
 struct CombatData
 {
 	BYTE size;

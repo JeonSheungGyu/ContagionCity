@@ -1,3 +1,1 @@
-﻿  PacketSender.cpp
-c:\users\sheunggyu\desktop\contagioncity\server\client\win32project1\packetsender.cpp(75): warning C4101: 'buf' :참조되지 않은 지역 변수입니다.
-  Win32Project1.vcxproj -> C:\Users\Sheunggyu\Desktop\ContagionCity\server\Client\x64\Debug\Win32Project1.exe
+﻿  Win32Project1.vcxproj -> C:\Users\Sheunggyu\Desktop\ContagionCity\server\Client\x64\Debug\Win32Project1.exe

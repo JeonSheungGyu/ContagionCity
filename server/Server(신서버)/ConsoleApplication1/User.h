@@ -1,5 +1,5 @@
 #pragma once
-#include "Protocol.h"
+
 #include "Object.h"
 #include "UserViewList.h"
 #include <atomic>
@@ -45,7 +45,6 @@ typedef struct NetworkSession {
 class User : public Object
 {
 private:
-	char userID[ID_LEN];
 	bool blnConnected;
 	NetworkSession session;
 	UserViewList viewList;
@@ -66,9 +65,6 @@ public:
 	NetworkSession& getSession() { return session; }
 	UserViewList& getViewList() { return viewList; }
 
-	//유저아이디
-	void					setUserID(const char* buf) { memcpy(userID, buf, ID_LEN); }
-	char*					getUserID() { return userID; }
 	//유저접속여부
 	bool			isConnected() const { return blnConnected; }
 	void			setConnected(const bool blnTemp) { blnConnected = blnTemp; }

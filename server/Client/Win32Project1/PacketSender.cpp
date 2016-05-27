@@ -21,7 +21,7 @@ PacketSender::~PacketSender()
 	delete sInstance;
 	sInstance = nullptr;
 }
-//로그인서버에인증요청
+
 void PacketSender::requestLogin( char *id, char *password )
 {
 	cl_packet_request_login packet;
@@ -30,17 +30,6 @@ void PacketSender::requestLogin( char *id, char *password )
 	packet.size = sizeof(packet);
 	strncpy(packet.id, id, ID_LEN);
 	strncpy(packet.password, password, ID_LEN);
-
-	send(Server::getSock(), reinterpret_cast<char*>(&packet), packet.size, 0);
-}
-//게임서버에정보요청
-void PacketSender::requestLogin2(char *id)
-{
-	cl_packet_request_login packet;
-
-	packet.type = CS_REQUEST_LOGIN;
-	packet.size = sizeof(packet);
-	strncpy(packet.id, id, ID_LEN);
 
 	send(Server::getSock(), reinterpret_cast<char*>(&packet), packet.size, 0);
 }
