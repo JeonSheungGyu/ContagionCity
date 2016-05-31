@@ -1,9 +1,9 @@
 #pragma once
 
 //CHASE_FAIL_DIST와 WANDER의 TARGET 반경이 일치하지 않아도 된다.
-const int	CHASE_FAIL_DIST = RECTSIZE * 6; // 쫓기반경
-const int   ATTACK_DIST = RECTSIZE*1.5; // 공격반경
-const int	CRASH_RANGE = RECTSIZE * 4; // 탐색반경
+const int	CHASE_FAIL_DIST = RECTSIZE * 5; // 쫓기반경
+const int   ATTACK_DIST = RECTSIZE*2; // 공격반경
+const int	CRASH_RANGE = RECTSIZE * 5; // 탐색반경
 
 enum
 {
@@ -72,7 +72,7 @@ void TargetProcess<Target_type, Owner>::CalculateDistWithTarget(Owner* owner)
 		owner->setAction(wander);
 	else if (dist > ATTACK_DIST)
 		owner->setAction(chase);
-	else
+	else if ( !owner->getDeadReckoning() )
 		owner->setAction(combat);
 }
 

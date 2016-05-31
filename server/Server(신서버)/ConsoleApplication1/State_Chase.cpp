@@ -43,13 +43,12 @@ void Chase::Execute(Monster* pMonster)
 
 	XMVECTOR dir = XMVector3Normalize(XMLoadFloat3(&XMFLOAT3((tPos.x) - mPos.x, 0, (tPos.z) - mPos.z)));
 
-	(tPos.x > mPos.x) ? tPos.x -= OBJECT_INTERVAL : tPos.x += OBJECT_INTERVAL;
-	(tPos.z > mPos.z) ? tPos.z -= OBJECT_INTERVAL : tPos.z += OBJECT_INTERVAL;
+	tPos.x = tPos.x - XMVectorGetX(dir)*OBJECT_INTERVAL;
+	tPos.z = tPos.z - XMVectorGetZ(dir)*OBJECT_INTERVAL;
 
 	FLOAT dist = sqrt((tPos.x - mPos.x)*(tPos.x - mPos.x) + (tPos.z - mPos.z)*(tPos.z - mPos.z));
-	//타겟위치 계산 완료
-
 	//dist += OBJECT_INTERVAL;
+
 	//서버 몬스터 이동에 사용
 	pMonster->setDir(XMFLOAT3(XMVectorGetX(dir), 0, XMVectorGetZ(dir)));
 	pMonster->setDist(dist);

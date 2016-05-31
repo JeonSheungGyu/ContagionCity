@@ -18,7 +18,8 @@ protected:
 	// 위치벡터, 방향벡터, 거리, 상태, 속도
 	XMFLOAT2 position;
 	XMFLOAT2 direction;
-	XMFLOAT3 targetPos;
+	XMFLOAT2 targetPos;
+	XMFLOAT2 serverPos;
 	double dist;
 	float speed;
 	
@@ -66,7 +67,8 @@ public:
 	virtual void update() {}
 	virtual void move() {}
 
-	void setTargetPos(const XMFLOAT3 tar) { targetPos = tar; }
-
-	
+	void setTargetPos(const XMFLOAT2 tar) { targetPos = tar; }
+	XMFLOAT2 getTargetPos() { return targetPos; }
+	void setServerPos(const XMFLOAT2 tar) { serverPos = tar; }
+	XMFLOAT2 getServerPos() { return serverPos; }
 };

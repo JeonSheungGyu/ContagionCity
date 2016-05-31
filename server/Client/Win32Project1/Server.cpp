@@ -9,7 +9,7 @@ using namespace std::chrono;
 
 WSADATA Server::wsa;
 SOCKET  Server::sock;
-WORD	Server::clientID=-1;
+int	Server::clientID=-1;
 thread*  Server::receiveThread;
 thread*  Server::updateThread;
 FuncProcess Server::Dispatcher[PACKET_TYPE];
@@ -138,20 +138,31 @@ void Server::UpdateThread()
 	auto& owner = users[getClientID()];
 	auto oldPos = owner.getPos();
 	auto start_time = std::chrono::high_resolution_clock::now();
+	auto db_start_time = std::chrono::high_resolution_clock::now();
 	std::chrono::duration<long long, std::milli> count;
+	std::chrono::duration<long long, std::milli> db_count;
 	while (1) {
 		if (count.count() > UPDATE_TIME)
 		{
-			if (oldPos.x == owner.getPos().x && oldPos.y == owner.getPos().y) {
-				Sleep(UPDATE_TIME);
-			}
-			else {
+			if (oldPos.x != owner.getPos().x || oldPos.y != owner.getPos().y) {
+
 				oldPos = owner.getPos();
 				PacketSender::instance().PlayerMove();
 				start_time = std::chrono::high_resolution_clock::now();
-				Sleep(UPDATE_TIME);
 			}
 		}
+		
+		if (db_count.count() > DB_UPDATE_TIME)
+		{
+			PacketSender::instance().DBUpdate();
+			db_start_time = std::chrono::high_resolution_clock::now();
+			
+		}
+
 		count = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start_time);
+		db_count = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - db_start_time);
+
+		Sleep(UPDATE_TIME);
 	}
 }
+

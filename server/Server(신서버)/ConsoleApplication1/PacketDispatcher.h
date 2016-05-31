@@ -1,5 +1,5 @@
 #pragma once
-const int DISPATCHER_FUNC_TYPE = 3;
+const int DISPATCHER_FUNC_TYPE = 5;
 
 // 패킷처리 함수를 담을 함수포인터 구조체
 struct DispatcherFuncArray
@@ -23,7 +23,7 @@ public:
 
 	//static void DummyUpdate(char* ptr, const unsigned short id);
 
-	//static void RequestLogin(char* ptr, const unsigned short id);
+	static void RequestLogin(char* ptr, const unsigned short id);
 
 	//static void CharInit(char*ptr, const unsigned short id);
 
@@ -38,7 +38,7 @@ public:
 
 	//static void PartyLeave(char* ptr, const unsigned short id);
 
-	//static void RequestDBupdate(char* ptr, const unsigned short id);
+	static void RequestDBupdate(char* ptr, const unsigned short id);
 
 	//static void InitMonster(char* ptr, const unsigned short id);
 

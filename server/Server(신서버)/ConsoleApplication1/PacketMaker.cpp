@@ -201,7 +201,11 @@ void PacketMaker::MonsterAttack(Object* player, const unsigned short id)
 		packet.size = sizeof(sc_packet_monster_attack);
 		packet.target_id = monster->getTargetProcess().getTarget()->getID();
 		packet.damage = monster->getStatus().damage;
-	
+		//몬스터위치
+		packet.x = monster->getPos().x;
+		packet.y = monster->getPos().y;
+		packet.z = monster->getPos().z;
+
 		SendPacket(player->getID(), reinterpret_cast<unsigned char *>(&packet));
 		printf("Send [%d] about  [%d] SC_MONSTER_ATTACK \n", player->getID(), monster->getID());
 	}
@@ -227,6 +231,10 @@ void PacketMaker::MonsterChase(Object* player, const unsigned short id)
 		packet.tx = monster->getTargetPos().x;
 		packet.ty = monster->getTargetPos().y;
 		packet.tz = monster->getTargetPos().z;
+		//몬스터위치
+		packet.x = monster->getPos().x;
+		packet.y = monster->getPos().y;
+		packet.z = monster->getPos().z;
 		packet.dist = monster->getDist();
 	
 		SendPacket(player->getID(), reinterpret_cast<unsigned char *>(&packet));

@@ -8,18 +8,14 @@
 #define LC_PERMISION_LOGIN		1
 
 
-//프로토콜
+//클라이언트->서버
 #define CS_MOVE_OBJECT			0
 #define CS_COMBAT_OBJECT		1
 #define CS_CHAT					2
+#define CS_REQUEST_LOGIN		3
+#define CS_DB_UPDATE			4
 
-enum {
-	UP,
-	DOWN,
-	LEFT,
-	RIGHT
-};
-
+//서버->클라이언트
 #define SC_LOGIN				0
 #define SC_MOVE_OBJECT          1
 #define SC_PUT_OBJECT			2
@@ -100,6 +96,9 @@ struct sc_packet_monster_attack
 	WORD mon_id;
 	WORD target_id;
 	WORD damage;
+	FLOAT x;
+	FLOAT y;
+	FLOAT z;
 };
 
 struct sc_packet_monster_chase
@@ -110,6 +109,9 @@ struct sc_packet_monster_chase
 	FLOAT tx;
 	FLOAT ty;
 	FLOAT tz;
+	FLOAT x;
+	FLOAT y;
+	FLOAT z;
 	FLOAT dist;
 };
 
@@ -167,7 +169,19 @@ struct cs_packet_combat
 	FLOAT z;
 };
 
+struct cs_packet_request_login
+{
+	BYTE size;
+	BYTE type;
+	char id[ID_LEN];
+};
 
+struct cs_packet_db_update
+{
+	BYTE size;
+	BYTE type;
+	WORD id;
+};
 //Client <-> LoginServer
 struct cl_packet_request_login
 {

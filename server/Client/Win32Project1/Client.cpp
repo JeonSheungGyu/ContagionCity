@@ -25,7 +25,7 @@ char id[ID_LEN];
 char password[PASSWORD_LEN];
 RECT clientRect;
 
-
+bool isDrawTarget = false , isDrawServerPos = false;
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdParam, int nCmdShow)
 {
@@ -96,6 +96,7 @@ LRESULT CALLBACK DlgProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			//게임서버접속
 			closesocket(Server::sock);
 			Server::GameServerConnection();
+			PacketSender::instance().requestLogin2(id);
 
 			EndDialog(hDlg, IDCANCEL);
 			hDlg = NULL;
@@ -151,25 +152,21 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		switch (wParam)
 		{
 		case VK_LEFT:
-			dir = LEFT;
 			users[Server::getClientID()].setDir(XMFLOAT2(-1, 0));
 			users[Server::getClientID()].setDist(users[Server::getClientID()].getSpeed() / 33);
 			users[Server::getClientID()].is_move = true;
 			break;
 		case VK_RIGHT:
-			dir = RIGHT;
 			users[Server::getClientID()].setDir(XMFLOAT2(1, 0));
 			users[Server::getClientID()].setDist(users[Server::getClientID()].getSpeed() / 33);
 			users[Server::getClientID()].is_move = true;
 			break;
 		case VK_UP:
-			dir = UP;
 			users[Server::getClientID()].setDir(XMFLOAT2(0, -1));
 			users[Server::getClientID()].setDist(users[Server::getClientID()].getSpeed() / 33);
 			users[Server::getClientID()].is_move = true;
 			break;
 		case VK_DOWN:
-			dir = DOWN;
 			users[Server::getClientID()].setDir(XMFLOAT2(0, 1));
 			users[Server::getClientID()].setDist(users[Server::getClientID()].getSpeed() / 33);
 			users[Server::getClientID()].is_move = true;
@@ -192,6 +189,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			ScreenToClient(hwnd, &p);
 			PacketSender::instance().PlayerCombat(CC_PointCircle, p.x+xPos, p.y+yPos);
 		}
+		else if (key == '1') {
+			isDrawTarget = !isDrawTarget;
+		}
+		else if (key == '2') {
+			isDrawServerPos = !isDrawServerPos;
+		}
 			
 		return 0;
 	case WM_TIMER:
@@ -205,16 +208,20 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		InvalidateRect(hwnd, NULL, FALSE);
 		return 0;
 	case WM_PAINT:
-		hdc = BeginPaint(hwnd, &ps);
-
-
-		//좌표계변환
-		if (Server::getClientID() != -1) {
-			xPos = users[Server::getClientID()].getPos().x - RECTSIZE * 8;
-			yPos = users[Server::getClientID()].getPos().y - RECTSIZE * 8;
+		//접속이 안되었을 경우 
+		if (Server::getClientID() == -1) {
+			//not connected
+			hdc = BeginPaint(hwnd, &ps);
+			wsprintf(str, TEXT("게임서버 (%s)  연결이 되지 않았습니다."), server_ip);
+			TextOut(hdc, clientRect.right / 2 - lstrlen(str)*4, clientRect.bottom / 2, str, lstrlen(str));
+			EndPaint(hwnd, &ps);
+			return 0;
 		}
-		
 
+		xPos = users[Server::getClientID()].getPos().x - RECTSIZE * 8;
+		yPos = users[Server::getClientID()].getPos().y - RECTSIZE * 8;
+		
+		hdc = BeginPaint(hwnd, &ps);
 		hMemDC = CreateCompatibleDC(hdc); // hMemDC 에 기존 DC (hdc)에 맞게 새 DC 생성
 		hBitmap = CreateCompatibleBitmap(hdc, clientRect.right, clientRect.bottom); // crt 규격대로 종이 생성
 		OldBitmap = (HBITMAP)SelectObject(hMemDC, hBitmap); // 종이 교체
@@ -266,7 +273,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				myBrush = CreateSolidBrush(color[users[i].getID()]);
 				oldBrush = (HBRUSH)SelectObject(hdc, myBrush);
 								
-				Rectangle(hMemDC, users[i].getPos().x - xPos, users[i].getPos().y - yPos, users[i].getPos().x - xPos + RECTSIZE, users[i].getPos().y - yPos + RECTSIZE);
+				Rectangle(hMemDC, users[i].getPos().x - xPos - RECTSIZE / 2, users[i].getPos().y - yPos - RECTSIZE / 2, 
+					users[i].getPos().x - xPos + RECTSIZE/2, users[i].getPos().y - yPos + RECTSIZE/2);
 
 				SelectObject(hMemDC, oldPen);
 				SelectObject(hMemDC, oldBrush);
@@ -278,9 +286,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				oldPen = (HPEN)SelectObject(hMemDC, myPen);
 
 				//방향그리기
-				MoveToEx(hMemDC, users[i].getPos().x - xPos + RECTSIZE / 2, users[i].getPos().y - yPos + RECTSIZE / 2, NULL);
-				LineTo(hMemDC, users[i].getPos().x - xPos + RECTSIZE / 2 + users[i].getDir().x*RECTSIZE,
-					users[i].getPos().y - yPos + RECTSIZE / 2 + users[i].getDir().y*RECTSIZE);
+				MoveToEx(hMemDC, users[i].getPos().x - xPos, users[i].getPos().y - yPos, NULL);
+				LineTo(hMemDC, users[i].getPos().x - xPos + users[i].getDir().x*RECTSIZE,
+					users[i].getPos().y - yPos + users[i].getDir().y*RECTSIZE);
 
 				SelectObject(hMemDC, oldPen);
 				DeleteObject(myPen);
@@ -299,20 +307,47 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				oldPen = (HPEN)SelectObject(hMemDC, myPen);
 				myBrush = CreateSolidBrush(COLORREF(RGB(255, 0, 0)));
 				oldBrush = (HBRUSH)SelectObject(hMemDC, myBrush);
-				Ellipse(hMemDC, monsters[i].getPos().x - xPos, monsters[i].getPos().y - yPos, monsters[i].getPos().x - xPos + RECTSIZE, monsters[i].getPos().y - yPos + RECTSIZE);
+				Ellipse(hMemDC, monsters[i].getPos().x - xPos - RECTSIZE / 2, monsters[i].getPos().y - yPos - RECTSIZE / 2, 
+					monsters[i].getPos().x - xPos + RECTSIZE / 2, monsters[i].getPos().y - yPos + RECTSIZE / 2);
 				wsprintf(str, TEXT("[%d] %d"), monsters[i].getID(), monsters[i].getHp());
 				TextOut(hMemDC, monsters[i].getPos().x + 5 - xPos, monsters[i].getPos().y + 10 - yPos, str, lstrlen(str));
 				SelectObject(hMemDC, oldPen);
 				SelectObject(hMemDC, oldBrush);
 				DeleteObject(myPen);
 				DeleteObject(myBrush);
+
+				
+				if (isDrawTarget) {
+					//타겟그리기
+					myPen = CreatePen(PS_SOLID, 5, RGB(0, 0, 255));
+					oldPen = (HPEN)SelectObject(hMemDC, myPen);
+
+					
+					MoveToEx(hMemDC, monsters[i].getPos().x - xPos, monsters[i].getPos().y - yPos, NULL);
+					LineTo(hMemDC, monsters[i].getTargetPos().x - xPos, monsters[i].getTargetPos().y - yPos);
+
+					SelectObject(hMemDC, oldPen);
+					DeleteObject(myPen);
+				}
+				if (isDrawServerPos) {
+					//서버위치 그리기
+					myPen = CreatePen(PS_SOLID, 5, RGB(0, 255, 0));
+					oldPen = (HPEN)SelectObject(hMemDC, myPen);
+
+					
+					MoveToEx(hMemDC, monsters[i].getPos().x - xPos, monsters[i].getPos().y - yPos, NULL);
+					LineTo(hMemDC, monsters[i].getServerPos().x - xPos, monsters[i].getServerPos().y - yPos);
+
+					SelectObject(hMemDC, oldPen);
+					DeleteObject(myPen);
+				}
 			}
 		}
 
 
 	
-		wsprintf(str, TEXT("좌표 ( %d, %d ) "),(DWORD)(users[Server::getClientID()].getPos().x/RECTSIZE), (DWORD)(users[Server::getClientID()].getPos().y / RECTSIZE));
-		TextOut(hMemDC, winRect.right - 200, winRect.bottom-100, str, lstrlen(str));
+		wsprintf(str, TEXT("좌표 ( %d, %d ) "),(DWORD)(users[Server::getClientID()].getPos().x), (DWORD)(users[Server::getClientID()].getPos().y ));
+		TextOut(hMemDC, clientRect.right - 200, clientRect.bottom-100, str, lstrlen(str));
 
 
 

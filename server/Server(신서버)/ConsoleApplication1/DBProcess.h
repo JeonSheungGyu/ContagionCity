@@ -11,9 +11,6 @@ public:
 	{
 		users[id].setStatus(over->status);
 		users[id].setPos(over->pos);
-
-		//패킷을전송하여야한다.
-		//PacketMaker::instance().Login(id);
 	}
 };
 

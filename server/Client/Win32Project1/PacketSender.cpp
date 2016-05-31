@@ -33,31 +33,32 @@ void PacketSender::requestLogin( char *id, char *password )
 
 	send(Server::getSock(), reinterpret_cast<char*>(&packet), packet.size, 0);
 }
+//게임서버에 ID를 전송한다.
+void PacketSender::requestLogin2(char *id)
+{
+	cs_packet_request_login packet;
+
+	packet.type = CS_REQUEST_LOGIN;
+	packet.size = sizeof(packet);
+	strncpy(packet.id, id, ID_LEN);
+	send(Server::getSock(), reinterpret_cast<char*>(&packet), packet.size, 0);
+}
 //
-//void PacketSender::positionUpdate()
-//{
-//	cout << "positionUpdate 호출 ID: " << GameEngine::getClientID() << endl;
-//	cs_packet_position_update packet;
-//	auto& user = GameEngine::getUser()[GameEngine::getClientID()];
-//
-//	// User가 담겨 있는 컨테이너 -> concurrent_vector -> 각 공간 동기화 되어있음, 
-//	// x,z 초기화 짧은 텀 동기화해야될까
-//	packet.id = GameEngine::getClientID();
-//	packet.type = CS_POSITION_UPDATE;
-//	packet.x = user.getPos().x;
-//	packet.y = 0;
-//	packet.z = user.getPos().y;
-//	packet.dx = user.getDir().x;
-//	packet.dy = 0;
-//	packet.dz = user.getDir().y;
-//	packet.size = sizeof(packet);
-//
-//	//cout << "position: " << packet.x << " " << packet.y << " " << packet.z << endl;
-//
-//	send(GameEngine::getSock(), reinterpret_cast<char*>(&packet), packet.size, 0);
-//}
-//
-//
+void PacketSender::DBUpdate()
+{
+
+	cs_packet_db_update packet;
+
+	// User가 담겨 있는 컨테이너 -> concurrent_vector -> 각 공간 동기화 되어있음, 
+	// x,z 초기화 짧은 텀 동기화해야될까
+	packet.id = Server::getClientID();
+	packet.type = CS_DB_UPDATE;
+	packet.size = sizeof(packet);
+
+	send(Server::getSock(), reinterpret_cast<char*>(&packet), packet.size, 0);
+}
+
+
 void PacketSender::PlayerMove()
 {
 	cs_packet_object_move move_packet;

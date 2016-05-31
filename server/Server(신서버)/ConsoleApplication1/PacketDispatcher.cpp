@@ -17,6 +17,8 @@ void updatePlayerView(DWORD id);
 extern CollisionFuncArray CollisionProcess[COLLISION_FUNC_TYPE];
 void SendPacket(int id, unsigned char *packet);
 
+extern tbb::concurrent_queue<DB_QUERY> DB_Queue;
+
 //// 플레이어가 1초마다 보내는 위치 갱신요청 처리
 //// 중간발표 끝나고 정리할때 삭제하기
 //void PacketDispatcher::PositionUpdate(char* ptr, const unsigned short id)
@@ -145,17 +147,36 @@ void PacketDispatcher::Combat(char* ptr, const unsigned short id)
 //	}
 //}
 
+void PacketDispatcher::RequestLogin(char* ptr, const unsigned short id)
+{
+	cs_packet_request_login rPacket;
 
-//void PacketDispatcher::RequestLogin(char* ptr, const unsigned short id)
-//{
-//
-//	cs_packet_request_login rPacket;
-//
-//	memcpy(reinterpret_cast<char*>(&rPacket), ptr, *ptr);
-//
-//	PacketMaker::instance().Login(rPacket.id);
-//}
-//
+	memcpy(reinterpret_cast<char*>(&rPacket), ptr, *ptr);
+
+	//계정에 아이디 셋팅
+	users[id].setUserID(rPacket.id);
+
+	//아이디로 캐릭터정보 로딩
+	DB_QUERY q;
+	q.ID = id;
+	q.type = DB_QUERY::REQUEST_STATE;
+	DB_Queue.push(q);
+}
+
+void PacketDispatcher::RequestDBupdate(char* ptr, const unsigned short id)
+{
+	cs_packet_db_update rPacket;
+
+	memcpy(reinterpret_cast<char*>(&rPacket), ptr, *ptr);
+
+	//아이디로 캐릭터정보 로딩
+	DB_QUERY q;
+	q.ID = rPacket.id;
+	q.type = DB_QUERY::REQUEST_UPDATE;
+	DB_Queue.push(q);
+}
+
+
 //// 파티관련 처리
 //void PacketDispatcher::PartyInit(char* ptr, const unsigned short id)
 //{
@@ -238,32 +259,6 @@ void PacketDispatcher::Combat(char* ptr, const unsigned short id)
 //	PartyManager::instance().Leave();
 //}
 
-
-// 클라이언트 -> 서버로 DB 업데이트 요청
-//void PacketDispatcher::RequestDBupdate(char* ptr, const unsigned short id)
-//{
-//	cs_packet_db_update packet;
-//
-//	memcpy(reinterpret_cast<char*>(&packet), ptr, *ptr);
-//
-//	try {
-//		auto& player = Server::getPlayers().at(packet.id);
-//		auto checkTime = duration_cast<minutes>(high_resolution_clock::now() - player->dbTime);
-//
-//		if (checkTime.count() >= DB_UPDATE_TIME) {
-//			DB_QUERY q;
-//			q.ID = id;
-//			q.type = DB_UPDATE;
-//			EnterCriticalSection(&Server::dbCS);
-//			Server::getDBQ().push(q);
-//			LeaveCriticalSection(&Server::dbCS);
-//			player->dbTime = high_resolution_clock::now();
-//		}
-//	}
-//	catch (exception& e) {
-//		cout << "PacketDispatcher::RequestDBupdate " << e.what() << endl;
-//	}
-//}
 //
 //
 //void PacketDispatcher::CharInit(char*ptr, const unsigned short id)

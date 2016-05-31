@@ -12,6 +12,7 @@
 #include "resource.h"
 
 #define UPDATE_TIME 100
+#define DB_UPDATE_TIME 60*1000
 #define BUFSIZE 1024
 #define RECTSIZE 40
 #define INTERVAL 4

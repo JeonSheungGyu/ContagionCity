@@ -45,6 +45,9 @@ typedef struct NetworkSession {
 class User : public Object
 {
 private:
+	//계정 아이디
+	char userID[ID_LEN];
+
 	bool blnConnected;
 	NetworkSession session;
 	UserViewList viewList;
@@ -76,6 +79,12 @@ public:
 	//action
 	void					setAction(const BYTE ac) { action = ac; }
 	const BYTE				getAction()const { return action; }
+
+
+	//userID
+	void					setUserID(const char *ui) { memcpy(userID, ui, ID_LEN); }
+	const char*				getUserID()const { return userID; }
+
 
 	//경험치 플러스
 	void plusExp(const WORD exp)

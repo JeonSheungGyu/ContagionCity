@@ -47,8 +47,9 @@ void updatePlayerView( DWORD id)
 	user->updateNearList();
 	printf("user viewList Update\n");
 	user->updateViewList();
-}
 
+	printf("시야안 오브젝트 : %d\n", user->getViewList().getView().size());
+}
 //패킷처리
 void SendPacket(int id, unsigned char *packet)
 {
@@ -74,6 +75,7 @@ void ProcessPacket(User *user, unsigned char buf[]) {
 	PacketDispatcher[*(buf + 1)].Func(reinterpret_cast<char *>(buf), user->getID());	// 함수포인터배열을 이용한 패킷처리
 	
 }
+
 //DB처리
 tbb::concurrent_queue<DB_QUERY> DB_Queue;
 std::thread *db_thread;
@@ -102,11 +104,10 @@ void DataBaseThread()
 	if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO)
 		SQLSetConnectAttr(hdbc, SQL_LOGIN_TIMEOUT, (SQLPOINTER)5, 0);
 
-	// Connect to data source
-	retcode = SQLConnect(hdbc, (SQLWCHAR*)L"ContagionCity", SQL_NTS, (SQLWCHAR*)L"",
-		SQL_NTS, (SQLWCHAR*)L"", SQL_NTS);
+	
 
-
+	retcode = SQLConnect(hdbc, (SQLWCHAR*)L"ContagionCityMS", SQL_NTS, (SQLWCHAR*)L"sa",
+		SQL_NTS, (SQLWCHAR*)L"1q2w3e4r@@", SQL_NTS);
 	//// TestCode
 	//retcode = SQLConnect(hdbc, (SQLWCHAR*)L"TEST_DB", SQL_NTS, (SQLWCHAR*)L"",
 	//	SQL_NTS, (SQLWCHAR*)L"", SQL_NTS);
@@ -114,7 +115,7 @@ void DataBaseThread()
 	// Allocate statetment handle
 	if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO) {
 		printf("DB Connection success");
-
+		retcode = SQLAllocHandle(SQL_HANDLE_STMT, hdbc, &hstmt);
 		// ---------------------- DB_thread loop start --------------------------//
 		while (true) {
 			ZeroMemory(overEx, sizeof(overEx));
@@ -124,6 +125,8 @@ void DataBaseThread()
 				continue;
 			}
 			DB_Queue.try_pop(q);
+			// Connect to data source
+			
 			retcode = SQLAllocHandle(SQL_HANDLE_STMT, hdbc, &hstmt);
 
 			if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO) {
@@ -133,10 +136,18 @@ void DataBaseThread()
 					break;
 				case DB_QUERY::REQUEST_UPDATE:
 					RequestToDB::RequestUpdate(overEx, q.ID, hstmt);
+					overEx->operation = OP_DB_EVENT;
+					overEx->db_type = DB_QUERY::REQUEST_UPDATE;
+					break;
+				case DB_QUERY::REQUEST_UPDATE_AND_END:
+					RequestToDB::RequestUpdate(overEx, q.ID, hstmt);
+					overEx->operation = OP_DB_EVENT;
+					overEx->db_type = DB_QUERY::REQUEST_UPDATE_AND_END;
 					break;
 				}
 				PostQueuedCompletionStatus(hCompletionPort, 1, q.ID, (OVERLAPPED*)overEx);
 			}
+			SQLFreeHandle(SQL_HANDLE_STMT, hstmt);
 		}
 		// ------------------------------ thread loop end -----------------------------------
 	}
@@ -166,9 +177,10 @@ void add_timer(DWORD id, DWORD type, DWORD duration) {
 	LeaveCriticalSection(&qCS);
 }
 void process_event(EVENT k) {
-	if (k.id < MAX_USER)
-		Object *object = &users[k.id];
+	if (k.id < MAX_USER) {
+	}
 	else {
+		//몬스터이동
 		Monster *monster = monsters.at(k.id - MAX_USER);
 		ZeroMemory(&monster->m_overlapped, sizeof(monster->m_overlapped));
 		monster->m_overlapped.operation = k.type;
@@ -196,7 +208,6 @@ void TimerThread()
 				EnterCriticalSection(&qCS);
 				timer_queue.pop();
 				LeaveCriticalSection(&qCS);
-
 				//printf("아이디 : %d, 타입 : %d 이벤트 처리", k.id, k.type);
 				process_event(k);
 			}else
@@ -233,6 +244,8 @@ void InitFunc()
 	// 패킷처리 함수
 	PacketDispatcher[CS_MOVE_OBJECT].Func = PacketDispatcher::ObjectMove;	// 클라이언트 갱신요청
 	PacketDispatcher[CS_COMBAT_OBJECT].Func = PacketDispatcher::Combat;	
+	PacketDispatcher[CS_REQUEST_LOGIN].Func = PacketDispatcher::RequestLogin;
+	PacketDispatcher[CS_DB_UPDATE].Func = PacketDispatcher::RequestDBupdate;
 
 	CollisionProcess[CC_CircleAround].Func = CombatCollision::CircleAround;
 	CollisionProcess[CC_CircleFront].Func = CombatCollision::CircleFront;
@@ -339,8 +352,8 @@ int main(int argc, char** argv)
 		printf("connect from [%d]\n", users[id].getID());
 		CreateIoCompletionPort((HANDLE)hClntSock, hCompletionPort, (DWORD)&users[id], 0);
 		
-		PacketMaker::instance().Login(users[id].getID());
-		updatePlayerView(users[id].getID());
+		//PacketMaker::instance().Login(users[id].getID());
+		//updatePlayerView(users[id].getID());
 
 
 		Flags = 0;
@@ -394,20 +407,14 @@ unsigned int __stdcall CompletionThread(LPVOID pComPort)
 		if (iosize == 0) //EOF 전송시.
 		{
 			user = reinterpret_cast<User*> (key);
-			for (auto i = 0; i < MAX_USER; ++i) {
-				if (i == user->getID()) continue;
-				if (users[i].isConnected()) {
-					PacketMaker::instance().RemoveObject(reinterpret_cast<Object*>(&users[i]), user->getID());
-				}
-			}
-			//sector 제거
-			user->getCurrentSector()->erasePlayer(user->getID());
-			user->setConnected(false);
-			closesocket(user->getSession().hClntSock);
-			continue;
-		}
 
-		if (OP_RECV == my_overlap->operation) {
+			DB_QUERY q;
+			q.ID = user->getID();
+			q.type = DB_QUERY::REQUEST_UPDATE_AND_END;
+			DB_Queue.push(q);
+
+			continue;
+		}if (OP_RECV == my_overlap->operation) {
 			user = reinterpret_cast<User*> (key);
 			unsigned char *buf_ptr = user->getSession().recv_overlap.iocp_buffer;
 			int remained = iosize;
@@ -448,7 +455,7 @@ unsigned int __stdcall CompletionThread(LPVOID pComPort)
 			Monster *monster = monsters.at(key - MAX_USER);
 			//두스레드가 하나의 몬스터를 처리할 경우가 생긴다..... concurrency control이 이게 아닌가보다 교수님 질문.
 			//EnterCriticalSection(&monster->cs);
-			printf("%d 시작", key);
+			//printf("%d 시작", key);
 			//몬스터 위치 업데이트
 			//위치 이동할게 있으면 이동
 			if (monster->getDeadReckoning())
@@ -459,17 +466,35 @@ unsigned int __stdcall CompletionThread(LPVOID pComPort)
 			monster->heartBeat();
 			//LeaveCriticalSection(&monster->cs);
 			//printf("%d 끝\n", key);
-		}else if (OP_NPC_MOVE == my_overlap->operation)
+		}else if (OP_DB_EVENT == my_overlap->operation)
 		{
 			//DB에서 받아온 데이터 처리
 			switch (my_overlap->db_type)
 			{
-			case DB_QUERY::REQUEST_STATE: DBProcess::RequestState(my_overlap, key); break;
+			case DB_QUERY::REQUEST_STATE: 
+				DBProcess::RequestState(my_overlap, key); 
+				updatePlayerView(key);
+				PacketMaker::instance().Login(key);
+				break;
 			case DB_QUERY::REQUEST_UPDATE: break;
+			case DB_QUERY::REQUEST_UPDATE_AND_END:
+				//DB 업데이트 후 접속종료
+				user = &users[key];
+
+				for (auto i = 0; i < MAX_USER; ++i) {
+					if (i == user->getID()) continue;
+					if (users[i].isConnected()) {
+						PacketMaker::instance().RemoveObject(reinterpret_cast<Object*>(&users[i]), user->getID());
+					}
+				}
+				//sector 제거
+				user->getCurrentSector()->erasePlayer(user->getID());
+				user->setConnected(false);
+				closesocket(user->getSession().hClntSock);
+				break;
 			}
 			continue;
-		}
-		else {
+		}else {
 			printf("operation : %d ", my_overlap->operation);
 			printf( "Unknown IOCP event!\n");
 			exit(-1);

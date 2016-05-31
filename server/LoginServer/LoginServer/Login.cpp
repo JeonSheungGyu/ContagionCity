@@ -199,8 +199,8 @@ void Login::DB_thread()
 				SQLSetConnectAttr(hdbc, SQL_LOGIN_TIMEOUT, (SQLPOINTER)5, 0);
 
 				// Connect to data source
-				retcode = SQLConnect(hdbc, (SQLWCHAR*)L"ContagionCity", SQL_NTS, (SQLWCHAR*)L"",
-					SQL_NTS, (SQLWCHAR*)L"", SQL_NTS);
+				retcode = SQLConnect(hdbc, (SQLWCHAR*)L"ContagionCityMS", SQL_NTS, (SQLWCHAR*)L"sa",
+					SQL_NTS, (SQLWCHAR*)L"1q2w3e4r@@", SQL_NTS);
 
 				// Allocate statement handle
 				if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO){
@@ -247,7 +247,7 @@ void Login::DB_thread()
 								sprintf_s(checkPw, sizeof(checkPw), "%s", q.pw);
 
 								// 저장프로시저 호출
-								retcode = SQLExecDirect(hstmt, (SQLWCHAR*)L"select count(id) from contagioncity.user u where u.id = ? and u.passwd = ?", SQL_NTS);
+								retcode = SQLExecDirect(hstmt, (SQLWCHAR*)L"exec CheckUser ?, ?", SQL_NTS);
 
 								if (retcode == SQL_SUCCESS || SQL_SUCCESS_WITH_INFO){
 									retcode = SQLBindCol(hstmt, 1, SQL_INTEGER, &PermisionOfLogin, sizeof(PermisionOfLogin), &cbCheckLogin);

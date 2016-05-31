@@ -61,7 +61,7 @@ void PacketDispatcher::PutObject(char* buf)
 		monster.setID(packet.id);
 		monster.setPos(XMFLOAT2(packet.x, packet.z));
 		monster.setStatus(ObjectStatus(packet.lv, packet.hp, packet.ap, packet.damage, packet.defense, packet.exp, packet.request_exp));
-		monster.setSpeed(packet.speed);
+		monster.setSpeed(packet.speed+10);
 		monster.setDir(XMFLOAT2(0, 0));
 		monster.is_using = true;
 	}
@@ -154,8 +154,8 @@ void PacketDispatcher::MonsterAttack(char* buf)
 
 	// monster -> player 공격
 	//if (users[packet.target_id].getHp() > 0 )
-		users[packet.target_id].minusHp(packet.damage);
-
+	users[packet.target_id].minusHp(packet.damage);
+	monsters[packet.mon_id - MAX_USER].setServerPos(XMFLOAT2(packet.x, packet.z));
 	
 	//cout << "[몬스터 -> 플레이어 공격] Player ID: " << packet.target_id
 	//	<< " HP: " << GameEngine::getUser()[packet.target_id].getHp() << endl;
@@ -184,6 +184,8 @@ void PacketDispatcher::MonsterChase(char* buf)
 	// 플레이어 위치와 방향벡터 갱신
 	monster.setDir(XMFLOAT2(XMVectorGetX(dir), XMVectorGetZ(dir)));
 	monster.setDist(dist);
+	monster.setTargetPos(XMFLOAT2(packet.tx, packet.tz));
+	monster.setServerPos(XMFLOAT2(packet.x, packet.z));
 	monster.is_move = true;
 }
 
