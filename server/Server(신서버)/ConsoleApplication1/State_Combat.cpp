@@ -47,7 +47,7 @@ void Combat::Execute(Monster* pMonster)
 
 	player->minusHP(damage);		// 플레이어 사망처리 해야됨 ( 주변 클라이언트들에게 전송하게 )
 	//pMonster->getTargetProcess().setTmpDamage(damage);
-	add_timer(pMonster->getID(), OP_NPC_MOVE, 1000);
+	add_timer(pMonster->getID(), OP_NPC_MOVE, 2000);
 	//몬스터 타입에 따른 액션 설정
 	//if (pMonster->mMonType == 1)
 	//{

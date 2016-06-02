@@ -151,7 +151,7 @@ void UserViewList::updateViewList(const set<DWORD>& nearList)
 			//MONSTER 일 경우 움직이게 한다.
 			//비활성화 상태일경우 
 			//비활성화일 경우 시간이 2초이상 지났는가 판단
-			if (!monsters.at(id - MAX_USER)->is_active && clock() - monsters.at(id - MAX_USER)->InActiveTime  > 2000) {
+			if (!monsters.at(id - MAX_USER)->is_active && clock() - monsters.at(id - MAX_USER)->InActiveTime  > 2500) {
 				monsters.at(id - MAX_USER)->is_active = true;
 				add_timer(id, OP_NPC_MOVE, 0);
 			}

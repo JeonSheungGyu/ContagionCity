@@ -28,15 +28,15 @@ public:
 	//static void CharInit(char*ptr, const unsigned short id);
 
 	//// 파티관련 처리
-	//static void PartyInit(char* ptr, const unsigned short id);
+	static void PartyInit(char* ptr, const unsigned short id);
 
-	//static void PartyInvite(char* ptr, const unsigned short id);
+	static void PartyInvite(char* ptr, const unsigned short id);
 
-	//static void PartyAgree(char* ptr, const unsigned short id);
+	static void PartyAgree(char* ptr, const unsigned short id);
 
-	//static void PartyDelete(char* ptr, const unsigned short id);
+	static void PartyDelete(char* ptr, const unsigned short id);
 
-	//static void PartyLeave(char* ptr, const unsigned short id);
+	static void PartyLeave(char* ptr, const unsigned short id);
 
 	static void RequestDBupdate(char* ptr, const unsigned short id);
 

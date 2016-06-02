@@ -246,6 +246,13 @@ void InitFunc()
 	PacketDispatcher[CS_COMBAT_OBJECT].Func = PacketDispatcher::Combat;	
 	PacketDispatcher[CS_REQUEST_LOGIN].Func = PacketDispatcher::RequestLogin;
 	PacketDispatcher[CS_DB_UPDATE].Func = PacketDispatcher::RequestDBupdate;
+	//ÆÄÆ¼
+	PacketDispatcher[CS_PARTY_INIT].Func = PacketDispatcher::PartyInit;
+	PacketDispatcher[CS_INVITE_PARTY].Func = PacketDispatcher::PartyInvite;
+	PacketDispatcher[CS_LEAVE_PARTY].Func = PacketDispatcher::PartyLeave;
+	PacketDispatcher[CS_PARTY_DELETE].Func = PacketDispatcher::PartyDelete;
+	PacketDispatcher[CS_PARTY_AGREE].Func = PacketDispatcher::PartyAgree;
+	
 
 	CollisionProcess[CC_CircleAround].Func = CombatCollision::CircleAround;
 	CollisionProcess[CC_CircleFront].Func = CombatCollision::CircleFront;
@@ -351,10 +358,6 @@ int main(int argc, char** argv)
 
 		printf("connect from [%d]\n", users[id].getID());
 		CreateIoCompletionPort((HANDLE)hClntSock, hCompletionPort, (DWORD)&users[id], 0);
-		
-		//PacketMaker::instance().Login(users[id].getID());
-		//updatePlayerView(users[id].getID());
-
 
 		Flags = 0;
 

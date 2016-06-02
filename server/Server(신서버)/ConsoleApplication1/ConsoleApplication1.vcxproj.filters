@@ -22,12 +22,6 @@
     <Filter Include="헤더 파일\FSM\State">
       <UniqueIdentifier>{47b94f78-e4ba-4420-b3c7-660a09ef9e17}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\FSM">
-      <UniqueIdentifier>{ccf7f2c7-d4f2-444f-b2c8-4e311cc2982b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\FSM\State">
-      <UniqueIdentifier>{da732f15-7d7b-4600-abf9-183652f525eb}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\Object">
       <UniqueIdentifier>{2d6db037-e5a8-4c8e-ae1e-333acf4e932b}</UniqueIdentifier>
     </Filter>
@@ -51,6 +45,18 @@
     </Filter>
     <Filter Include="소스 파일\View">
       <UniqueIdentifier>{782b4129-bffc-4e2e-98a4-5e322c9d6aa7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\FSM">
+      <UniqueIdentifier>{ccf7f2c7-d4f2-444f-b2c8-4e311cc2982b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\FSM\State">
+      <UniqueIdentifier>{da732f15-7d7b-4600-abf9-183652f525eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Game">
+      <UniqueIdentifier>{1a1c56ea-714a-49cc-bfe0-7834f68d9320}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\Game">
+      <UniqueIdentifier>{c6fbaa5e-2f9c-423d-8dce-07b55692ac49}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -98,6 +104,9 @@
     </ClCompile>
     <ClCompile Include="Object.cpp">
       <Filter>소스 파일\Object</Filter>
+    </ClCompile>
+    <ClCompile Include="PartyManager.cpp">
+      <Filter>소스 파일\Game</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -172,6 +181,9 @@
     </ClInclude>
     <ClInclude Include="DeadReckoning.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="PartyManager.h">
+      <Filter>헤더 파일\Game</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

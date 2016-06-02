@@ -34,6 +34,7 @@
     <ClCompile Include="CombatCollision.cpp" />
     <ClCompile Include="PacketDispatcher.cpp" />
     <ClCompile Include="DeadReckoning.cpp" />
+    <ClCompile Include="PartyManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PacketMaker.h" />
@@ -60,6 +61,7 @@
     <ClInclude Include="CombatCollision.h" />
     <ClInclude Include="PacketDispatcher.h" />
     <ClInclude Include="DeadReckoning.h" />
+    <ClInclude Include="PartyManager.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{08FF5596-CE64-47F8-8961-CCF369C1D1A6}</ProjectGuid>

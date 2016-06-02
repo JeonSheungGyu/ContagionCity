@@ -22,7 +22,6 @@ public:
 		retcode = SQLExecDirect(hstmt, (SQLWCHAR*)L"EXEC RequestState ?", SQL_NTS);
 
 		if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO) {
-			printf("업데이트성공\n");
 			//ID는 쓰지 않지만 받아오는걸로
 			retcode = SQLBindCol(hstmt, 1, SQL_CHAR, &client_ID, sizeof(client_ID), &cb_ret[0]);
 			retcode = SQLBindCol(hstmt, 2, SQL_INTEGER, &over->status.lv, sizeof(int), &cb_ret[1]);
@@ -44,13 +43,18 @@ public:
 			over->pos.y = y;
 			over->pos.z = z;
 
-			if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO)
+			if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO) {
+				printf("RequestToDB::RequestState : %s is loaded\n", client_ID);
 				over->isSuccess = true;
-			else{
+			}else if (retcode == SQL_NO_DATA){
+				printf("RequestToDB::RequestState : %s is new\n", client_ID);
 				over->isSuccess = false;
 				//초기값으로 전송
 				over->status.reset();
 				over->pos = XMFLOAT3(0, 0, 0);
+			}
+			else {
+				printf("RequestToDB::RequestState : %s is not loaded\n", client_ID);
 			}
 
 		}
@@ -94,8 +98,8 @@ public:
 		retcode = SQLExecDirect(hstmt, (SQLWCHAR*)L"EXEC RequestUpdate ?,?,?,?,?,?,?,?,?,?,?", SQL_NTS);
 
 		if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO)
-			printf("RequestUpdate Success\n");
+			printf("RequestToDB::RequestUpdate : %s is updated \n", client_ID);
 		else
-			printf("RequestUpdate Fail\n");
+			printf("RequestToDB::RequestUpdate : %s is not updated \n", client_ID);
 	}
 };

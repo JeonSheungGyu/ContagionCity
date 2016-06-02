@@ -54,6 +54,9 @@ private:
 
 	//이동, 공격, 정지
 	BYTE			 action;
+
+	//파티
+	WORD PartyNumber;
 public:
 
 	User() : viewList(this), Object () {
@@ -68,22 +71,23 @@ public:
 	NetworkSession& getSession() { return session; }
 	UserViewList& getViewList() { return viewList; }
 
-	//유저접속여부
-	bool			isConnected() const { return blnConnected; }
-	void			setConnected(const bool blnTemp) { blnConnected = blnTemp; }
-
-	void updateViewList() {
-		viewList.updateViewList(nearList);
-	}
-
-	//action
-	void					setAction(const BYTE ac) { action = ac; }
-	const BYTE				getAction()const { return action; }
-
-
 	//userID
 	void					setUserID(const char *ui) { memcpy(userID, ui, ID_LEN); }
 	const char*				getUserID()const { return userID; }
+
+	//유저접속여부
+	bool			isConnected() const { return blnConnected; }
+	void			setConnected(const bool blnTemp) { blnConnected = blnTemp; }
+	//뷰리스트 업데이트
+	void updateViewList() {
+		viewList.updateViewList(nearList);
+	}
+	//action
+	void					setAction(const BYTE ac) { action = ac; }
+	const BYTE				getAction()const { return action; }
+	// 소속 파티번호 accessor
+	const WORD					getPartyNum()const { return PartyNumber; }
+	void						setPartyNum(const WORD num) { PartyNumber = num; }
 
 
 	//경험치 플러스
