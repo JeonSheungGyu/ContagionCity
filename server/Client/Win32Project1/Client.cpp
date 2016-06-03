@@ -195,6 +195,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		else if (key == '2') {
 			isDrawServerPos = !isDrawServerPos;
 		}
+		else if (key == '3') {
+			PacketSender::instance().ChangeStage(Stages::STAGE_1);
+		}
 			
 		return 0;
 	case WM_TIMER:

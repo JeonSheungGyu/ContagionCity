@@ -29,6 +29,8 @@ class Object : public SyncObject
 {
 protected:
 	DWORD									id;
+	//장소
+	WORD									stage;
 	//이동
 	ObjectVector							obVector;
 	float									speed;
@@ -53,12 +55,14 @@ public:
 
 	Object() : collisionSphere(XMFLOAT3(0,0,0), COLLISIONSPHERE) {
 		id = -1;
+		stage = -1;
 		sector = nullptr;
 		speed = 40;
 		nearList.clear();
 		nearSectors.clear();
 	}
 	Object( DWORD t_id, XMFLOAT3 pos) : id(t_id), collisionSphere(pos, COLLISIONSPHERE) {
+		stage = -1;
 		obVector.position = pos;
 		regenPos = pos;
 		sector = nullptr;
@@ -70,13 +74,24 @@ public:
 	void reset() {
 		obVector.reset();
 		obStatus.reset();
+		stage = -1;
 		id = -1;
 		sector = nullptr;
 		speed = 40;
 		nearList.clear();
 		nearSectors.clear();
 	}
-
+	// stage
+	WORD					getStage()const { return stage; }
+	void					setStage(const WORD sg) { stage = sg; }
+	//기존의 섹터에서 오브젝트의 정보를 지운다.
+	void changeStage(const WORD sg) { 
+		if (sector != nullptr) {
+			sector->erasePlayer(id);
+			sector = nullptr;
+		}
+		stage = sg; 
+	}
 	// speed
 	FLOAT					getSpeed()const { return speed; }
 	void					setSpeed(const FLOAT sp) { speed = sp; }

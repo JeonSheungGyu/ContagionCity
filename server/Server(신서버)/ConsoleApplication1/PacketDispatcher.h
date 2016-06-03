@@ -1,5 +1,5 @@
 #pragma once
-const int DISPATCHER_FUNC_TYPE = 5;
+const int DISPATCHER_FUNC_TYPE = 11;
 
 // 패킷처리 함수를 담을 함수포인터 구조체
 struct DispatcherFuncArray
@@ -37,6 +37,9 @@ public:
 	static void PartyDelete(char* ptr, const unsigned short id);
 
 	static void PartyLeave(char* ptr, const unsigned short id);
+
+	//
+	static void ChangeStage(char* ptr, const unsigned short id);
 
 	static void RequestDBupdate(char* ptr, const unsigned short id);
 

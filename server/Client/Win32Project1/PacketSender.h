@@ -12,6 +12,7 @@ public:
 	void PlayerMove();
 	void PlayerCombat(const char combatCollision, const float x, const float y);
 	void DBUpdate();
+	void ChangeStage(WORD stage);
 
 	//void staticUpdate();
 

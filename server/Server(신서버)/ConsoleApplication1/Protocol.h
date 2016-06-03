@@ -19,6 +19,7 @@
 #define CS_LEAVE_PARTY			7
 #define CS_PARTY_DELETE			8
 #define CS_PARTY_AGREE			9
+#define CS_CHANGE_STAGE			10
 
 //서버->클라이언트
 #define SC_LOGIN				0
@@ -266,6 +267,14 @@ struct cs_packet_party_leave
 	BYTE type;
 	WORD id;
 	WORD party_id;
+};
+
+struct cs_packet_change_stage
+{
+	BYTE size;
+	BYTE type;
+	WORD id;
+	WORD stage;
 };
 
 

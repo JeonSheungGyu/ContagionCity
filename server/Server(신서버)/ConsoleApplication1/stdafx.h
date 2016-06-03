@@ -20,6 +20,7 @@
 #include <tbb/concurrent_queue.h>
 #include <DirectXCollision.h>
 #include <DirectXMath.h>
+#include <mutex>
 #include "ObjectStatus.h"
 
 #define BUFSIZE 1024
@@ -29,7 +30,6 @@
 
 #define RECTSIZE 40
 #define INTERVAL 4
-#define WORLDSIZE RECTSIZE * INTERVAL * 100
 #define SECTOR_WIDTH 1000
 #define SECTOR_HEIGHT 1000
 #define VIEWRANGE RECTSIZE*8
@@ -85,3 +85,9 @@ typedef struct EVENT {
 	bool operator < (const EVENT& e) const { return  e.endTime < endTime; }
 }EVENT;
 
+//Àå¼Ò
+enum Stages { STAGE_VILLIGE = 0, STAGE_1, STAGE_2, STAGE_3, STAGE_LOGIN };
+const int VILLIGE_WIDTH = RECTSIZE * INTERVAL * 100;
+const int VILLIGE_HEIGHT = RECTSIZE * INTERVAL * 100;
+const int STAGE1_WIDTH = RECTSIZE * INTERVAL * 100;
+const int STAGE1_HEIGHT = RECTSIZE * INTERVAL * 100;

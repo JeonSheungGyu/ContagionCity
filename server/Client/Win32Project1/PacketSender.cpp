@@ -92,6 +92,19 @@ void PacketSender::PlayerCombat(const char combatCollision, const float x, const
 	send(Server::getSock(), reinterpret_cast<char*>(&packet), packet.size, 0);
 }
 
+void PacketSender::ChangeStage(WORD stage )
+{
+	assert( stage < Stages::END);
+	cs_packet_change_stage packet;
+
+	packet.id = Server::getClientID();
+	packet.stage = stage;
+	packet.type = CS_CHANGE_STAGE;
+	packet.size = sizeof(packet);
+
+	send(Server::getSock(), reinterpret_cast<char*>(&packet), packet.size, 0);
+}
+
 
 //// 플레이어가 2초 이상 정지하고 있을 때 send
 //void PacketSender::staticUpdate()

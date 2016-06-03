@@ -29,3 +29,10 @@ enum
 	CC_Eraser,
 	CC_PointCircle,
 };
+
+//¿Âº“
+enum Stages { STAGE_VILLIGE = 0, STAGE_1, STAGE_2, STAGE_3, END };
+const int VILLIGE_WIDTH = RECTSIZE * INTERVAL * 100;
+const int VILLIGE_HEIGHT = RECTSIZE * INTERVAL * 100;
+const int STAGE1_WIDTH = RECTSIZE * INTERVAL * 100;
+const int STAGE1_HEIGHT = RECTSIZE * INTERVAL * 100;

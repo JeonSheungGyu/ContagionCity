@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "State_Wander.h"
-
+#include "Zone.h"
 const int WANDER_RAGNE = RECTSIZE*4;
 
 using namespace DirectX;
@@ -9,6 +9,7 @@ Wander* Wander::wInstance = nullptr;
 std::mutex Wander::pMutex;
 
 extern User users[MAX_USER];
+extern std::vector<Zone*> zone;
 void add_timer(DWORD id, DWORD type, DWORD duration);
 
 Wander* Wander::Instance()
@@ -50,7 +51,7 @@ void Wander::Execute(Monster* pMonster)
 	while (true) {
 		x = tx(rnd);	
 		z = tz(rnd);
-		if (x < 0 || x>WORLDSIZE || z < 0 || z>WORLDSIZE) continue;
+		if (x < 0 || x>zone.at(pMonster->getStage())->getWidth()|| z < 0 || z>zone.at(pMonster->getStage())->getHeight()) continue;
 		else break;
 	}
 	

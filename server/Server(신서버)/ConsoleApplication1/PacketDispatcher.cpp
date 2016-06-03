@@ -261,6 +261,16 @@ void PacketDispatcher::PartyLeave(char* ptr, const unsigned short id)
 	PartyManager::instance().Leave();
 }
 
+
+void PacketDispatcher::ChangeStage(char* ptr, const unsigned short id)
+{
+	cs_packet_change_stage packet;
+	memcpy(reinterpret_cast<char*>(&packet), ptr, *ptr);
+	
+	//스테이지 체인지
+	users[id].changeStage(packet.stage);
+}
+
 //
 //
 //void PacketDispatcher::CharInit(char*ptr, const unsigned short id)

@@ -15,7 +15,7 @@
 HANDLE hCompletionPort;
 User users[MAX_USER];
 std::vector<Monster*> monsters;
-Zone zone;
+std::vector<Zone*> zone;
 DispatcherFuncArray PacketDispatcher[DISPATCHER_FUNC_TYPE];
 CollisionFuncArray CollisionProcess[COLLISION_FUNC_TYPE];
 
@@ -35,17 +35,13 @@ void error_display(char *msg, int err_no)
 }
 unsigned int __stdcall CompletionThread(LPVOID pComPort);
 
-
 //뷰처리
 void updatePlayerView( DWORD id)
 {
 	User *user = &users[id];
 	assert(id < MAX_USER);
-	printf("user Zone Update\n");
-	zone.SectorUpdateOfPlayer(id);
-	printf("user nearList Update\n");
+	zone.at(user->getStage())->SectorUpdateOfPlayer(id);
 	user->updateNearList();
-	printf("user viewList Update\n");
 	user->updateViewList();
 
 	printf("시야안 오브젝트 : %d\n", user->getViewList().getView().size());
@@ -223,8 +219,8 @@ void allocateObject()
 	monsters.reserve(MAX_NPC);
 	//// [TEST] 몬스터 랜덤배치, -> 추후에 바꿔야됨
 	std::mt19937 gen(12);
-	std::uniform_real_distribution<float> mx(0.0, WORLDSIZE-1);
-	std::uniform_real_distribution<float> mz(0.0, WORLDSIZE-1);
+	std::uniform_real_distribution<float> mx(0.0, VILLIGE_WIDTH-1);
+	std::uniform_real_distribution<float> mz(0.0, VILLIGE_HEIGHT-1);
 	DWORD x = 0, z = 0;
 	int count = 0;
 
@@ -234,17 +230,17 @@ void allocateObject()
 		x = ((int)(mx(gen) / RECTSIZE))*RECTSIZE;
 		z = ((int)(mz(gen) / RECTSIZE))*RECTSIZE;
 		monsters.push_back(new Monster(i, XMFLOAT3(x,0,z)));
-		zone.SectorUpdateOfMonster(i);
-		//add_timer(i, OP_NPC_MOVE, 1000);
+		monsters[i-MAX_USER]->changeStage(Stages::STAGE_1);
+		zone.at(monsters[i - MAX_USER]->getStage())->SectorUpdateOfMonster(i);
 	}
 }
-
 void InitFunc()
 {
 	// 패킷처리 함수
 	PacketDispatcher[CS_MOVE_OBJECT].Func = PacketDispatcher::ObjectMove;	// 클라이언트 갱신요청
 	PacketDispatcher[CS_COMBAT_OBJECT].Func = PacketDispatcher::Combat;	
 	PacketDispatcher[CS_REQUEST_LOGIN].Func = PacketDispatcher::RequestLogin;
+	//데이터베이스
 	PacketDispatcher[CS_DB_UPDATE].Func = PacketDispatcher::RequestDBupdate;
 	//파티
 	PacketDispatcher[CS_PARTY_INIT].Func = PacketDispatcher::PartyInit;
@@ -252,12 +248,24 @@ void InitFunc()
 	PacketDispatcher[CS_LEAVE_PARTY].Func = PacketDispatcher::PartyLeave;
 	PacketDispatcher[CS_PARTY_DELETE].Func = PacketDispatcher::PartyDelete;
 	PacketDispatcher[CS_PARTY_AGREE].Func = PacketDispatcher::PartyAgree;
-	
+	//채팅
+	PacketDispatcher[CS_CHAT].Func = nullptr;
+	//스테이지
+	PacketDispatcher[CS_CHANGE_STAGE].Func = PacketDispatcher::ChangeStage;
 
 	CollisionProcess[CC_CircleAround].Func = CombatCollision::CircleAround;
 	CollisionProcess[CC_CircleFront].Func = CombatCollision::CircleFront;
 	CollisionProcess[CC_Eraser].Func = CombatCollision::Eraser;
 	CollisionProcess[CC_PointCircle].Func = CombatCollision::PointCircle;
+}
+void initZone() {
+	//Villige
+	zone.push_back(new Zone(VILLIGE_WIDTH, VILLIGE_HEIGHT));
+	//Stage1
+	zone.push_back(new Zone(STAGE1_WIDTH, STAGE1_HEIGHT));
+	//Stage2
+	//Stage3
+
 }
 void initializeGame() {
 	//큐 크리티컬섹션 초기화
@@ -267,6 +275,8 @@ void initializeGame() {
 	db_thread = new std::thread{ DataBaseThread };
 
 	InitFunc();
+	initZone();
+	allocateObject();
 }
 void releaseGame() {
 	DeleteCriticalSection(&qCS);
@@ -274,8 +284,10 @@ void releaseGame() {
 	db_thread->join();
 	delete timer_thread;
 	delete db_thread;
-}
 
+	for (int i = 0; i < zone.size(); i++)
+		delete zone.at(i);
+}
 int main(int argc, char** argv)
 {
 	WSADATA wsaData;
@@ -308,7 +320,7 @@ int main(int argc, char** argv)
 
 	//게임배치 및 초기화
 	initializeGame();
-	allocateObject();
+
 	//2. Completion Port 에서 입출력 완료를 대기하는 쓰레드를 CPU 개수만큼 생성.
 	for (i = 0; i<SystemInfo.dwNumberOfProcessors; i++)
 		_beginthreadex(NULL, 0, CompletionThread, (LPVOID)hCompletionPort, 0, NULL);
@@ -344,7 +356,6 @@ int main(int argc, char** argv)
 				users[i].setID(i);
 				users[i].setConnected(true);
 				users[i].getSession().hClntSock = hClntSock;
-				users[i].setSpeed(300);
 				memcpy(&(users[i].getSession().clntAddr), &clntAddr, addrLen);
 				id = i;
 				break;
@@ -463,7 +474,7 @@ unsigned int __stdcall CompletionThread(LPVOID pComPort)
 			//위치 이동할게 있으면 이동
 			if (monster->getDeadReckoning())
 				monster->ObjectDeadReckoning(my_overlap->duration);
-			zone.SectorUpdateOfMonster(monster->getID());
+			zone.at(monster->getStage())->SectorUpdateOfMonster(monster->getID());
 			monster->setCollisionSpherePos(monster->getPos()); // 충돌체도 업데이트 (원)
 			//몬스터 FSM
 			monster->heartBeat();
@@ -504,7 +515,6 @@ unsigned int __stdcall CompletionThread(LPVOID pComPort)
 		}
 	}
 }
-
 void ErrorHandling(char *message)
 {
 	fputs(message, stderr);

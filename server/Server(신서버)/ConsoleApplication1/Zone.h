@@ -3,12 +3,32 @@
 #include "Object.h"
 class Zone
 {
-	Sector innerSector[WORLDSIZE / SECTOR_HEIGHT][WORLDSIZE / SECTOR_WIDTH];	// 월드섹터 저장
-
+	Sector **innerSector;	// 월드섹터 저장
+	int m_width;
+	int m_height;
 public:
-	void SectorUpdateOfPlayer(const unsigned int id);
-	void SectorUpdateOfMonster(const unsigned int id);
+	int getWidth() { return m_width; }
+	int getHeight() { return m_height; }
+	void SectorUpdateOfPlayer(const unsigned id);
+	void SectorUpdateOfMonster(const unsigned id);
 
+	Zone(int width, int height) {
+		m_width = width;
+		m_height = height;
+		//존영역 동적할당
+		innerSector = new Sector*[height / SECTOR_HEIGHT];
+		for (int i = 0; i < height / SECTOR_HEIGHT; i++) {
+			innerSector[i] = new Sector[width / SECTOR_WIDTH];
+		}
+	}
+
+	~Zone() {
+		//존영역해제
+		for (int i = 0; i < m_height / SECTOR_HEIGHT; i++) {
+			delete[] innerSector[i];
+		}
+		delete[] innerSector;
+	}
 
 	Sector* getSectorWithPlayer(const Object* object)
 	{
@@ -19,9 +39,9 @@ public:
 	{
 
 		if (z < 0) z = 0;
-		if (z >= WORLDSIZE) z = WORLDSIZE - 1;
+		if (z >= m_height) z = m_height - 1;
 		if (x < 0) x = 0;
-		if (x >= WORLDSIZE) x = WORLDSIZE - 1;
+		if (x >= m_width) x = m_width - 1;
 	
 		return &innerSector[(int)(z / SECTOR_HEIGHT)][(int)(x / SECTOR_WIDTH)];
 	}
@@ -38,9 +58,4 @@ public:
 		}
 
 	}
-
-
-	Zone()
-	{}
-	~Zone() {}
 };

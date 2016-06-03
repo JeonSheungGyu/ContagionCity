@@ -4,8 +4,9 @@
 #include "Monster.h"
 #include "Zone.h"
 
-extern Zone zone;
+
 extern User users[MAX_USER];
+extern std::vector<Zone*> zone;
 extern std::vector<Monster*> monsters;
 
 /*NearList*/
@@ -20,10 +21,10 @@ void Object::updateNearList()
 	rt.top = obVector.position.z - VIEWRANGE;
 	rt.bottom = obVector.position.z + VIEWRANGE + 1;
 	
-	Zone::insertNearSector(zone.getSectorWithPoint(rt.left, rt.top), nearSectors);
-	Zone::insertNearSector(zone.getSectorWithPoint(rt.right, rt.top), nearSectors);
-	Zone::insertNearSector(zone.getSectorWithPoint(rt.left, rt.bottom), nearSectors);
-	Zone::insertNearSector(zone.getSectorWithPoint(rt.right, rt.bottom), nearSectors);
+	Zone::insertNearSector(zone.at(stage)->getSectorWithPoint(rt.left, rt.top), nearSectors);
+	Zone::insertNearSector(zone.at(stage)->getSectorWithPoint(rt.right, rt.top), nearSectors);
+	Zone::insertNearSector(zone.at(stage)->getSectorWithPoint(rt.left, rt.bottom), nearSectors);
+	Zone::insertNearSector(zone.at(stage)->getSectorWithPoint(rt.right, rt.bottom), nearSectors);
 
 	//printf("%d -> %d\n", id, nearSectors.size());
 	// nearSector에 있는 유저들 중 시야 내에 있는 유저만 nearList에 추가

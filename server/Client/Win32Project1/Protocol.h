@@ -14,6 +14,12 @@
 #define CS_CHAT					2
 #define CS_REQUEST_LOGIN		3
 #define CS_DB_UPDATE			4
+#define CS_PARTY_INIT			5
+#define CS_INVITE_PARTY			6
+#define CS_LEAVE_PARTY			7
+#define CS_PARTY_DELETE			8
+#define CS_PARTY_AGREE			9
+#define CS_CHANGE_STAGE			10
 
 //서버->클라이언트
 #define SC_LOGIN				0
@@ -21,12 +27,16 @@
 #define SC_PUT_OBJECT			2
 #define SC_REMOVE_OBJECT		3
 #define SC_CHAT					4
-
 #define SC_MONSTER_CHASE		5
 #define SC_MONSTER_ATTACK		6
 #define SC_MONSTER_DIE			7
-
 #define SC_COMBAT_OBJECT		8
+#define SC_PARTY_INIT			9
+#define SC_INVITE_PARTY			10
+#define SC_LEAVE_PARTY			11
+#define SC_PARTY_DELETE			12
+#define SC_PARTY_NEWPLAYER		13
+#define SC_ACCEPT_FAIL			14
 
 // Login_Server -> Client
 #define ID_LEN					20
@@ -137,6 +147,42 @@ struct sc_packet_combat
 	FLOAT z;
 };
 
+//party
+struct sc_packet_party_init
+{
+	BYTE size;
+	BYTE type;
+	WORD party_id;
+};
+
+struct sc_packet_party_invite
+{
+	BYTE size;
+	BYTE type;
+	WORD id;
+	WORD party_id;
+};
+
+struct sc_packet_party_notify
+{
+	BYTE size;
+	BYTE type;
+	WORD newPlayer_id;
+};
+
+struct sc_packet_party_delete
+{
+	BYTE size;
+	BYTE type;
+};
+
+struct sc_packet_accept_fail
+{
+	BYTE size;
+	BYTE type;
+	char message[30];
+};
+
 //Client -> Server
 
 struct cs_packet_object_move
@@ -182,6 +228,56 @@ struct cs_packet_db_update
 	BYTE type;
 	WORD id;
 };
+//party
+
+struct cs_packet_party_init
+{
+	BYTE size;
+	BYTE type;
+	WORD id;
+};
+
+struct cs_packet_party_invite
+{
+	BYTE size;
+	BYTE type;
+	WORD id;
+	WORD target_id;
+	WORD party_id;
+};
+
+struct cs_packet_inivte_agree
+{
+	BYTE size;
+	BYTE type;
+	WORD id;
+	WORD party_id;
+};
+
+struct cs_packet_party_delete
+{
+	BYTE size;
+	BYTE type;
+	WORD party_id;
+};
+
+struct cs_packet_party_leave
+{
+	BYTE size;
+	BYTE type;
+	WORD id;
+	WORD party_id;
+};
+
+struct cs_packet_change_stage
+{
+	BYTE size;
+	BYTE type;
+	WORD id;
+	WORD stage;
+};
+
+
 //Client <-> LoginServer
 struct cl_packet_request_login
 {
