@@ -218,17 +218,16 @@ void allocateObject()
 {
 	monsters.reserve(MAX_NPC);
 	//// [TEST] 몬스터 랜덤배치, -> 추후에 바꿔야됨
-	std::mt19937 gen(12);
-	std::uniform_real_distribution<float> mx(0.0, VILLIGE_WIDTH-1);
-	std::uniform_real_distribution<float> mz(0.0, VILLIGE_HEIGHT-1);
-	DWORD x = 0, z = 0;
-	int count = 0;
-
+	auto myzone = zone.at(Stages::STAGE_1);
+	std::random_device rnd;
+	std::uniform_real_distribution<float> mx(myzone->getStartPos().x, myzone->getWidth() + myzone->getStartPos().x);
+	std::uniform_real_distribution<float> mz(myzone->getStartPos().z, myzone->getHeight() + myzone->getStartPos().z);
+	float x = 0, z = 0;
 	// monster 할당 및 실행
 	for (int i = MAX_USER; i < MAX_USER + MAX_NPC; ++i)
 	{
-		x = ((int)(mx(gen) / RECTSIZE))*RECTSIZE;
-		z = ((int)(mz(gen) / RECTSIZE))*RECTSIZE;
+		x = mx(rnd);
+		z = mz(rnd);
 		monsters.push_back(new Monster(i, XMFLOAT3(x,0,z)));
 		monsters[i-MAX_USER]->changeStage(Stages::STAGE_1);
 		zone.at(monsters[i - MAX_USER]->getStage())->SectorUpdateOfMonster(i);
@@ -260,9 +259,9 @@ void InitFunc()
 }
 void initZone() {
 	//Villige
-	zone.push_back(new Zone(VILLIGE_WIDTH, VILLIGE_HEIGHT));
+	zone.push_back(new Zone(VILLIGE_POS, VILLIGE_WIDTH, VILLIGE_HEIGHT));
 	//Stage1
-	zone.push_back(new Zone(STAGE1_WIDTH, STAGE1_HEIGHT));
+	zone.push_back(new Zone(STAGE1_POS, STAGE1_WIDTH, STAGE1_HEIGHT));
 	//Stage2
 	//Stage3
 
@@ -291,22 +290,21 @@ void releaseGame() {
 int main(int argc, char** argv)
 {
 	WSADATA wsaData;
-
-	// 만들어질 CompletionPort가 전달될 Handle
-
 	SYSTEM_INFO SystemInfo;
 	/*
 	시스템 정보가 전달됨 쓰레드를 생성할때 CPU 의 개수에 따라
 	쓰레드를 만들어 줘야 하기 때문에 정보를 얻어옴
 	*/
-	SOCKADDR_IN servAddr;
-
-	char buffer[BUFSIZE] = { 0,0 };
-
+	
 	SOCKET hServSock;
-	int RecvBytes;
-	int i, Flags;
-	int id;
+	SOCKET hClntSock;
+	SOCKADDR_IN clntAddr;
+	SOCKADDR_IN servAddr;
+	int RecvBytes, Flags;
+	int addrLen;
+	int ConnectedID;
+
+	
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) /* Load Winsock 2.2 DLL */
 		ErrorHandling("WSAStartup() error!");
 
@@ -322,7 +320,7 @@ int main(int argc, char** argv)
 	initializeGame();
 
 	//2. Completion Port 에서 입출력 완료를 대기하는 쓰레드를 CPU 개수만큼 생성.
-	for (i = 0; i<SystemInfo.dwNumberOfProcessors; i++)
+	for (int i = 0; i<SystemInfo.dwNumberOfProcessors; i++)
 		_beginthreadex(NULL, 0, CompletionThread, (LPVOID)hCompletionPort, 0, NULL);
 
 	hServSock = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
@@ -336,9 +334,9 @@ int main(int argc, char** argv)
 
 	while (TRUE)
 	{
-		SOCKET hClntSock;
-		SOCKADDR_IN clntAddr;
-		int addrLen = sizeof(clntAddr);
+		addrLen = sizeof(clntAddr);
+		Flags = 0;
+		ConnectedID = -1;
 
 		hClntSock = accept(hServSock, (SOCKADDR*)&clntAddr, &addrLen);
 
@@ -348,8 +346,6 @@ int main(int argc, char** argv)
 			exit(1);
 		}
 
-		id = -1;
-
 		for (int i = 0; i < MAX_USER; i++) {
 			if (!users[i].isConnected()) {
 				users[i].reset();
@@ -357,28 +353,30 @@ int main(int argc, char** argv)
 				users[i].setConnected(true);
 				users[i].getSession().hClntSock = hClntSock;
 				memcpy(&(users[i].getSession().clntAddr), &clntAddr, addrLen);
-				id = i;
+				users[i].setStage(START_STAGE);
+				users[i].setPos(START_POS);
+				users[i].setSpeed(300);
+			
+				ConnectedID = i;
 				break;
 			}
 		}
-		if (id == -1) {
+		if (ConnectedID < 0) {
 			closesocket(hClntSock);
 			continue;
 		}
 
 
-		printf("connect from [%d]\n", users[id].getID());
-		CreateIoCompletionPort((HANDLE)hClntSock, hCompletionPort, (DWORD)&users[id], 0);
+		printf("[%d] connect \n", users[ConnectedID].getID());
+		CreateIoCompletionPort((HANDLE)hClntSock, hCompletionPort, (DWORD)&users[ConnectedID], 0);
 
-		Flags = 0;
-
-		//4. 중첩된 데이터입력.
-		WSARecv(users[id].getSession().hClntSock, // 데이터 입력소켓.
-			&(users[id].getSession().recv_overlap.wsabuf),  // 데이터 입력 버퍼포인터.
+	
+		WSARecv(users[ConnectedID].getSession().hClntSock, // 데이터 입력소켓.
+			&(users[ConnectedID].getSession().recv_overlap.wsabuf),  // 데이터 입력 버퍼포인터.
 			1,       // 데이터 입력 버퍼의 수.
 			(LPDWORD)&RecvBytes,
 			(LPDWORD)&Flags,
-			&(users[id].getSession().recv_overlap.overlapped), // OVERLAPPED 구조체 포인터.
+			&(users[ConnectedID].getSession().recv_overlap.overlapped), // OVERLAPPED 구조체 포인터.
 			NULL);
 	}
 
@@ -466,20 +464,15 @@ unsigned int __stdcall CompletionThread(LPVOID pComPort)
 			delete my_overlap;
 		}
 		else if ( OP_NPC_MOVE == my_overlap->operation) {
+			//몬스터 이동
 			Monster *monster = monsters.at(key - MAX_USER);
-			//두스레드가 하나의 몬스터를 처리할 경우가 생긴다..... concurrency control이 이게 아닌가보다 교수님 질문.
-			//EnterCriticalSection(&monster->cs);
-			//printf("%d 시작", key);
-			//몬스터 위치 업데이트
-			//위치 이동할게 있으면 이동
 			if (monster->getDeadReckoning())
 				monster->ObjectDeadReckoning(my_overlap->duration);
 			zone.at(monster->getStage())->SectorUpdateOfMonster(monster->getID());
-			monster->setCollisionSpherePos(monster->getPos()); // 충돌체도 업데이트 (원)
+			monster->setCollisionSpherePos(monster->getPos()); 
 			//몬스터 FSM
 			monster->heartBeat();
-			//LeaveCriticalSection(&monster->cs);
-			//printf("%d 끝\n", key);
+
 		}else if (OP_DB_EVENT == my_overlap->operation)
 		{
 			//DB에서 받아온 데이터 처리

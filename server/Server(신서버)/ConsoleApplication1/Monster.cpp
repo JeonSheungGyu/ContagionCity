@@ -115,38 +115,3 @@ void Monster::heartBeat() {
 		printf("Monster::heart_beat : %s", e.what());
 	}
 }
-/*
-	몬스터의 시야로 주위에 플레이어가 있는지 탐색
-*/
-bool Monster::isNearUser()
-{
-	for (auto sector : nearSectors)
-	{
-		EnterCriticalSection(&Sector::sCS);
-		auto vec = sector->getPlayers();
-		LeaveCriticalSection(&Sector::sCS);
-
-		for (auto t_id : vec)
-		{
-			if (t_id == id) continue;
-
-			try {
-				//유저일경우
-				if (t_id < MAX_USER) {
-					//접속이 아닌경우는 패스
-					if (!users[t_id].isConnected()) continue;
-					if (Sector::isinMonsterView(obVector.position.x, obVector.position.z,
-						users[t_id].getObjectVec().position.x, users[t_id].getObjectVec().position.z)) {
-						return true;
-					}
-				}
-			}
-			catch (std::exception& e) {
-				printf("Object::updateNearList %s\n", e.what());
-				continue;
-			}
-
-		}
-	}
-	return false;
-}

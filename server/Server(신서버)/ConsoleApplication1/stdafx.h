@@ -34,14 +34,12 @@
 #define SECTOR_HEIGHT 1000
 #define VIEWRANGE RECTSIZE*8
 #define MONSTER_VIEWRANGE RECTSIZE*8
-#define MONSTER_DURATION 1000
 
-#define OP_RECV  1
-#define OP_SEND  2
-#define OP_NPC_MOVE  3
-#define OP_DB_EVENT 4
-
-#define EVENT_DB_UPDATE 1
+//operation
+#define OP_RECV			1
+#define OP_SEND			2
+#define OP_NPC_MOVE		3
+#define OP_DB_EVENT		4
 
 using namespace DirectX;
 
@@ -86,8 +84,16 @@ typedef struct EVENT {
 }EVENT;
 
 //장소
+//Zone 1000단위로 끊어줘야 영역이 없는 곳이 안생긴다.
 enum Stages { STAGE_VILLIGE = 0, STAGE_1, STAGE_2, STAGE_3, STAGE_LOGIN };
+const XMFLOAT3 VILLIGE_POS = XMFLOAT3(-1000, 0, -1000);
 const int VILLIGE_WIDTH = RECTSIZE * INTERVAL * 100;
 const int VILLIGE_HEIGHT = RECTSIZE * INTERVAL * 100;
-const int STAGE1_WIDTH = RECTSIZE * INTERVAL * 100;
-const int STAGE1_HEIGHT = RECTSIZE * INTERVAL * 100;
+const XMFLOAT3 STAGE1_POS = XMFLOAT3(-1000, 0, -1000);
+const int STAGE1_WIDTH = RECTSIZE * INTERVAL * 6.25;
+const int STAGE1_HEIGHT = RECTSIZE * INTERVAL * 6.25;
+
+
+//유저초기위치
+const XMFLOAT3 START_POS = XMFLOAT3(0, 0, 0);
+const WORD START_STAGE = Stages::STAGE_VILLIGE;

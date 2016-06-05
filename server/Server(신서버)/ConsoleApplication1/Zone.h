@@ -3,18 +3,18 @@
 #include "Object.h"
 class Zone
 {
-	Sector **innerSector;	// 월드섹터 저장
+	Sector **innerSector;// 월드섹터 저장
 	int m_width;
 	int m_height;
+	XMFLOAT3 m_startPos; // ZONE 영역 시작위치
 public:
 	int getWidth() { return m_width; }
 	int getHeight() { return m_height; }
+	XMFLOAT3 getStartPos() { return m_startPos; }
 	void SectorUpdateOfPlayer(const unsigned id);
 	void SectorUpdateOfMonster(const unsigned id);
 
-	Zone(int width, int height) {
-		m_width = width;
-		m_height = height;
+	Zone(XMFLOAT3 startPos, int width, int height) : m_startPos(startPos), m_width(width), m_height(height){
 		//존영역 동적할당
 		innerSector = new Sector*[height / SECTOR_HEIGHT];
 		for (int i = 0; i < height / SECTOR_HEIGHT; i++) {
@@ -37,12 +37,15 @@ public:
 
 	Sector* getSectorWithPoint( float x,  float z)
 	{
+		x = x - m_startPos.x;
+		z = z - m_startPos.z;
 
 		if (z < 0) z = 0;
 		if (z >= m_height) z = m_height - 1;
 		if (x < 0) x = 0;
 		if (x >= m_width) x = m_width - 1;
-	
+
+		//printf("%f %f\n", x ,z);
 		return &innerSector[(int)(z / SECTOR_HEIGHT)][(int)(x / SECTOR_WIDTH)];
 	}
 

@@ -43,7 +43,7 @@ void Wander::Enter(Monster* pMonster)
 void Wander::Execute(Monster* pMonster)
 {
 	assert(pMonster && "<Wander::Execute>: trying to work to a null state");
-
+	auto myzone = zone.at(pMonster->getStage());
 	std::random_device rnd;
 	std::uniform_real_distribution<float> tx(pMonster->getPos().x - WANDER_RAGNE, pMonster->getPos().x + WANDER_RAGNE);
 	std::uniform_real_distribution<float> tz(pMonster->getPos().z - WANDER_RAGNE, pMonster->getPos().z + WANDER_RAGNE);
@@ -51,7 +51,10 @@ void Wander::Execute(Monster* pMonster)
 	while (true) {
 		x = tx(rnd);	
 		z = tz(rnd);
-		if (x < 0 || x>zone.at(pMonster->getStage())->getWidth()|| z < 0 || z>zone.at(pMonster->getStage())->getHeight()) continue;
+		if (x <myzone->getStartPos().x || 
+			x>myzone->getWidth() + myzone->getStartPos().x
+			|| z < myzone->getStartPos().z
+			|| z>myzone->getHeight() + myzone->getStartPos().z) continue;
 		else break;
 	}
 	
