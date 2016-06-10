@@ -66,12 +66,13 @@ void PacketDispatcher::ObjectMove(char* ptr, const unsigned short id)
 		//방향설정
 		player.setDir(XMFLOAT3(rPacket.dx, 0, rPacket.dz));
 		player.setCollisionSpherePos(player.getPos()); // 충돌체 업데이트
+		player.setAction(action_move);
 		//player.setDeadReckoning(true); // 데드레커닝가동
 		//PacketMaker::instance().MoveObject(reinterpret_cast<Object*>(&player), player.getID());
 		updatePlayerView(player.getID());
 
-		printf("[%d] SC_POS pos( %f, %f, %f) \n",
-			player.getID(), player.getPos().x, player.getPos().y, player.getPos().z);
+		//printf("[%d] SC_POS pos( %f, %f, %f) \n",
+		//	player.getID(), player.getPos().x, player.getPos().y, player.getPos().z);
 	}
 	catch (std::exception& e) {
 		printf("PacketDispatcher::ObjectMove :", e.what());

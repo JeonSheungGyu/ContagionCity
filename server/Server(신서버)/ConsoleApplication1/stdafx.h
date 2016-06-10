@@ -26,7 +26,7 @@
 #define BUFSIZE 1024
 
 #define MAX_USER 10
-#define MAX_NPC 1000
+#define MAX_NPC 100
 
 #define RECTSIZE 40
 #define INTERVAL 4
@@ -86,12 +86,12 @@ typedef struct EVENT {
 //장소
 //Zone 1000단위로 끊어줘야 영역이 없는 곳이 안생긴다.
 enum Stages { STAGE_VILLIGE = 0, STAGE_1, STAGE_2, STAGE_3, STAGE_LOGIN };
-const XMFLOAT3 VILLIGE_POS = XMFLOAT3(-1000, 0, -1000);
+const XMFLOAT3 VILLIGE_POS = XMFLOAT3(0, 0, 0);
 const int VILLIGE_WIDTH = RECTSIZE * INTERVAL * 100;
 const int VILLIGE_HEIGHT = RECTSIZE * INTERVAL * 100;
-const XMFLOAT3 STAGE1_POS = XMFLOAT3(-1000, 0, -1000);
-const int STAGE1_WIDTH = RECTSIZE * INTERVAL * 6.25;
-const int STAGE1_HEIGHT = RECTSIZE * INTERVAL * 6.25;
+const XMFLOAT3 STAGE1_POS = XMFLOAT3(-2500, 0, -2500);
+const int STAGE1_WIDTH = 5000;
+const int STAGE1_HEIGHT = 5000;
 
 
 //유저초기위치

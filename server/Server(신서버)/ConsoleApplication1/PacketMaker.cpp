@@ -172,7 +172,9 @@ void PacketMaker::MoveObject(Object* owner, const DWORD id)
 		move_packet.tx = object->getPos().x;
 		move_packet.ty = object->getPos().y;
 		move_packet.tz = object->getPos().z;
-
+		move_packet.dx = object->getDir().x;
+		move_packet.dy = object->getDir().y;
+		move_packet.dz = object->getDir().z;
 
 		SendPacket(owner->getID(), reinterpret_cast<unsigned char *>(&move_packet));
 		printf("Send [%d] about  [%d] SC_POS pos( %f, %f, %f) \n", owner->getID(),
@@ -286,7 +288,7 @@ void PacketMaker::CombatObject(Object* player, const unsigned short id)
 
 		for (int i = 0; i < user.combatData.size; i++) {
 			packet.InfoList[i] = user.combatData.InfoList[i];
-			printf("Send [%d] about  [%d] SC_COMBAT_OBJECT \n", player->getID(), packet.InfoList[i].first);
+			printf("Send [%d] about  [%d] SC_COMBAT_OBJECT ( HP : %d )\n", player->getID(), packet.InfoList[i].first, packet.InfoList[i].second);
 		}
 
 

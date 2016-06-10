@@ -1,5 +1,5 @@
 #pragma once
-const int DISPATCHER_FUNC_TYPE = 11;
+const int DISPATCHER_FUNC_TYPE = 20;
 
 // 패킷처리 함수를 담을 함수포인터 구조체
 struct DispatcherFuncArray

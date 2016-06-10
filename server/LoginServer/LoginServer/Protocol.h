@@ -28,7 +28,7 @@
 
 // Login <-> Client
 #define CL_REQUEST_LOGIN		0
-#define LC_PERMISION_LOGIN		1
+#define LC_PERMISION_LOGIN		0
 
 
 #pragma pack(push,1)

@@ -35,7 +35,7 @@ void CombatCollision::CircleAround(const WORD id, vector<pair<WORD, int>>& InfoL
 					// 데미지계산 후 해당 몬스터 HP minus
 					/*damage = calculator(player->getState().AP, monsters.at(ID - MAX_USER)->getState().DP,
 					player->getState().ElementType, monsters.at(ID - MAX_USER)->getState().ElementType);*/
-					damage = player->getStatus().damage / 5;
+					damage = player->getStatus().damage;
 					monsters.at(ID - MAX_USER)->minusHP(damage);
 
 					//패킷에 전송할 몬스터 정보
@@ -79,7 +79,7 @@ void CombatCollision::CircleFront(const WORD id, vector<pair<WORD, int>>& InfoLi
 										// 데미지계산 후 해당 몬스터 HP minus
 										/*damage = calculator(player->getState().AP, monsters.at(ID - MAX_USER)->getState().DP,
 										player->getState().ElementType, monsters.at(ID - MAX_USER)->getState().ElementType);*/
-						damage = player->getStatus().damage / 5;
+						damage = player->getStatus().damage;
 
 						monsters.at(ID - MAX_USER)->minusHP(damage);
 						//패킷에 전송할 몬스터 정보
@@ -114,7 +114,7 @@ void CombatCollision::Eraser(const WORD id, vector<pair<WORD, int>>& InfoList, c
 				if (RayCast(player->getPos(), player->getDir(), dist, monsters.at(ID - MAX_USER)->getCollisionSphere())) {
 					//damage = calculator(player->getState().AP, monsters.at(ID - MAX_USER)->getState().DP,
 						//player->getState().ElementType, monsters.at(ID - MAX_USER)->getState().ElementType);
-					damage = player->getStatus().damage / 5;
+					damage = player->getStatus().damage;
 
 					monsters.at(ID - MAX_USER)->minusHP(damage);
 					//패킷에 전송할 몬스터 정보
@@ -149,7 +149,7 @@ void CombatCollision::PointCircle(const WORD id, vector<pair<WORD, int>>& InfoLi
 					/*damage = calculator(player->getState().AP, monsters.at(ID - MAX_USER)->getState().DP,
 						player->getState().ElementType, monsters.at(ID - MAX_USER)->getState().ElementType);*/
 
-					damage = player->getStatus().damage / 5;
+					damage = player->getStatus().damage;
 					monsters.at(ID - MAX_USER)->minusHP(damage);
 					//패킷에 전송할 몬스터 정보
 					InfoList.push_back(make_pair(ID, monsters.at(ID - MAX_USER)->getStatus().hp));

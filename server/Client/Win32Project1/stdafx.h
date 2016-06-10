@@ -19,7 +19,7 @@
 #define MAX_USER 10
 #define MAX_NPC 10000
 #define VIEWRANGE RECTSIZE*8
-#define PACKET_TYPE			10
+#define PACKET_TYPE	20
 
 //공격종류
 enum
