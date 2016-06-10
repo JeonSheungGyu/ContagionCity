@@ -93,32 +93,43 @@ void PacketMaker::PutObject(Object *owner, const DWORD id)
 			put_packet.exp = object->getStatus().exp;
 			put_packet.request_exp = object->getStatus().requestEXP;
 			//put_packet.ElementType = player->getEleType();
+
+			put_packet.id = object->getID();
+			put_packet.size = sizeof(put_packet);
+			put_packet.type = SC_PUT_OBJECT;
+
+			printf("Send [%d] about [%d] SC_PUT_OBJECT (P)  pos( %f, %f, %f)\n", owner->getID(),
+				object->getID(), object->getPos().x, object->getPos().y, object->getPos().z);
 		}
 		else
 		{
-			object = monsters.at(id - MAX_USER);
-			put_packet.x = object->getPos().x;
-			put_packet.y = object->getPos().y;
-			put_packet.z = object->getPos().z;
-			put_packet.speed = object->getSpeed();
-			put_packet.lv = object->getStatus().lv;
-			put_packet.hp = object->getStatus().hp;
-			put_packet.ap = object->getStatus().ap;
-			put_packet.damage = object->getStatus().damage;
-			put_packet.defense = object->getStatus().defense;
-			put_packet.exp = object->getStatus().exp;
+			Monster *monster = monsters.at(id - MAX_USER);
+			put_packet.x = monster->getPos().x;
+			put_packet.y = monster->getPos().y;
+			put_packet.z = monster->getPos().z;
+			put_packet.speed = monster->getSpeed();
+			put_packet.lv = monster->getStatus().lv;
+			put_packet.hp = monster->getStatus().hp;
+			put_packet.ap = monster->getStatus().ap;
+			put_packet.damage = monster->getStatus().damage;
+			put_packet.defense = monster->getStatus().defense;
+			put_packet.exp = monster->getStatus().exp;
 			put_packet.request_exp = 0;
-			//put_packet.ElementType = object->getEleType();
+			put_packet.MonType = monster->getMonType();
+
+			put_packet.id = monster->getID();
+			put_packet.size = sizeof(put_packet);
+			put_packet.type = SC_PUT_OBJECT;
+
+			printf("Send [%d] about [%d] SC_PUT_OBJECT (M)  pos( %f, %f, %f)\n", owner->getID(),
+				monster->getID(), monster->getPos().x, monster->getPos().y, monster->getPos().z);
 		}
 
-		put_packet.id = object->getID();
-		put_packet.size = sizeof(put_packet);
-		put_packet.type = SC_PUT_OBJECT;
+		
 	
 
 		SendPacket(owner->getID(), reinterpret_cast<unsigned char *>(&put_packet));
-		printf("Send [%d] about [%d] SC_PUT_PLAYER  pos( %f, %f, %f)\n", owner->getID(),
-			object->getID(), object->getPos().x, object->getPos().y, object->getPos().z);
+		
 		//중복패킷 발생가능함. 한명은 뷰를 보고 한명은 tmp를 보고 있으니까
 	}
 	catch (exception& e) {

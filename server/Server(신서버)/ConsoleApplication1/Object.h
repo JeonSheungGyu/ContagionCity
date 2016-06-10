@@ -28,6 +28,7 @@ const int COLLISIONSPHERE = 20;
 class Object : public SyncObject
 {
 protected:
+	//아이디
 	DWORD									id;
 	//장소
 	WORD									stage;
@@ -81,9 +82,11 @@ public:
 		nearList.clear();
 		nearSectors.clear();
 	}
+	
 	// stage
 	WORD					getStage()const { return stage; }
 	void					setStage(const WORD sg) { stage = sg; }
+
 	//기존의 섹터에서 오브젝트의 정보를 지운다.
 	void changeStage(const WORD sg) { 
 		if (sector != nullptr) {

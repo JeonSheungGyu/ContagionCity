@@ -64,6 +64,7 @@ void PacketDispatcher::PutObject(char* buf)
 		monster.setSpeed(packet.speed+10);
 		monster.setDir(XMFLOAT2(0, 0));
 		monster.is_using = true;
+		monster.setMonType(packet.MonType);
 	}
 }
 // 플레이어 or 몬스터 삭제 ( 시야범위 밖 )

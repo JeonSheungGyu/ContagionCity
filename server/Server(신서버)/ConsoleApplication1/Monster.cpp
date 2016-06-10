@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "Sector.h"
 #include "StateHeader.h"
 #include "PacketMaker.h"
@@ -8,10 +9,19 @@ extern Zone zone;
 extern User users[MAX_USER];
 
 
-Monster::Monster(DWORD id, XMFLOAT3 pos) : Object(id, pos), m_currentAction(wander), m_preAction(wander),
+Monster::Monster(DWORD id, BYTE monType, XMFLOAT3 pos) : Object(id, pos), m_MonType(monType), m_currentAction(wander), m_preAction(wander),
 	is_alive(true), is_active(false), InActiveTime(0), m_pStateMachine(new StateMachine<Monster>(this)) {
 	// FSM 현재상태 초기화
 	m_pStateMachine->SetCurrentState(Wander::Instance());
+
+	if (monType == ENEMY_ZOMBIE_MAN || monType == ENEMY_ZOMBIE_WOMAN) {
+		obStatus.hp = 100;
+		obStatus.damage = 3;
+	}else if (monType == ENEMY_STAGE1_BOSS) {
+		obStatus.hp = 500;
+		obStatus.damage = 6;
+	}
+
 }
 void Monster::heartBeat() {
 	if (is_alive == false)

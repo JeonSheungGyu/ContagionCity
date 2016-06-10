@@ -83,6 +83,9 @@ typedef struct EVENT {
 	bool operator < (const EVENT& e) const { return  e.endTime < endTime; }
 }EVENT;
 
+//몬스터타입
+enum ObjectType_ENEMY { ENEMY_ZOMBIE_MAN = 20, ENEMY_ZOMBIE_WOMAN, ENEMY_STAGE1_BOSS, };
+
 //장소
 //Zone 1000단위로 끊어줘야 영역이 없는 곳이 안생긴다.
 enum Stages { STAGE_VILLIGE = 0, STAGE_1, STAGE_2, STAGE_3, STAGE_LOGIN };

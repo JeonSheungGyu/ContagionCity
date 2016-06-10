@@ -223,12 +223,22 @@ void allocateObject()
 	std::uniform_real_distribution<float> mx(myzone->getStartPos().x, myzone->getWidth() + myzone->getStartPos().x);
 	std::uniform_real_distribution<float> mz(myzone->getStartPos().z, myzone->getHeight() + myzone->getStartPos().z);
 	float x = 0, z = 0;
-	// monster 할당 및 실행
-	for (int i = MAX_USER; i < MAX_USER + MAX_NPC; ++i)
+
+	//Stage1 보스 몬스터 배치
+	monsters.push_back(new Monster(MAX_USER, ENEMY_STAGE1_BOSS, XMFLOAT3(myzone->getStartPos().x, 0, myzone->getStartPos().z)));
+	monsters[0]->changeStage(Stages::STAGE_1);
+	zone.at(monsters[0]->getStage())->SectorUpdateOfMonster(MAX_USER);
+
+	//Stage1 몬스터 배치
+	for (int i = MAX_USER+1; i < MAX_USER + MAX_NPC; ++i)
 	{
 		x = mx(rnd);
 		z = mz(rnd);
-		monsters.push_back(new Monster(i, XMFLOAT3(x,0,z)));
+		if ( i%2 )
+			monsters.push_back(new Monster(i,ENEMY_ZOMBIE_MAN, XMFLOAT3(x,0,z)));
+		else
+			monsters.push_back(new Monster(i, ENEMY_ZOMBIE_WOMAN, XMFLOAT3(x, 0, z)));
+
 		monsters[i-MAX_USER]->changeStage(Stages::STAGE_1);
 		zone.at(monsters[i - MAX_USER]->getStage())->SectorUpdateOfMonster(i);
 	}

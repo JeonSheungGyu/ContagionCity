@@ -15,13 +15,21 @@ public:
 
 	Overlap_ex								m_overlapped;
 	BYTE									m_currentAction, m_preAction;
+
 	WORD									m_EXP;
+	BYTE									m_MonType;
 public:
 	std::atomic<bool>	is_alive;
 	std::atomic<bool>	is_active;
 	DWORD				InActiveTime;
 	//»ý¼ºÀÚ
-	Monster(DWORD id, XMFLOAT3 pos);
+	Monster(DWORD id, BYTE monType, XMFLOAT3 pos);
+
+	//ElementType
+	WORD					getMonType()const { return m_MonType; }
+	void					setMonType(const BYTE mt) { m_MonType = mt; }
+
+
 	// StateMachine accessor
 	StateMachine<Monster>*					GetFSM()const { return m_pStateMachine; }
 	// Target Process
