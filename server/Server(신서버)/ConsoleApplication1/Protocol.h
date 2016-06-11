@@ -172,6 +172,9 @@ struct sc_packet_party_notify
 	BYTE size;
 	BYTE type;
 	WORD newPlayer_id;
+	char str_id[ID_LEN];
+	int hp;
+
 };
 
 struct sc_packet_party_delete
@@ -246,15 +249,14 @@ struct cs_packet_party_invite
 	BYTE size;
 	BYTE type;
 	WORD id;
-	WORD target_id;
-	WORD party_id;
+	//WORD target_id;
+	//WORD party_id;
 };
 
 struct cs_packet_inivte_agree
 {
 	BYTE size;
 	BYTE type;
-	WORD id;
 	WORD party_id;
 };
 
@@ -262,15 +264,12 @@ struct cs_packet_party_delete
 {
 	BYTE size;
 	BYTE type;
-	WORD party_id;
 };
 
 struct cs_packet_party_leave
 {
 	BYTE size;
 	BYTE type;
-	WORD id;
-	WORD party_id;
 };
 
 struct cs_packet_change_stage

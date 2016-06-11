@@ -56,11 +56,12 @@ private:
 	BYTE			 action;
 
 	//파티
-	WORD PartyNumber;
+	int PartyNumber;
 public:
 
 	User() : viewList(this), Object () {
 		blnConnected = false;
+		PartyNumber = -1;
 	}
 	void reset() {
 		Object::reset();
@@ -86,8 +87,8 @@ public:
 	void					setAction(const BYTE ac) { action = ac; }
 	const BYTE				getAction()const { return action; }
 	// 소속 파티번호 accessor
-	const WORD					getPartyNum()const { return PartyNumber; }
-	void						setPartyNum(const WORD num) { PartyNumber = num; }
+	const int					getPartyNum()const { return PartyNumber; }
+	void						setPartyNum(const int num) { PartyNumber = num; }
 
 
 	//경험치 플러스

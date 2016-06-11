@@ -38,7 +38,6 @@ public:
 
 	static void PartyLeave(char* ptr, const unsigned short id);
 
-	//
 	static void ChangeStage(char* ptr, const unsigned short id);
 
 	static void RequestDBupdate(char* ptr, const unsigned short id);

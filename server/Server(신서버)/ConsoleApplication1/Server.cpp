@@ -225,7 +225,7 @@ void allocateObject()
 	float x = 0, z = 0;
 
 	//Stage1 보스 몬스터 배치
-	monsters.push_back(new Monster(MAX_USER, ENEMY_STAGE1_BOSS, XMFLOAT3(myzone->getStartPos().x, 0, myzone->getStartPos().z)));
+	monsters.push_back(new Monster(MAX_USER, ENEMY_STAGE1_BOSS, XMFLOAT3(0, 0, 0)));
 	monsters[0]->changeStage(Stages::STAGE_1);
 	zone.at(monsters[0]->getStage())->SectorUpdateOfMonster(MAX_USER);
 
@@ -255,7 +255,7 @@ void InitFunc()
 	PacketDispatcher[CS_PARTY_INIT].Func = PacketDispatcher::PartyInit;
 	PacketDispatcher[CS_INVITE_PARTY].Func = PacketDispatcher::PartyInvite;
 	PacketDispatcher[CS_LEAVE_PARTY].Func = PacketDispatcher::PartyLeave;
-	PacketDispatcher[CS_PARTY_DELETE].Func = PacketDispatcher::PartyDelete;
+	//PacketDispatcher[CS_PARTY_DELETE].Func = PacketDispatcher::PartyDelete;
 	PacketDispatcher[CS_PARTY_AGREE].Func = PacketDispatcher::PartyAgree;
 	//채팅
 	PacketDispatcher[CS_CHAT].Func = nullptr;

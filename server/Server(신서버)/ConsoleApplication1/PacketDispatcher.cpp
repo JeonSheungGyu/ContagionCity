@@ -179,21 +179,31 @@ void PacketDispatcher::RequestDBupdate(char* ptr, const unsigned short id)
 
 
 // 파티관련 처리
+
+//파티생성
 void PacketDispatcher::PartyInit(char* ptr, const unsigned short id)
 {
 	cs_packet_party_init rPacket;
-	sc_packet_party_init sPacket;
+	sc_packet_party_notify sPacket;
 
 	memcpy(reinterpret_cast<char*>(&rPacket), ptr, *ptr);
+
+	//파티가 없어야한다.
+	if (users[rPacket.id].getPartyNum() != -1) return;
 
 	PartyManager::instance().Enter();
 	PartyManager::instance().PartyInit(rPacket.id);
 	PartyManager::instance().Leave();
 
 	try {
-		sPacket.party_id = users[rPacket.id].getPartyNum();
-		sPacket.type = SC_PARTY_INIT;
+		sPacket.newPlayer_id = id;
+		sPacket.hp = users[id].getStatus().hp;
+		memcpy(sPacket.str_id, users[id].getUserID(), sizeof(sPacket.str_id));
+		sPacket.type = SC_PARTY_NEWPLAYER;
 		sPacket.size = sizeof(sPacket);
+		printf("[%d] SC_PARTY_NEWPLAYER (%d, %s, %d ) \n", sPacket.newPlayer_id, sPacket.newPlayer_id, sPacket.str_id, sPacket.hp);
+	
+		SendPacket(id, reinterpret_cast<unsigned char *>(&sPacket));
 	}
 	catch (exception& e) {
 		printf("PacketDispatcher::PartyInit %s", e.what());
@@ -205,19 +215,30 @@ void PacketDispatcher::PartyInvite(char* ptr, const unsigned short id)
 {
 	cs_packet_party_invite rPacket;
 	sc_packet_party_invite sPacket;
-
+	std::vector<std::pair<WORD, int>> InfoList;
 	memcpy(reinterpret_cast<char*>(&rPacket), ptr, *ptr);
 
-	sPacket.id = rPacket.target_id;
-	sPacket.type = SC_INVITE_PARTY;
-	sPacket.party_id = rPacket.party_id;
-	sPacket.size = sizeof(sPacket);
+	//파티가 있는지 확인
+	if (users[rPacket.id].getPartyNum() != -1) {
 
+		// action 충돌체크 종류
+		CollisionProcess[CC_Eraser].Func(rPacket.id, InfoList, 0, 0);
+		for (int i = 0; i < InfoList.size(); ++i) {
+			//유저이면서 파티가 없을경우 신청을 보낸다.
+			if (InfoList[i].first < MAX_USER &&
+				users[InfoList[i].first].getPartyNum() == -1 ) {
+
+				sPacket.id = InfoList[i].first;
+				sPacket.type = SC_INVITE_PARTY;
+				sPacket.party_id = users[rPacket.id].getPartyNum();
+				sPacket.size = sizeof(sPacket);
+			}
+		}
+	}
 	SendPacket(sPacket.id, reinterpret_cast<unsigned char *>(&sPacket));
-
 }
 
-
+//파티참여 동의
 void PacketDispatcher::PartyAgree(char* ptr, const unsigned short id)
 {
 	cs_packet_inivte_agree rPacket;
@@ -226,19 +247,52 @@ void PacketDispatcher::PartyAgree(char* ptr, const unsigned short id)
 	memcpy(reinterpret_cast<char*>(&rPacket), ptr, *ptr);
 
 	PartyManager::instance().Enter();
-	PartyManager::instance().EnterInParty(rPacket.party_id, rPacket.id);
+	PartyManager::instance().EnterInParty(rPacket.party_id, id);
 	PartyManager::instance().Leave();
 
-	sPacket.newPlayer_id = rPacket.id;
+
+	sPacket.newPlayer_id = id;
+	sPacket.hp = users[id].getStatus().hp;
+	memcpy(sPacket.str_id, users[id].getUserID(), sizeof(sPacket.str_id));
 	sPacket.type = SC_PARTY_NEWPLAYER;
 	sPacket.size = sizeof(sPacket);
 
-	//알리기
-	for (auto& id : PartyManager::instance().getPartyInfo()[rPacket.party_id].first)
+	//파티참여알리기
+	for (auto& p_id : PartyManager::instance().getPartyInfo()[rPacket.party_id].first) {
+		SendPacket(p_id, reinterpret_cast<unsigned char *>(&sPacket));
+		printf("[%d] SC_PARTY_NEWPLAYER (%d, %s, %d ) \n", p_id, sPacket.newPlayer_id, sPacket.str_id, sPacket.hp);
+	}
+		
+
+	//파티정보받기
+	for (auto& p_id : PartyManager::instance().getPartyInfo()[rPacket.party_id].first) {
+		if (p_id == id) continue;
+
+		sPacket.newPlayer_id = p_id;
+		sPacket.hp = users[p_id].getStatus().hp;
+		memcpy(sPacket.str_id, users[p_id].getUserID(), sizeof(sPacket.str_id));
+		sPacket.type = SC_PARTY_NEWPLAYER;
+		sPacket.size = sizeof(sPacket);
+
 		SendPacket(id, reinterpret_cast<unsigned char *>(&sPacket));
+		printf("[%d] SC_PARTY_NEWPLAYER (%d, %s, %d ) \n", id, sPacket.newPlayer_id, sPacket.str_id, sPacket.hp);
+	}
+}
+//파티원 제거후 알림, 파티 삭제
+void PacketDispatcher::PartyLeave(char* ptr, const unsigned short id)
+{
+	cs_packet_party_leave packet;
+
+	memcpy(reinterpret_cast<char*>(&packet), ptr, *ptr);
+
+	if (users[id].getPartyNum() == -1) return;
+
+	PartyManager::instance().Enter();
+	PartyManager::instance().LeaveInParty(users[id].getPartyNum(), id);
+	PartyManager::instance().Leave();
 }
 
-
+//파티제거 ( 미사용 )
 void PacketDispatcher::PartyDelete(char* ptr, const unsigned short id)
 {
 	cs_packet_party_delete rPacket;
@@ -246,28 +300,16 @@ void PacketDispatcher::PartyDelete(char* ptr, const unsigned short id)
 	memcpy(reinterpret_cast<char*>(&rPacket), ptr, *ptr);
 
 	PartyManager::instance().Enter();
-	PartyManager::instance().PartyDelete(rPacket.party_id);
+	PartyManager::instance().PartyDelete(users[id].getPartyNum());
 	PartyManager::instance().Leave();
 }
 
-
-void PacketDispatcher::PartyLeave(char* ptr, const unsigned short id)
-{
-	cs_packet_party_leave packet;
-
-	memcpy(reinterpret_cast<char*>(&packet), ptr, *ptr);
-
-	PartyManager::instance().Enter();
-	PartyManager::instance().LeaveInParty(packet.party_id, packet.id);
-	PartyManager::instance().Leave();
-}
-
-
+//씬전환
 void PacketDispatcher::ChangeStage(char* ptr, const unsigned short id)
 {
 	cs_packet_change_stage packet;
 	memcpy(reinterpret_cast<char*>(&packet), ptr, *ptr);
-	
+
 	//스테이지 체인지
 	users[id].changeStage(packet.stage);
 }

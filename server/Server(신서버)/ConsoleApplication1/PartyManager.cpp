@@ -58,6 +58,7 @@ void PartyManager::EnterInParty(const WORD party_id, const WORD player_id)
 
 	try {
 		PartyInfo.at(party_id).first.push_back(player_id);
+		users[player_id].setPartyNum(party_id);
 	}
 	catch (exception& e) {
 		printf("PartyManger::EnterInParty : %s", e.what());
@@ -70,16 +71,27 @@ void PartyManager::LeaveInParty(const WORD party_id, const WORD player_id)
 	assert(player_id >= 0 && party_id >= 0);
 
 	try {
-		auto& iter = find(PartyInfo.at(party_id).first.begin(), PartyInfo.at(party_id).first.end(), player_id);
-		PartyInfo.at(party_id).first.erase(iter);
-
+		//다 지우도록 패킷을 전송
 		sc_packet_party_notify packet;
 		packet.newPlayer_id = player_id;
 		packet.type = SC_LEAVE_PARTY;
 		packet.size = sizeof(packet);
 
-		for (auto& id : PartyInfo.at(party_id).first)
+		for (auto& id : PartyInfo.at(party_id).first) {
 			SendPacket(id, reinterpret_cast<unsigned char *>(&packet));
+			printf("[%d] SC_LEAVE_PARTY (%d) \n", id, player_id);
+		}
+			
+		//파티에서 지운다
+		auto& iter = find(PartyInfo.at(party_id).first.begin(), PartyInfo.at(party_id).first.end(), player_id);
+		PartyInfo.at(party_id).first.erase(iter);
+		users[player_id].setPartyNum(-1);
+
+		//파티에 사람이 없으면 파티제거
+		if (PartyInfo.at(party_id).first.size() == 0) {
+			PartyInfo.at(party_id).first.clear();
+			PartyInfo.at(party_id).second = false;
+		}
 	}
 	catch (exception& e) {
 		printf("PartyManger::LeaveInParty : %s", e.what());
