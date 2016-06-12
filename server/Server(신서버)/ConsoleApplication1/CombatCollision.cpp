@@ -164,3 +164,29 @@ void CombatCollision::PointCircle(const WORD id, vector<pair<WORD, int>>& InfoLi
 	}
 }
 // ~WizardCollision
+
+
+void CombatCollision::CheckUser(const WORD id, vector<pair<WORD, int>>& InfoList, const FLOAT x, const FLOAT z)
+{
+	assert(id >= 0);
+
+	try {
+		auto player = &users[id];
+		float dist = E_DIST;
+		WORD damage = 0;
+
+		for (const auto& ID : player->getNearList())
+		{
+			if (ID < MAX_USER) {
+
+				if (RayCast(player->getPos(), player->getDir(), dist, users[ID].getCollisionSphere())) {
+
+					InfoList.push_back(make_pair(ID, users[ID].getStatus().hp));
+				}
+			}
+		}
+	}
+	catch (exception& e) {
+		printf("WizardCollision::eraser : %s", e.what());
+	}
+}

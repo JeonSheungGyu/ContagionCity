@@ -101,6 +101,7 @@ void PacketDispatcher::Combat(char* ptr, const unsigned short id)
 		player.combatData.combatCollision = rPacket.combatCollision;
 		player.combatData.x = rPacket.x;
 		player.combatData.z = rPacket.z;
+		player.combatData.AnimState = rPacket.AnimState;
 		player.setAction(action_combat);
 		
 		PacketMaker::instance().CombatObject(reinterpret_cast<Object*>(&player), player.getID());
@@ -205,7 +206,7 @@ void PacketDispatcher::PartyInit(char* ptr, const unsigned short id)
 	
 		SendPacket(id, reinterpret_cast<unsigned char *>(&sPacket));
 	}
-	catch (exception& e) {
+	catch (std::exception& e) {
 		printf("PacketDispatcher::PartyInit %s", e.what());
 	}
 }
@@ -218,24 +219,29 @@ void PacketDispatcher::PartyInvite(char* ptr, const unsigned short id)
 	std::vector<std::pair<WORD, int>> InfoList;
 	memcpy(reinterpret_cast<char*>(&rPacket), ptr, *ptr);
 
+	
 	//파티가 있는지 확인
 	if (users[rPacket.id].getPartyNum() != -1) {
 
-		// action 충돌체크 종류
-		CollisionProcess[CC_Eraser].Func(rPacket.id, InfoList, 0, 0);
+		// 유저체크
+		CollisionProcess[ETC_CheckUser].Func(rPacket.id, InfoList, 0, 0);
 		for (int i = 0; i < InfoList.size(); ++i) {
 			//유저이면서 파티가 없을경우 신청을 보낸다.
-			if (InfoList[i].first < MAX_USER &&
-				users[InfoList[i].first].getPartyNum() == -1 ) {
+			if ( users[InfoList[i].first].getPartyNum() == -1 ) {
 
 				sPacket.id = InfoList[i].first;
 				sPacket.type = SC_INVITE_PARTY;
 				sPacket.party_id = users[rPacket.id].getPartyNum();
 				sPacket.size = sizeof(sPacket);
+
+				SendPacket(sPacket.id, reinterpret_cast<unsigned char *>(&sPacket));
+				printf("[%d] SC_INVITE_PARTY (party_id : %d) \n", sPacket.id, sPacket.party_id );
 			}
 		}
 	}
-	SendPacket(sPacket.id, reinterpret_cast<unsigned char *>(&sPacket));
+
+
+
 }
 
 //파티참여 동의
@@ -245,6 +251,8 @@ void PacketDispatcher::PartyAgree(char* ptr, const unsigned short id)
 	sc_packet_party_notify sPacket;
 
 	memcpy(reinterpret_cast<char*>(&rPacket), ptr, *ptr);
+
+	printf("[%d] CS_PARTY_AGREE (party_id : %d) \n", id, rPacket.party_id);
 
 	PartyManager::instance().Enter();
 	PartyManager::instance().EnterInParty(rPacket.party_id, id);
@@ -258,19 +266,20 @@ void PacketDispatcher::PartyAgree(char* ptr, const unsigned short id)
 	sPacket.size = sizeof(sPacket);
 
 	//파티참여알리기
-	for (auto& p_id : PartyManager::instance().getPartyInfo()[rPacket.party_id].first) {
-		SendPacket(p_id, reinterpret_cast<unsigned char *>(&sPacket));
-		printf("[%d] SC_PARTY_NEWPLAYER (%d, %s, %d ) \n", p_id, sPacket.newPlayer_id, sPacket.str_id, sPacket.hp);
+	auto party = PartyManager::instance().getPartyInfo().at(rPacket.party_id).first;
+	for (int i = 0; i < party.size();i++) {
+		SendPacket(party[i], reinterpret_cast<unsigned char *>(&sPacket));
+		printf("[%d] SC_PARTY_NEWPLAYER (%d, %s, %d ) \n", party[i], sPacket.newPlayer_id, sPacket.str_id, sPacket.hp);
 	}
 		
 
 	//파티정보받기
-	for (auto& p_id : PartyManager::instance().getPartyInfo()[rPacket.party_id].first) {
-		if (p_id == id) continue;
+	for (int i = 0; i < party.size(); i++) {
+		if (party[i] == id) continue;
 
-		sPacket.newPlayer_id = p_id;
-		sPacket.hp = users[p_id].getStatus().hp;
-		memcpy(sPacket.str_id, users[p_id].getUserID(), sizeof(sPacket.str_id));
+		sPacket.newPlayer_id = party[i];
+		sPacket.hp = users[party[i]].getStatus().hp;
+		memcpy(sPacket.str_id, users[party[i]].getUserID(), sizeof(sPacket.str_id));
 		sPacket.type = SC_PARTY_NEWPLAYER;
 		sPacket.size = sizeof(sPacket);
 
@@ -307,11 +316,32 @@ void PacketDispatcher::PartyDelete(char* ptr, const unsigned short id)
 //씬전환
 void PacketDispatcher::ChangeStage(char* ptr, const unsigned short id)
 {
-	cs_packet_change_stage packet;
-	memcpy(reinterpret_cast<char*>(&packet), ptr, *ptr);
+	cs_packet_change_stage rPacket;
+	sc_packet_change_stage sPacket;
 
-	//스테이지 체인지
-	users[id].changeStage(packet.stage);
+	memcpy(reinterpret_cast<char*>(&rPacket), ptr, *ptr);
+
+	sPacket.stage = rPacket.stage;
+	sPacket.type = SC_CHANGE_STAGE;
+	sPacket.size = sizeof(sPacket);
+
+	if (users[id].getStage() == sPacket.stage ) return;
+
+	//파티원들에게 씬체인지 전송
+	if (users[id].getPartyNum() != -1) {
+		auto party = PartyManager::instance().getPartyInfo().at(users[id].getPartyNum()).first;
+		for (int i = 0; i < party.size(); i++) {
+			SendPacket(party[i], reinterpret_cast<unsigned char *>(&sPacket));
+			users[party[i]].changeStage(sPacket.stage);
+			//updatePlayerView(party[i]);
+			printf("[%d] SC_CHANGE_STAGE ( stage : %d ) \n", party[i], sPacket.stage);
+		}
+	}
+	else {
+		users[id].changeStage(sPacket.stage);
+		//updatePlayerView(id);
+		printf("[%d] SC_CHANGE_STAGE ( stage : %d ) \n", id, sPacket.stage);
+	}
 }
 
 //

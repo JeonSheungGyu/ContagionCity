@@ -4,7 +4,7 @@
 #include "Monster.h"
 #include "PacketMaker.h"
 #include "CombatCollision.h"
-
+#include "PartyManager.h"
 using namespace std;
 
 PacketMaker* PacketMaker::pInstance = nullptr;
@@ -221,6 +221,9 @@ void PacketMaker::MonsterAttack(Object* player, const unsigned short id)
 
 		SendPacket(player->getID(), reinterpret_cast<unsigned char *>(&packet));
 		printf("Send [%d] about  [%d] SC_MONSTER_ATTACK \n", player->getID(), monster->getID());
+
+		PacketMaker::instance().PartyInfo(reinterpret_cast<User*>(player), packet.damage);
+
 	}
 	catch (exception& e) {
 		printf("PacketMaker::MonsterAttack : %s", e.what());
@@ -269,9 +272,6 @@ void PacketMaker::MonsterDie(Object* player, const unsigned short id)
 	try {
 		packet.mon_id = id;
 
-		if (monsters.at(id - MAX_USER)->getTargetProcess().getTarget() == nullptr)
-			return throw exception("PacketMaker::MonsterDie monster target is nullptr\n");
-
 		packet.player_id = monsters.at(id - MAX_USER)->getTargetProcess().getTarget()->getID();
 		packet.EXP = monsters.at(id - MAX_USER)->getEXP();
 		packet.size = sizeof(packet);
@@ -304,6 +304,7 @@ void PacketMaker::CombatObject(Object* player, const unsigned short id)
 
 
 		packet.combatCollision = user.combatData.combatCollision;
+		packet.AnimState = user.combatData.AnimState;
 		packet.ListSize = user.combatData.size;
 		packet.id = id;
 		packet.type = SC_COMBAT_OBJECT;
@@ -320,5 +321,32 @@ void PacketMaker::CombatObject(Object* player, const unsigned short id)
 	}
 	catch (exception& e) {
 		printf("PacketMaker::ObjectCombat %s", e.what());
+	}
+}
+//몬스터
+void PacketMaker::PartyInfo(User* player, const unsigned int damage )
+{
+	assert(player);
+
+	sc_packet_party_info packet;
+
+	try {
+		//파티가있다면 데미지 받은것을 알린다.
+		if (player->getPartyNum() != -1) {
+
+			packet.type = SC_PARTY_INFO;
+			packet.size = sizeof(packet);
+			packet.newPlayer_id = player->getID();
+			packet.damage = damage;
+
+			auto party = PartyManager::instance().getPartyInfo().at(player->getPartyNum()).first;
+			for (int i = 0; i < party.size(); i++) {
+				SendPacket(party[i], reinterpret_cast<unsigned char *>(&packet));
+				printf("[%d] SC_PARTY_INFO (id : %d, damage: %d) \n", party[i], packet.newPlayer_id, packet.damage);
+			}
+		}
+	}
+	catch (exception& e) {
+		printf("PacketMaker::PartyInfo : %s", e.what());
 	}
 }

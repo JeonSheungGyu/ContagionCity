@@ -3,14 +3,14 @@
 #include "PartyManager.h"
 #include "User.h"
 
-mutex PartyManager::pMutex;
+std::mutex PartyManager::pMutex;
 PartyManager* PartyManager::pInstance = nullptr;
 void SendPacket(int id, unsigned char *packet);
 extern User users[MAX_USER];
 
 PartyManager& PartyManager::instance()
 {
-	lock_guard<mutex> guard(pMutex);
+	std::lock_guard<std::mutex> guard(pMutex);
 
 	if (pInstance == nullptr)
 		pInstance = new PartyManager;
@@ -46,7 +46,7 @@ void PartyManager::PartyInit(const WORD player_id)
 
 
 	}
-	catch (exception& e) {
+	catch (std::exception& e) {
 		printf("PartyManger::PartyInit : %s", e.what());
 	}
 }
@@ -57,10 +57,12 @@ void PartyManager::EnterInParty(const WORD party_id, const WORD player_id)
 	assert(player_id >= 0 && party_id >= 0);
 
 	try {
+	
 		PartyInfo.at(party_id).first.push_back(player_id);
 		users[player_id].setPartyNum(party_id);
+		
 	}
-	catch (exception& e) {
+	catch (std::exception& e) {
 		printf("PartyManger::EnterInParty : %s", e.what());
 	}
 }
@@ -79,7 +81,7 @@ void PartyManager::LeaveInParty(const WORD party_id, const WORD player_id)
 
 		for (auto& id : PartyInfo.at(party_id).first) {
 			SendPacket(id, reinterpret_cast<unsigned char *>(&packet));
-			printf("[%d] SC_LEAVE_PARTY (%d) \n", id, player_id);
+			printf("[%d] SC_LEAVE_PARTY (player_id : %d) \n", id, player_id);
 		}
 			
 		//파티에서 지운다
@@ -93,7 +95,7 @@ void PartyManager::LeaveInParty(const WORD party_id, const WORD player_id)
 			PartyInfo.at(party_id).second = false;
 		}
 	}
-	catch (exception& e) {
+	catch (std::exception& e) {
 		printf("PartyManger::LeaveInParty : %s", e.what());
 	}
 }
@@ -116,7 +118,7 @@ void PartyManager::PartyDelete(const WORD party_id)
 		PartyInfo.at(party_id).first.clear();
 		PartyInfo.at(party_id).second = false;
 	}
-	catch (exception& e) {
+	catch (std::exception& e) {
 		printf("PartyManger::PartyDelete : %s", e.what());
 	}
 }

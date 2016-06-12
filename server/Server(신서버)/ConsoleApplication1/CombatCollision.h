@@ -1,6 +1,6 @@
 #pragma once
 #include "stdafx.h"
-const int COLLISION_FUNC_TYPE = 4;
+const int COLLISION_FUNC_TYPE = 5;
 
 enum
 {
@@ -8,6 +8,7 @@ enum
 	CC_CircleFront,
 	CC_Eraser,
 	CC_PointCircle,
+	ETC_CheckUser
 };
 
 // 함수포인터 구조체
@@ -33,6 +34,8 @@ public:
 	// 지정된 포인트
 	static void PointCircle(const WORD id, std::vector< std::pair<WORD, int>>& InfoList, const FLOAT x, const FLOAT z);
 
+	// 일직선
+	static void CheckUser(const WORD id, std::vector< std::pair<WORD, int>>& InfoList, const FLOAT x, const FLOAT z);
 	//RayCast
 	static BOOL RayCast(const XMFLOAT3& Pos, const XMFLOAT3& Dir, FLOAT dist, const BoundingSphere object)
 	{

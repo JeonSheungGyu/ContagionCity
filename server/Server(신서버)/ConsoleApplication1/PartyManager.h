@@ -1,15 +1,10 @@
 #pragma once
-#include <atomic>
-#include <WinSock2.h>
-#include <vector>
-#include <mutex>
-
-using namespace std;
+#include "stdafx.h"
 
 class PartyManager
 {
 private:
-	typedef vector<pair<vector<WORD>, bool>> PARTY;
+	typedef std::vector<std::pair<std::vector<WORD>, bool>> PARTY;
 	PARTY PartyInfo;
 
 	CRITICAL_SECTION pCS;
@@ -19,7 +14,7 @@ private:
 	PartyManager& operator=(const PartyManager& other) = delete;
 
 	static PartyManager*	pInstance;
-	static mutex			pMutex;
+	static std::mutex			pMutex;
 public:
 	static PartyManager&	instance();
 

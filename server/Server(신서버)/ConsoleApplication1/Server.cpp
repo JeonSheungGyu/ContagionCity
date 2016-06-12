@@ -10,7 +10,9 @@
 #include "DBProcess.h"
 #include "CombatCollision.h"
 #include "PacketDispatcher.h"
+#include "PartyManager.h"
 #include "DeadReckoning.h"
+
 //전역변수
 HANDLE hCompletionPort;
 User users[MAX_USER];
@@ -225,7 +227,7 @@ void allocateObject()
 	float x = 0, z = 0;
 
 	//Stage1 보스 몬스터 배치
-	monsters.push_back(new Monster(MAX_USER, ENEMY_STAGE1_BOSS, XMFLOAT3(0, 0, 0)));
+	monsters.push_back(new Monster(MAX_USER, ENEMY_STAGE1_BOSS, XMFLOAT3(-2000, 0, 1250)));
 	monsters[0]->changeStage(Stages::STAGE_1);
 	zone.at(monsters[0]->getStage())->SectorUpdateOfMonster(MAX_USER);
 
@@ -266,6 +268,7 @@ void InitFunc()
 	CollisionProcess[CC_CircleFront].Func = CombatCollision::CircleFront;
 	CollisionProcess[CC_Eraser].Func = CombatCollision::Eraser;
 	CollisionProcess[CC_PointCircle].Func = CombatCollision::PointCircle;
+	CollisionProcess[ETC_CheckUser].Func = CombatCollision::CheckUser;
 }
 void initZone() {
 	//Villige
@@ -489,6 +492,9 @@ unsigned int __stdcall CompletionThread(LPVOID pComPort)
 			switch (my_overlap->db_type)
 			{
 			case DB_QUERY::REQUEST_STATE: 
+				//체력과 행동풀
+				my_overlap->status.hp = my_overlap->status.max_hp;
+				my_overlap->status.ap = my_overlap->status.max_ap;
 				DBProcess::RequestState(my_overlap, key); 
 				updatePlayerView(key);
 				PacketMaker::instance().Login(key);
@@ -503,6 +509,12 @@ unsigned int __stdcall CompletionThread(LPVOID pComPort)
 					if (users[i].isConnected()) {
 						PacketMaker::instance().RemoveObject(reinterpret_cast<Object*>(&users[i]), user->getID());
 					}
+				}
+				//파티나가기
+				if (user->getPartyNum() != -1) {
+					PartyManager::instance().Enter();
+					PartyManager::instance().LeaveInParty(user->getPartyNum(), user->getID());
+					PartyManager::instance().Leave();
 				}
 				//sector 제거
 				user->getCurrentSector()->erasePlayer(user->getID());

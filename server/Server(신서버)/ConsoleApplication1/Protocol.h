@@ -1,46 +1,45 @@
 #pragma once
 #include "stdafx.h"
-#define LOGIN_PORT	9011
+#define LOGIN_PORT   9011
 #define GAME_PORT   9012
 
-// Login <-> Client
-#define CL_REQUEST_LOGIN		0
-#define LC_PERMISION_LOGIN		1
-
-
 //클라이언트->서버
-#define CS_MOVE_OBJECT			0
-#define CS_COMBAT_OBJECT		1
-#define CS_CHAT					2
-#define CS_REQUEST_LOGIN		3
-#define CS_DB_UPDATE			4
-#define CS_PARTY_INIT			5
-#define CS_INVITE_PARTY			6
-#define CS_LEAVE_PARTY			7
-#define CS_PARTY_DELETE			8
-#define CS_PARTY_AGREE			9
-#define CS_CHANGE_STAGE			10
+#define CL_REQUEST_LOGIN      0
+#define CS_MOVE_OBJECT         1
+#define CS_COMBAT_OBJECT      2
+#define CS_CHAT               3
+#define CS_REQUEST_LOGIN      4
+#define CS_DB_UPDATE         5
+#define CS_PARTY_INIT         6
+#define CS_INVITE_PARTY         7
+#define CS_LEAVE_PARTY         8
+#define CS_PARTY_DELETE         9
+#define CS_PARTY_AGREE         10
+#define CS_CHANGE_STAGE         11
 
 //서버->클라이언트
-#define SC_LOGIN				0
-#define SC_MOVE_OBJECT          1
-#define SC_PUT_OBJECT			2
-#define SC_REMOVE_OBJECT		3
-#define SC_CHAT					4
-#define SC_MONSTER_CHASE		5
-#define SC_MONSTER_ATTACK		6
-#define SC_MONSTER_DIE			7
-#define SC_COMBAT_OBJECT		8
-#define SC_PARTY_INIT			9
-#define SC_INVITE_PARTY			10
-#define SC_LEAVE_PARTY			11
-#define SC_PARTY_DELETE			12
-#define SC_PARTY_NEWPLAYER		13
-#define SC_ACCEPT_FAIL			14
+#define LC_PERMISION_LOGIN      0
+#define SC_LOGIN            1
+#define SC_MOVE_OBJECT          2
+#define SC_PUT_OBJECT         3
+#define SC_REMOVE_OBJECT      4
+#define SC_CHAT               5
+#define SC_MONSTER_CHASE      6
+#define SC_MONSTER_ATTACK      7
+#define SC_MONSTER_DIE         8
+#define SC_COMBAT_OBJECT      9
+#define SC_PARTY_INIT         10
+#define SC_INVITE_PARTY         11
+#define SC_LEAVE_PARTY         12
+#define SC_PARTY_DELETE         13
+#define SC_PARTY_NEWPLAYER      14
+#define SC_ACCEPT_FAIL         15
+#define SC_CHANGE_STAGE			16
+#define SC_PARTY_INFO			17
 
 // Login_Server -> Client
-#define ID_LEN					20
-#define PASSWORD_LEN			20
+#define ID_LEN               20
+#define PASSWORD_LEN         20
 
 
 #pragma pack (push, 1)
@@ -145,6 +144,7 @@ struct sc_packet_combat
 	//시전자
 	WORD id;
 	BYTE combatCollision;
+	BYTE AnimState;
 	std::pair<WORD, int> InfoList[10];
 	BYTE  ListSize;
 	FLOAT x;
@@ -176,7 +176,14 @@ struct sc_packet_party_notify
 	int hp;
 
 };
+struct sc_packet_party_info
+{
+	BYTE size;
+	BYTE type;
+	WORD newPlayer_id;
+	int damage;
 
+};
 struct sc_packet_party_delete
 {
 	BYTE size;
@@ -190,6 +197,13 @@ struct sc_packet_accept_fail
 	char message[30];
 };
 
+//씬체인지
+struct sc_packet_change_stage
+{
+	BYTE size;
+	BYTE type;
+	WORD stage;
+};
 //Client -> Server
 
 struct cs_packet_object_move
@@ -218,6 +232,7 @@ struct cs_packet_combat
 	//시전자
 	WORD id;
 	BYTE combatCollision;
+	BYTE AnimState;
 	FLOAT x;
 	FLOAT z;
 };
@@ -307,6 +322,7 @@ struct CombatData
 	//누가공격을 시전하였는지
 	WORD id;
 	BYTE combatCollision;
+	BYTE AnimState;
 	std::pair<WORD, int> InfoList[10];
 	BYTE  ListSize;
 	FLOAT x;

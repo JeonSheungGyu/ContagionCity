@@ -3,40 +3,37 @@
 #define LOGIN_PORT	9011
 #define GAME_PORT   9012
 
-// Login <-> Client
-#define CL_REQUEST_LOGIN		0
-#define LC_PERMISION_LOGIN		1
-
-
 //클라이언트->서버
-#define CS_MOVE_OBJECT			0
-#define CS_COMBAT_OBJECT		1
-#define CS_CHAT					2
-#define CS_REQUEST_LOGIN		3
-#define CS_DB_UPDATE			4
-#define CS_PARTY_INIT			5
-#define CS_INVITE_PARTY			6
-#define CS_LEAVE_PARTY			7
-#define CS_PARTY_DELETE			8
-#define CS_PARTY_AGREE			9
-#define CS_CHANGE_STAGE			10
+#define CL_REQUEST_LOGIN		0
+#define CS_MOVE_OBJECT			1
+#define CS_COMBAT_OBJECT		2
+#define CS_CHAT					3
+#define CS_REQUEST_LOGIN		4
+#define CS_DB_UPDATE			5
+#define CS_PARTY_INIT			6
+#define CS_INVITE_PARTY			7
+#define CS_LEAVE_PARTY			8
+#define CS_PARTY_DELETE			9
+#define CS_PARTY_AGREE			10
+#define CS_CHANGE_STAGE			11
 
 //서버->클라이언트
-#define SC_LOGIN				0
-#define SC_MOVE_OBJECT          1
-#define SC_PUT_OBJECT			2
-#define SC_REMOVE_OBJECT		3
-#define SC_CHAT					4
-#define SC_MONSTER_CHASE		5
-#define SC_MONSTER_ATTACK		6
-#define SC_MONSTER_DIE			7
-#define SC_COMBAT_OBJECT		8
-#define SC_PARTY_INIT			9
-#define SC_INVITE_PARTY			10
-#define SC_LEAVE_PARTY			11
-#define SC_PARTY_DELETE			12
-#define SC_PARTY_NEWPLAYER		13
-#define SC_ACCEPT_FAIL			14
+#define LC_PERMISION_LOGIN		0
+#define SC_LOGIN				1
+#define SC_MOVE_OBJECT          2
+#define SC_PUT_OBJECT			3
+#define SC_REMOVE_OBJECT		4
+#define SC_CHAT					5
+#define SC_MONSTER_CHASE		6
+#define SC_MONSTER_ATTACK		7
+#define SC_MONSTER_DIE			8
+#define SC_COMBAT_OBJECT		9
+#define SC_PARTY_INIT			10
+#define SC_INVITE_PARTY			11
+#define SC_LEAVE_PARTY			12
+#define SC_PARTY_DELETE			13
+#define SC_PARTY_NEWPLAYER		14
+#define SC_ACCEPT_FAIL			15
 
 // Login_Server -> Client
 #define ID_LEN					20
@@ -172,6 +169,9 @@ struct sc_packet_party_notify
 	BYTE size;
 	BYTE type;
 	WORD newPlayer_id;
+	char str_id[ID_LEN];
+	int hp;
+
 };
 
 struct sc_packet_party_delete
@@ -246,15 +246,14 @@ struct cs_packet_party_invite
 	BYTE size;
 	BYTE type;
 	WORD id;
-	WORD target_id;
-	WORD party_id;
+	//WORD target_id;
+	//WORD party_id;
 };
 
 struct cs_packet_inivte_agree
 {
 	BYTE size;
 	BYTE type;
-	WORD id;
 	WORD party_id;
 };
 
@@ -262,15 +261,12 @@ struct cs_packet_party_delete
 {
 	BYTE size;
 	BYTE type;
-	WORD party_id;
 };
 
 struct cs_packet_party_leave
 {
 	BYTE size;
 	BYTE type;
-	WORD id;
-	WORD party_id;
 };
 
 struct cs_packet_change_stage

@@ -15,11 +15,11 @@ Monster::Monster(DWORD id, BYTE monType, XMFLOAT3 pos) : Object(id, pos), m_MonT
 	m_pStateMachine->SetCurrentState(Wander::Instance());
 
 	if (monType == ENEMY_ZOMBIE_MAN || monType == ENEMY_ZOMBIE_WOMAN) {
-		obStatus.hp = 100;
-		obStatus.damage = 3;
+		obStatus.hp = 40;
+		obStatus.damage = 1;
 	}else if (monType == ENEMY_STAGE1_BOSS) {
-		obStatus.hp = 500;
-		obStatus.damage = 6;
+		obStatus.hp = 100;
+		obStatus.damage = 1;
 	}
 
 }

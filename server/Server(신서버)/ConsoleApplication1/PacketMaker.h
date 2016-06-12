@@ -1,7 +1,7 @@
 #pragma once
 #include <mutex>
 #include "Object.h"
-
+#include "User.h"
 // 패킷 생성과정이 코드마다 분산되어 있으면 찾기도 힘들고 가독성 떨어짐
 // 패킷 생성하는 부분 클래스로 캡슐화
 
@@ -26,7 +26,7 @@ public:
 
 	void CombatObject(Object* player, const unsigned short id);
 
-
+	void PartyInfo(User* player, const unsigned int damage);
 private:
 	static PacketMaker* pInstance;
 	static std::mutex pMutex;
